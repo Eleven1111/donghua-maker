@@ -29,6 +29,10 @@ A Claude Code skill + agent that turns a one-line idea into a self-contained HTM
   - 包含学习目标、易错点、回顾和课后小测；
   - 自动生成讲义；
   - **盲测关卡**：没看过脚本的新读者只看影片内容答题，正确率要达到 80% 才能通过。
+- **自媒体场景包**（`donghua-creator` 加 `creator-director` Agent）：一句选题，就能生成可发抖音、视频号、小红书的 9:16 竖屏短片和发布包：
+  - **平台关卡**：逐帧读取片中实际画出的文字，检查它是否在平台安全区内、会不会被小红书的 3:4 裁切切掉、文字之间有没有重叠，以及前 3 秒的钩子是否到位；
+  - **发布包**：包括两种比例的封面、各平台的标题/简介/话题（有字数检查）和授权清单。素材授权不可商用或来源不明就判失败，CC-BY 素材自动署名；
+  - 只导出文件，不代发任何平台。
 
 ## 安装
 
@@ -39,6 +43,9 @@ cp donghua-maker/agents/donghua-director.md ~/.claude/agents/
 # 老师场景包（依赖上面的底座，两个技能要放在同一个 skills 目录下）
 cp -R donghua-maker/skills/donghua-classroom ~/.claude/skills/
 cp donghua-maker/agents/classroom-director.md ~/.claude/agents/
+# 自媒体场景包
+cp -R donghua-maker/skills/donghua-creator ~/.claude/skills/
+cp donghua-maker/agents/creator-director.md ~/.claude/agents/
 ```
 
 依赖：
@@ -58,6 +65,7 @@ cp donghua-maker/agents/classroom-director.md ~/.claude/agents/
 ```
 用 donghua-director 做一个讲光合作用原理的科普动画
 用 classroom-director 做一节初二勾股定理的微课
+用 creator-director 做一条抖音和小红书的短视频：为什么猫咪爱钻纸箱
 ```
 
 老师场景包做完后，由主会话另派一个新上下文的 Agent 只看 `film-lesson/blind/packet.md` 答题，然后运行 `lesson_check.py film.html --blind`。
@@ -74,6 +82,7 @@ python3 $S/narrate.py film.html                               # 读 film-vo/scri
 python3 $S/font_embed.py film.html                             # 嵌入可商用字体（改完文字后重跑）
 python3 $S/audio_director.py film.html --mood cute --key C --run --check
 python3 $S/export.py film.html -o film-1080.mp4 --scale .75 --crf 23   # 网页版确认后再导出
+python3 $S/export.py film.html -o film-3x4.mp4 --aspect 3:4 --scale .75 --crf 23   # 竖屏片的小红书 3:4 版
 ```
 
 ## 输出结构
@@ -85,6 +94,7 @@ film-audio/               音频方案、bgm.mid/.wav、编码后的音效、sou
 film-vo/                  script.json（解说稿与书签）、语音片段缓存、film.srt
 film-fonts/               sources.json 与 OFL 许可原文
 film-lesson/              老师场景包：lesson.json、讲义.md、blind/（盲测材料与答卷）
+film-publish/             自媒体场景包：pack.json、cover-9x16.jpg、cover-3x4.jpg、发布包.md、.srt
 film-stills/              静帧与 sheet.jpg（已被 .gitignore 忽略）
 film-1080.mp4             导出成片（只在确认后生成）
 ```
@@ -100,6 +110,10 @@ agents/
 skills/donghua-classroom/    老师场景包（建立在底座之上，不改引擎）
   SKILL.md                   学段节奏表、课程结构、解说/字幕/字体/盲测流程
   scripts/lesson_check.py    课程关卡：目标、关键词、语速、停顿、小测证据、盲测 → 讲义.md
+skills/donghua-creator/      自媒体场景包（建立在底座之上，不改引擎）
+  SKILL.md                   钩子、竖屏构图、文案规则、平台关卡、发布包
+  scripts/platform_check.py  安全区 / 3:4 裁切 / 文字重叠 / 钩子
+  scripts/publish_kit.py     封面、各平台文案、授权清单 → 发布包.md
 skills/donghua-maker/        底座
   SKILL.md                   完整工作流：分镜 → 骨架 → 镜头 → 音频 → 事实核对 → 验证 → 交付 → 导出
   assets/engine.html         引擎模板

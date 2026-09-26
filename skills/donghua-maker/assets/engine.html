@@ -799,10 +799,10 @@ function drawSubs() { // burned-in subtitle: one phrase at a time, bottom-centre
   if (!film.subs || !NARR.subs.length) return;
   const T = film.f / FPS, cur = NARR.subs.find(u => T >= u[0] && T < u[1]); if (!cur) return;
   const txt = NARR.lines[cur[2]].slice(cur[3], cur[4]).replace(/[，。！？；：、,.!?;:]+$/, ''), sz = Math.round(Math.min(W, H) * (W > H ? .052 : .042));
-  ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.font = `600 ${sz}px ${SUBFONT()}`; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-  const y = H * (W > H ? .93 : .8), w = ctx.measureText(txt).width;
+  film._sub = true; ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.font = `600 ${sz}px ${SUBFONT()}`; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+  const y = H * (W > H ? .93 : .78), w = ctx.measureText(txt).width;
   ctx.fillStyle = 'rgba(12,16,20,.55)'; ctx.beginPath(); ctx.roundRect(W / 2 - w / 2 - sz * .5, y - sz * 1.05, w + sz, sz * 1.4, sz * .25); ctx.fill();
-  ctx.lineJoin = 'round'; ctx.lineWidth = sz * .14; ctx.strokeStyle = 'rgba(8,10,12,.9)'; ctx.strokeText(txt, W / 2, y); ctx.fillStyle = '#fffdf6'; ctx.fillText(txt, W / 2, y); ctx.restore();
+  ctx.lineJoin = 'round'; ctx.lineWidth = sz * .14; ctx.strokeStyle = 'rgba(8,10,12,.9)'; ctx.strokeText(txt, W / 2, y); ctx.fillStyle = '#fffdf6'; ctx.fillText(txt, W / 2, y); ctx.restore(); film._sub = false;
 }
 function voReady() { return VO._p || (VO._p = Promise.all(VO.src.map((b, i) => { const u8 = Uint8Array.from(atob(b), c => c.charCodeAt(0)); return new OfflineAudioContext(1, 1, 48000).decodeAudioData(u8.buffer).then(buf => { VO.buf[i] = buf; }); }))); }
 
@@ -1039,10 +1039,24 @@ addEventListener('keydown', ev => {
   requestAnimationFrame(tick);
 })();
 // test hooks (headless capture + review)
+// text boxes drawn in frame f (canvas px): every fillText/strokeText, transformed, with its string — for safe-area and overlap checks.
+//   Text baked into sprites earlier (drawImage) is not seen; draw labels live if a check must cover them.
+function textBoxes(f) {
+  const out = [], wrap = (g, k) => { const o = { fillText: g.fillText, strokeText: g.strokeText };
+    for (const m of ['fillText', 'strokeText']) g[m] = function (t, x, y, ...r) { t = String(t);
+      if (t.trim() && this.globalAlpha > .05) { const mt = this.measureText(t), M = this.getTransform(), pts = [[x - mt.actualBoundingBoxLeft, y - mt.actualBoundingBoxAscent], [x + mt.actualBoundingBoxRight, y - mt.actualBoundingBoxAscent], [x - mt.actualBoundingBoxLeft, y + mt.actualBoundingBoxDescent], [x + mt.actualBoundingBoxRight, y + mt.actualBoundingBoxDescent]].map(([a, b]) => [(M.a * a + M.c * b + M.e) * k, (M.b * a + M.d * b + M.f) * k]);
+        const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]), bx = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)].map(v => Math.round(v));
+        if (!out.some(o => o.text === t && o.box.every((v, i) => Math.abs(v - bx[i]) < 2))) out.push({ text: t, box: bx, sub: !!film._sub }); }   // fill+stroke of one label = one box
+      return o[m].call(this, t, x, y, ...r); };
+    return () => Object.assign(g, o); };
+  const un = [wrap(ctx, 1)].concat(LOG ? [wrap(LOG, W / LW)] : []);
+  try { film.seeking = true; simTo(f); film.seeking = false; render(); } finally { un.forEach(u => u()); for (const g of [ctx, LOG]) if (g) { delete g.fillText; delete g.strokeText; } }
+  return out;
+}
 window.__film = {
   seek: f => { film.seeking = true; simTo(f); film.seeking = false; render(); return film.f; },
   time: () => { const t0 = performance.now(); render(); return performance.now() - t0; },
-  wav: (o) => renderWav(o), score: () => SCORE, audio: () => audioReport(), info: () => ({ f: film.f, shot: film.shot && film.shot.name, smooth: film.smooth }), narr: () => ({ marks: NARR.marks, subs: NARR.subs.length, fonts: window.EMBED_FONTS, cues: Object.keys(NARR.marks).map(k => { const [, i, f] = k.match(/^S(\d+)\.(\w+)$/); return [k, SHOTS[+i - 1][f]]; }) }),
+  wav: (o) => renderWav(o), score: () => SCORE, audio: () => audioReport(), info: () => ({ f: film.f, shot: film.shot && film.shot.name, smooth: film.smooth }), textBoxes: f => textBoxes(f), narr: () => ({ marks: NARR.marks, subs: NARR.subs.length, fonts: window.EMBED_FONTS, cues: Object.keys(NARR.marks).map(k => { const [, i, f] = k.match(/^S(\d+)\.(\w+)$/); return [k, SHOTS[+i - 1][f]]; }) }),
 };
 </script>
 </body>

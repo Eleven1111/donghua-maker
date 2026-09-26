@@ -19,6 +19,8 @@ two facts fused into one). So facts get their own gate, run after the shots are 
 4. Add `visual` entries for every factual claim the picture makes: map positions and outlines, which coast/side,
    directions, flags, uniforms, architecture, vehicles tied to a year. Each needs a source and the still it was
    checked on (`scripts/stills.py <film>.html --shots`). `[]` only when the picture asserts nothing factual.
+   A `visual` entry is only `verified` or `disputed`, never `na`. Stylised things that assert nothing, such as a
+   cartoon cat's proportions, a palette or icons, simply get no entry. List only what a viewer could call wrong.
 5. `python3 scripts/fact_check.py <film>.html` must print `FACT CHECK PASS`. It fails on any unchecked string,
    any `todo`, a verified/disputed entry without a URL, a missing `visual` list, or an entry whose text is no longer
    in the film (so a changed date re-opens the check).

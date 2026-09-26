@@ -28,6 +28,7 @@ Bundled files:
 - `references/fact-check.md` + `scripts/fact_check.py`: the fact gate for any film that states facts (history, science, geography, business, product claims): every on-screen string is sourced, disputed-with-note or marked non-factual, plus the picture's factual claims (map positions, costumes…). **Read it before briefing a factual topic.**
 - `scripts/narrate.py`: free narration (edge-tts, no key) with word-level timing. `<film>-vo/script.json` holds one line per shot; a `{FIELD}` bookmark moves that shot's cue field onto the next spoken word. It writes the NARRATION block, burned-in subtitles (C toggles them; `?subs=0`) and an `.srt`. It fails when a line overruns its shot. `--check` re-verifies.
 - `scripts/font_embed.py`: embeds SIL OFL fonts (霞鹜文楷 and Noto Sans SC), subset to the film's characters, and writes a licence ledger. Use it whenever the film may be published or used commercially. `--check` catches a stale subset.
+- `__film.textBoxes(frame)` (engine hook): every text drawn in that frame with its string and canvas box, subtitles tagged. Scene packs use it for safe-area and overlap checks. It can't see text baked into sprites.
 - `scripts/stills.py`: full-resolution stills (`--shots` = first/mid/last frame of every shot) plus a contact sheet, on its own local server; exits 1 on page errors. The input for the step-5 visual check.
 - `references/styles.md`: formats and vertical composition, texture recipes, palettes, rhythm, music. Read it when you turn a theme into parameters.
 
@@ -149,6 +150,7 @@ Options:
 - `--png`: lossless frames instead of JPEG q.95.
 - `--crf N`: sets the x264 quality.
 - `--no-audio`: exports picture only.
+- `--aspect 3:4`: centre-crops before scaling, e.g. the 小红书 version of a 9:16 film.
 
 Requires `ffmpeg` and `playwright` (Python), plus Google Chrome or `python3 -m playwright install chromium`.
 

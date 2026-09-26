@@ -67,6 +67,7 @@ def main() -> int:
     ap.add_argument("--png", action="store_true", help="lossless PNG frames (slower) instead of JPEG q=0.95")
     ap.add_argument("--crf", type=int, default=18, help="x264 quality, lower = better (default 18)")
     ap.add_argument("--no-audio", action="store_true")
+    ap.add_argument("--aspect", default="", help="centre-crop to w:h before scaling, e.g. 3:4 (Xiaohongshu version of a 9:16 film)")
     ap.add_argument("--lufs", type=float, default=-16.0, help="integrated loudness target for the master (default -16)")
     ap.add_argument("--tp", type=float, default=-1.5, help="true-peak ceiling in dBTP (default -1.5)")
     ap.add_argument("--no-norm", action="store_true", help="keep the raw in-browser mix level")
@@ -95,6 +96,11 @@ def main() -> int:
             sys.exit(f"film threw on load: {errors[0]}")
         info = page.evaluate("({w: document.getElementById('film').width, h: document.getElementById('film').height, nf: NF, fps: FPS, dur: DUR})")
         w, h, nf = info["w"], info["h"], int(info["nf"])
+        crop = ""
+        if a.aspect:   # centre crop, e.g. 9:16 → 3:4 keeps the full width and drops equal bands top and bottom
+            n, d = (float(x) for x in a.aspect.split(":"))
+            cw, ch = (w, int(w * d / n) // 2 * 2) if w * d / n <= h else (int(h * n / d) // 2 * 2, h)
+            crop, w, h = f"crop={cw}:{ch}:{(w - cw) // 2}:{(h - ch) // 2},", cw, ch
         ow, oh = int(w * a.scale) // 2 * 2, int(h * a.scale) // 2 * 2
 
         wav = Path(tmp) / "mix.wav"
@@ -119,7 +125,7 @@ def main() -> int:
         cmd = ["ffmpeg", "-y", "-loglevel", "error", "-f", "image2pipe", "-framerate", str(a.fps), "-i", "-"]
         if not a.no_audio:
             cmd += ["-i", str(wav)]
-        cmd += ["-vf", f"scale={ow}:{oh}:flags=lanczos,format=yuv420p", "-c:v", "libx264", "-preset", "medium", "-crf", str(a.crf),
+        cmd += ["-vf", crop + f"scale={ow}:{oh}:flags=lanczos,format=yuv420p", "-c:v", "libx264", "-preset", "medium", "-crf", str(a.crf),
                 "-r", str(a.fps), "-movflags", "+faststart"]
         if not a.no_audio:
             cmd += ["-c:a", "aac", "-b:a", "192k", "-shortest"]
