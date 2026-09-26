@@ -48,7 +48,7 @@ html.bare body{padding:0;gap:0}html.bare #bar,html.bare #hint{display:none}html.
   <button id="snd">Sound off</button>
   <button id="fs">Full screen</button>
 </div>
-<p id="hint">Click the world to poke it, drag to blow on it · <kbd>Space</kbd> play/pause · <kbd>←</kbd><kbd>→</kbd> one exposure · <kbd>S</kbd> stop-motion/smooth · <kbd>1</kbd>–<kbd>{{NSHOTS}}</kbd> shots · <kbd>M</kbd> mute</p>
+<p id="hint">Click the world to poke it, drag to blow on it · <kbd>Space</kbd> play/pause · <kbd>←</kbd><kbd>→</kbd> one exposure · <kbd>S</kbd> stop-motion/smooth · <kbd>1</kbd>–<kbd>{{NSHOTS}}</kbd> shots · <kbd>M</kbd> mute · <kbd>C</kbd> subtitles</p>
 <script>
 // ═══════════════════════════════════════════════════════════════════════════
 //  {{TITLE}} — a stop-motion film, drawn and scored entirely in code.
@@ -783,6 +783,27 @@ class Sound {
 // ── narration (optional): the story sets VO.src = [base64 mp3, …] and schedules { t, k: 'vo', id, dur } events;
 //    clips are decoded once and shared by the live player and the offline mix (see shot-contract §9)
 const VO = { src: [], buf: [], _p: null };
+// ── narration timing + subtitles (optional): scripts/narrate.py writes a NARRATION block into the story that fills NARR:
+//    lines = spoken text per clip; ev = its { t, k: 'vo', id, dur } events; subs = [t0, t1, line, a, b] (chars a..b of lines[line]);
+//    marks = { 'S<i>.<FIELD>': absolute seconds }: at boot shot i's own cue field FIELD becomes (word time − shot.t0), so a label lands on its word
+const NARR = { lines: [], ev: [], subs: [], marks: {} };
+function applyMarks() {
+  for (const [k, t] of Object.entries(NARR.marks)) {
+    const [, i, fld] = k.match(/^S(\d+)\.(\w+)$/) || [], s = SHOTS[+i - 1];
+    if (!s || !(fld in s)) throw new Error(`narration mark ${k}: shot ${i} has no cue field ${fld}`);
+    s[fld] = +(t - s.t0).toFixed(3);
+  }
+}
+const SUBFONT = () => [...(window.EMBED_FONTS || [])].sort((x, y) => /Sans/.test(y) - /Sans/.test(x)).map(f => `"${f}"`).concat(['"PingFang SC"', '"Noto Sans CJK SC"', '"Microsoft YaHei"', 'sans-serif']).join(', ');
+function drawSubs() { // burned-in subtitle: one phrase at a time, bottom-centre inside the title-safe area
+  if (!film.subs || !NARR.subs.length) return;
+  const T = film.f / FPS, cur = NARR.subs.find(u => T >= u[0] && T < u[1]); if (!cur) return;
+  const txt = NARR.lines[cur[2]].slice(cur[3], cur[4]).replace(/[，。！？；：、,.!?;:]+$/, ''), sz = Math.round(Math.min(W, H) * (W > H ? .052 : .042));
+  ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.font = `600 ${sz}px ${SUBFONT()}`; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+  const y = H * (W > H ? .93 : .8), w = ctx.measureText(txt).width;
+  ctx.fillStyle = 'rgba(12,16,20,.55)'; ctx.beginPath(); ctx.roundRect(W / 2 - w / 2 - sz * .5, y - sz * 1.05, w + sz, sz * 1.4, sz * .25); ctx.fill();
+  ctx.lineJoin = 'round'; ctx.lineWidth = sz * .14; ctx.strokeStyle = 'rgba(8,10,12,.9)'; ctx.strokeText(txt, W / 2, y); ctx.fillStyle = '#fffdf6'; ctx.fillText(txt, W / 2, y); ctx.restore();
+}
 function voReady() { return VO._p || (VO._p = Promise.all(VO.src.map((b, i) => { const u8 = Uint8Array.from(atob(b), c => c.charCodeAt(0)); return new OfflineAudioContext(1, 1, 48000).decodeAudioData(u8.buffer).then(buf => { VO.buf[i] = buf; }); }))); }
 
 // ── pixel toolkit (used when PIX > 0; harmless otherwise) ──────────────────────────────────────
@@ -840,7 +861,8 @@ function simTo(f) {
   while (film.f < f) { film.f++; const sf = film.f - f0; s.step(1 / FPS, sf / FPS, sf); stepGusts(); if (film.smooth || sf % EXPO === 0) s.snap(); }
 }
 // post: exposure flicker (each stop-motion frame is its own photograph), grain, lens falloff
-const VIGN = (() => { const c = mk(W, H), g = g2(c); g.save(); g.translate(W / 2, H / 2); g.scale(1, H / W); const rg = g.createRadialGradient(0, 0, W * .22, 0, 0, W * .72); rg.addColorStop(0, 'rgba(4,14,16,0)'); rg.addColorStop(.7, 'rgba(4,14,16,.18)'); rg.addColorStop(1, 'rgba(4,14,16,.55)'); g.fillStyle = rg; g.fillRect(-W, -W, W * 2, W * 2); g.restore(); return c; })();
+//   a look can set `const VIGN_TONE = ['60,50,30', .05, .16];` (rgb, alpha at 70 %, alpha at the edge) in its story
+const VIGN = (() => { const c = mk(W, H), g = g2(c); g.save(); g.translate(W / 2, H / 2); g.scale(1, H / W); const rg = g.createRadialGradient(0, 0, W * .22, 0, 0, W * .72); const [vc, v7, v1] = typeof VIGN_TONE !== 'undefined' ? VIGN_TONE : ['4,14,16', .18, .55]; rg.addColorStop(0, `rgba(${vc},0)`); rg.addColorStop(.7, `rgba(${vc},${v7})`); rg.addColorStop(1, `rgba(${vc},${v1})`); g.fillStyle = rg; g.fillRect(-W, -W, W * 2, W * 2); g.restore(); return c; })();
 function render() {
   const f = film.f, s = film.shot, f0 = Math.round(s.t0 * FPS), sf = f - f0, st = sf / FPS;
   const e = film.smooth ? 0 : Math.floor(f / EXPO), sq = film.smooth ? st : Math.floor(sf / EXPO) * EXPO / FPS;
@@ -849,7 +871,7 @@ function render() {
     LOG.setTransform(1, 0, 0, 1, 0, 0); LOG.globalAlpha = 1; LOG.globalCompositeOperation = 'source-over'; LOG.imageSmoothingEnabled = false; LOG.fillStyle = '#000'; LOG.fillRect(0, 0, LW, LH);
     s.draw(LOG, st, sq, e, cam);
     ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.imageSmoothingEnabled = false; ctx.drawImage(LO, 0, 0, W, H);
-    return;
+    drawSubs(); return;
   }
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = '#0c1719'; ctx.fillRect(0, 0, W, H);
   s.draw(ctx, st, sq, e, cam);
@@ -858,6 +880,7 @@ function render() {
   const ox = (hash(e + 1, 5) * 384) | 0, oy = (hash(e + 1, 6) * 384) | 0;
   ctx.save(); ctx.translate(-ox, -oy); ctx.globalAlpha = .6; ctx.fillStyle = PAT.grain; ctx.fillRect(ox, oy, W, H); ctx.restore();
   ctx.drawImage(VIGN, 0, 0);
+  drawSubs();
 }
 
 // ── sound schedule on the audio clock (the picture follows the sound when it's on) ──
@@ -865,7 +888,7 @@ let AC = null, SND = null, audioT0 = 0, cursor = 0, SCORE = [];
 voReady(); smpReady();   // start decoding narration + recorded sounds at boot so live playback has them
 let DUCKC = new Float32Array([1, 1]);
 const buildScore = () => {
-  let ev = baseScore().concat(...SHOTS.map(s => s.score()));
+  let ev = baseScore().concat(NARR.ev, ...SHOTS.map(s => s.score()));
   // SMP.bgm = { id, replace: 'groove' | 'music' | 'none', keep: [kinds kept, e.g. 'mb' action notes], v }: a recorded/rendered bed replaces groove() (or all synth music)
   if (SMP.bgm && SMP.lib[SMP.bgm.id]) { const rp = SMP.bgm.replace ?? 'groove'; const keep = SMP.bgm.keep || []; ev = ev.filter(e => !(roleOf(e) === 'music' && !keep.includes(e.k) && (rp === 'music' ? e.k !== 'smp' : rp === 'groove' && e.src === 'groove')));
     ev.push({ t: SMP.bgm.t ?? 0, k: 'smp', id: SMP.bgm.id, dur: Math.min(DUR - (SMP.bgm.t ?? 0), SMP.lib[SMP.bgm.id].dur || DUR), v: SMP.bgm.v ?? 1 }); }
@@ -996,11 +1019,16 @@ addEventListener('keydown', ev => {
   else if (k === 's' || k === 'S') $('sm').click();
   else if (k === 'm' || k === 'M') $('snd').click();
   else if (k === 'f' || k === 'F') $('fs').click();
+  else if (k === 'c' || k === 'C') { film.subs = !film.subs; if (!film.playing) render(); }
   else if (k >= '1' && k <= String(SHOTS.length)) { if (!film.started) { $('start').hidden = true; film.started = true; film.audio = true; } seek(Math.round(SHOTS[+k - 1].t0 * FPS)); if (!film.playing) play(true); }
 });
 
 // ── boot ──
 (async () => {
+  window.EMBED_FONTS = (document.getElementById('embedfonts')?.dataset.families || '').split(',').filter(Boolean);
+  await Promise.all(window.EMBED_FONTS.map(f => document.fonts.load(`40px "${f}"`, '字A')));   // canvas text must not fall back mid-film
+  film.subs = Q.get('subs') !== '0';
+  applyMarks();
   for (const s of SHOTS) s.build();
   buildScore();
   const t = Q.get('t'), fr = Q.get('frame');
@@ -1014,7 +1042,7 @@ addEventListener('keydown', ev => {
 window.__film = {
   seek: f => { film.seeking = true; simTo(f); film.seeking = false; render(); return film.f; },
   time: () => { const t0 = performance.now(); render(); return performance.now() - t0; },
-  wav: (o) => renderWav(o), score: () => SCORE, audio: () => audioReport(), info: () => ({ f: film.f, shot: film.shot && film.shot.name, smooth: film.smooth }),
+  wav: (o) => renderWav(o), score: () => SCORE, audio: () => audioReport(), info: () => ({ f: film.f, shot: film.shot && film.shot.name, smooth: film.smooth }), narr: () => ({ marks: NARR.marks, subs: NARR.subs.length, fonts: window.EMBED_FONTS, cues: Object.keys(NARR.marks).map(k => { const [, i, f] = k.match(/^S(\d+)\.(\w+)$/); return [k, SHOTS[+i - 1][f]]; }) }),
 };
 </script>
 </body>

@@ -43,7 +43,7 @@ async def grab(url: str, times, shots: bool, out: Path, width: int) -> list:
         errs = []
         pg.on("pageerror", lambda e: errs.append(str(e)))
         await pg.goto(url)
-        await pg.wait_for_function("window.__film && window.__film.info")
+        await pg.wait_for_function("window.__READY === true")
         await pg.wait_for_timeout(600)
         if shots:
             spans = await pg.evaluate("SHOTS.map(s => [s.t0, s.t1])")

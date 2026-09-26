@@ -95,6 +95,7 @@ def main() -> int:
     ap.add_argument("--durs", default="", help="per-shot seconds, e.g. '2,3.5,2.5,2' (overrides --dur; total = sum)")
     ap.add_argument("--bpm", type=float, default=96)
     ap.add_argument("--bed", default="room", help="default ambience bed: room|street|field|stage")
+    ap.add_argument("--narrated", action="store_true", help="the film will have a voice track: no ambience beds (they hiss under speech)")
     ap.add_argument("--aria", default="", help="one-sentence description for screen readers")
     ap.add_argument("--pixel", type=int, default=0, help="pixel-art mode: draw at (W/N)x(H/N) and scale up xN nearest-neighbour, e.g. 8 -> 320x180")
     a = ap.parse_args()
@@ -133,7 +134,7 @@ def main() -> int:
     off = [(t1, round(t1 / eighth) * eighth) for _, t1 in bounds[:-1] if abs(t1 / eighth - round(t1 / eighth)) > 1e-3]
     if off:
         print("warning: cuts off the eighth-note grid at %g bpm: %s" % (a.bpm, ", ".join(f"{c:g}s (nearest {n:.4g}s)" for c, n in off)), file=sys.stderr)
-    beds = ", ".join(f"{{ t: {t0:g}, k: 'bed', kind: '{a.bed}', dur: {t1 - t0 + (.12 if i == len(names) - 1 else 0):g} }}"
+    beds = "" if a.narrated else ", ".join(f"{{ t: {t0:g}, k: 'bed', kind: '{a.bed}', dur: {t1 - t0 + (.12 if i == len(names) - 1 else 0):g} }}"
                      for i, (t0, t1) in enumerate(bounds))
     story = STORY_HEAD.format(title=a.title, bpm=a.bpm, beds=beds)
     for i, (name, (t0, t1)) in enumerate(zip(names, bounds), 1):
