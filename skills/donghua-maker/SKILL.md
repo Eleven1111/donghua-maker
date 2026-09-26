@@ -26,6 +26,8 @@ Bundled files:
 - `scripts/sfx_import.py`: turns found recordings (sfx or a music bed) into an embedded `SAMPLES` block. It trims, levels, encodes, measures the landing point, and records source and licence in `sources.json`. Downloading a sound needs the user's OK first.
 - `references/looks/<look>.md`: look-specific toolkits and rules (`pixel`, `explainer`, `comic`, `torn-paper`, `shadow-puppet`, `clay`, `watercolor`). Read only the file for the look you're building, after the shot contract.
 - `references/fact-check.md` + `scripts/fact_check.py`: the fact gate for any film that states facts (history, science, geography, business, product claims): every on-screen string is sourced, disputed-with-note or marked non-factual, plus the picture's factual claims (map positions, costumes…). **Read it before briefing a factual topic.**
+- `scripts/narrate.py`: free narration (edge-tts, no key) with word-level timing. `<film>-vo/script.json` holds one line per shot; a `{FIELD}` bookmark moves that shot's cue field onto the next spoken word. It writes the NARRATION block, burned-in subtitles (C toggles them; `?subs=0`) and an `.srt`. It fails when a line overruns its shot. `--check` re-verifies.
+- `scripts/font_embed.py`: embeds SIL OFL fonts (霞鹜文楷 and Noto Sans SC), subset to the film's characters, and writes a licence ledger. Use it whenever the film may be published or used commercially. `--check` catches a stale subset.
 - `scripts/stills.py`: full-resolution stills (`--shots` = first/mid/last frame of every shot) plus a contact sheet, on its own local server; exits 1 on page errors. The input for the step-5 visual check.
 - `references/styles.md`: formats and vertical composition, texture recipes, palettes, rhythm, music. Read it when you turn a theme into parameters.
 
@@ -85,6 +87,8 @@ Follow `references/shot-contract.md`. Rules that keep the look:
 - To change the pose rate, edit `EXPO` near the top of the file and the `Stop-motion · 12 poses/s` label in `ui()`.
 
 ### 4b. Narration (only when the user asks for a voice track)
+
+**Default: `scripts/narrate.py`.** It is free, needs no key, times each word, and makes subtitles; the scene packs, such as `donghua-classroom`, use it. The MiniMax path below is the paid, opt-in voice for when the user asks for it. Its mixing and verification rules (steps 5–6) apply to both.
 Work in the web version, like any other revision; this is not part of rendering.
 1. **Write one line per shot, sized to fit.** MiniMax `speech-2.8-hd` at speed 1.15 reads about **5.3 Chinese characters per second** (measured: 17 chars → 3.31 s, 21 chars → 3.77 s). Budget for `(shot length − 0.2 s) × 5.3` characters. Say the thing the picture shows, in plain words.
 2. **Generate with `scripts/voice.py`.** MiniMax is paid and opt-in: only use it when the user asks. Write `<film>-vo/lines.json` (`{"clips":[{"id","text","voice","speed"}]}`) next to the film, then run `python3 ~/.claude/skills/donghua-maker/scripts/voice.py <film>-vo/lines.json`. Use `--only <id>` to regenerate one line and `--force` to regenerate all. The key comes from `MINIMAX_API_KEY` in the environment, otherwise from the user's global secrets file `~/.config/secrets/.env` (chmod 600). If it is missing the script stops and says so; tell the user to add it there. Never read, print, copy or `source` the key yourself, and never pass it on a command line. The script retries each line 3×, and the async API sometimes misses its 120 s window.

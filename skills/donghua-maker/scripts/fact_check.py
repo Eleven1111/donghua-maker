@@ -45,7 +45,10 @@ def story(html: str) -> str:
 def on_screen(html: str) -> list:
     """String literals in the story that a viewer can read: anything with CJK, plus bare years/ranges. Template parts split on ${…}."""
     seen, out = set(), []
-    for m in LIT.finditer(story(html)):
+    body = story(html)
+    if not re.search(r"\b(?:this|s|shot|sh)\.name\b", body):   # shot names label the UI timeline, unless the story draws them
+        body = re.sub(r"\bname: '[^']*'", "", body)
+    for m in LIT.finditer(body):
         s = next(g for g in m.groups() if g is not None)
         for part in re.split(r"\$\{[^}]*\}", s):
             part = part.strip()

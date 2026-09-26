@@ -17,7 +17,18 @@ A Claude Code skill + agent that turns a one-line idea into a self-contained HTM
   - 混音：分角色母线，音乐自动给音效和人声让位；
   - 自带无头浏览器验收，冷启动约 15 秒。
 - **导出**（`export.py`）：H.264 + AAC，两遍响度标准化到 −16 LUFS，可导出分轨。
-- **中文解说**（可选）：`voice.py` 调用 MiniMax 生成，按时间轴对齐。付费服务，默认不启用。
+- **免费解说 + 字幕**（`narrate.py`）：
+  - 用 edge-tts 生成中文语音，免费，不需要 key。
+  - 解说稿里的 `{书签}` 能让画面标签卡在对应的词上出现。
+  - 自动烧入字幕（按 C 开关），同时导出 `.srt` 文件。
+  - 解说超出镜头时长就判失败。
+- **可商用字体**（`font_embed.py`）：嵌入霞鹜文楷和 Noto Sans SC（均为 SIL OFL 许可），只保留片中用到的字，并记录授权。
+- **MiniMax 中文解说**（可选，付费）：`voice.py`，默认不启用。
+- **老师场景包**（`donghua-classroom` 加 `classroom-director` Agent）：一句话（如"初二勾股定理"）或一段教案，就能生成讲课用的 16:9 微课：
+  - 按学段控制语速、停顿和新词数量；
+  - 包含学习目标、易错点、回顾和课后小测；
+  - 自动生成讲义；
+  - **盲测关卡**：没看过脚本的新读者只看影片内容答题，正确率要达到 80% 才能通过。
 
 ## 安装
 
@@ -25,10 +36,14 @@ A Claude Code skill + agent that turns a one-line idea into a self-contained HTM
 git clone https://github.com/Eleven1111/donghua-maker.git
 cp -R donghua-maker/skills/donghua-maker ~/.claude/skills/
 cp donghua-maker/agents/donghua-director.md ~/.claude/agents/
+# 老师场景包（依赖上面的底座，两个技能要放在同一个 skills 目录下）
+cp -R donghua-maker/skills/donghua-classroom ~/.claude/skills/
+cp donghua-maker/agents/classroom-director.md ~/.claude/agents/
 ```
 
 依赖：
 - **必需**：Python 3.10+、`ffmpeg`、`playwright`（Python 版），再加 Google Chrome，或运行 `python3 -m playwright install chromium`。
+- **解说和字体**：`pip install edge-tts fonttools`。edge-tts 需要联网；字体第一次使用时下载到 `~/.cache/donghua-fonts/`。
 - **可选**：
   - `fluidsynth` 加 GeneralUser GS SoundFont，用于渲染背景音乐。默认路径 `~/.local/share/soundfonts/GeneralUser-GS.sf2`，可用环境变量 `SOUNDFONT` 另指。
   - `FREESOUND_API_KEY`：多一个音效来源。
@@ -42,7 +57,10 @@ cp donghua-maker/agents/donghua-director.md ~/.claude/agents/
 
 ```
 用 donghua-director 做一个讲光合作用原理的科普动画
+用 classroom-director 做一节初二勾股定理的微课
 ```
+
+老师场景包做完后，由主会话另派一个新上下文的 Agent 只看 `film-lesson/blind/packet.md` 答题，然后运行 `lesson_check.py film.html --blind`。
 
 或者手动走技能流程（详见 `skills/donghua-maker/SKILL.md`）：
 
@@ -52,6 +70,8 @@ python3 $S/scaffold.py film.html --title "片名" --format landscape --shots "A,
 python3 $S/stills.py film.html --shots                         # 画面自检
 python3 $S/fact_check.py film.html --init                      # 生成事实清单，填好后：
 python3 $S/fact_check.py film.html                             # → FACT CHECK PASS
+python3 $S/narrate.py film.html                               # 读 film-vo/script.json → 解说、书签、字幕、.srt
+python3 $S/font_embed.py film.html                             # 嵌入可商用字体（改完文字后重跑）
 python3 $S/audio_director.py film.html --mood cute --key C --run --check
 python3 $S/export.py film.html -o film-1080.mp4 --scale .75 --crf 23   # 网页版确认后再导出
 ```
@@ -62,24 +82,31 @@ python3 $S/export.py film.html -o film-1080.mp4 --scale .75 --crf 23   # 网页�
 film.html                 单文件成片（引擎 + 镜头 + 嵌入的音频）
 film-facts/facts.json     每条屏幕文字的核对记录：状态、来源、备注
 film-audio/               音频方案、bgm.mid/.wav、编码后的音效、sources.json（来源与授权）
+film-vo/                  script.json（解说稿与书签）、语音片段缓存、film.srt
+film-fonts/               sources.json 与 OFL 许可原文
+film-lesson/              老师场景包：lesson.json、讲义.md、blind/（盲测材料与答卷）
 film-stills/              静帧与 sheet.jpg（已被 .gitignore 忽略）
 film-1080.mp4             导出成片（只在确认后生成）
 ```
 
-成片测试接口：`?t=3.2` 从 3.2 秒开始，`?ui=0` 只显示画面，另有 `window.__film.seek(frame)`、`.info()`、`.score()`、`await .wav()`、`.audio()`。
+成片测试接口：`?t=3.2` 从 3.2 秒开始，`?ui=0` 只显示画面，`?subs=0` 关闭字幕，另有 `window.__film.seek(frame)`、`.info()`、`.score()`、`await .wav()`、`.audio()`。
 
 ## 目录
 
 ```
 agents/
   donghua-director.md        一句话出片 Agent
-skills/donghua-maker/
+  classroom-director.md      老师一句话出微课 Agent
+skills/donghua-classroom/    老师场景包（建立在底座之上，不改引擎）
+  SKILL.md                   学段节奏表、课程结构、解说/字幕/字体/盲测流程
+  scripts/lesson_check.py    课程关卡：目标、关键词、语速、停顿、小测证据、盲测 → 讲义.md
+skills/donghua-maker/        底座
   SKILL.md                   完整工作流：分镜 → 骨架 → 镜头 → 音频 → 事实核对 → 验证 → 交付 → 导出
   assets/engine.html         引擎模板
   assets/example-*.html      每种风格验证过的示例片
   references/                镜头接口、各风格工具箱（looks/）、配色与节奏、音频、事实核对规范
   scripts/                   scaffold / stills / fact_check / audio_director / music_render /
-                             sfx_search / sfx_import / export / voice
+                             sfx_search / sfx_import / export / voice / narrate / font_embed
 ```
 
 ## 设计理念
@@ -88,6 +115,7 @@ skills/donghua-maker/
 - **先网页后视频**：所有修改都在浏览器里完成，确认之后才导出 MP4。
 - **确定性**：不用 `Math.random()`，随机都由种子控制。任意一帧都能复现，离线混音和实时播放的结果一致。
 - **靠关卡，不靠自评**：画面、事实、音频各有一道能判失败的检查，每道都用负控测试过（故意改坏必须判失败）。核对关卡只能证明"每条都查过、有来源"，不能代替人的判断。
+- **一个底座，多个场景包**：引擎、画风和关卡属于底座；场景包只调整输入、关卡和产出，不改引擎。
 - **经验沉淀成规则**：每次被否决的输出都写成一条可检验的规则，放进风格文档。
 
 ## 授权与致谢

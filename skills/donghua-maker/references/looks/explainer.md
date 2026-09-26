@@ -18,5 +18,5 @@ Rules learned on 地球的诞生:
 - `pageDraw` fills the whole frame with paper before drawing the page. Otherwise, when the camera pans or zooms in, the page's edge shows as a black band on the first frame.
 - Drive every appearance from `sq`, with `pop(sq, t)` for labels at beat times. Nothing needs `step`.
 - Explainer layout: the header sits top-left, about y 150–215. Keep labels below y ≈ 260 and at least 150 px from the right edge. Long lines at 64 px run about 64 px per character, so check the right margin.
-- Soften the engine vignette for a paper look: stops `rgba(60,50,30,.05)` and `.16`, not the default dark teal. The default greys the paper.
+- Soften the engine vignette for a paper look: put `const VIGN_TONE = ['60,50,30', .05, .16];` in the story (don't edit the engine line). The default dark teal greys the paper.
 - The shot-to-shot handoff is an idea, not a prop. End each shot on a hint of the next one (red cracks → magma, a purple planet appearing → impact).
