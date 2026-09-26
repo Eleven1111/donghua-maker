@@ -1,0 +1,1361 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>清晨农场</title>
+<style>
+:root{--ground:#0b1517;--ink:#e7dec8;--muted:#8fa4a2;--accent:#d04b40;--line:rgba(231,222,200,.16);--line2:rgba(231,222,200,.42);color-scheme:dark}
+html,body{height:100%;margin:0;background:var(--ground);color:var(--ink)}
+[hidden]{display:none!important}
+body{font:14px/1.4 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding-inline:16px;padding-block:16px;box-sizing:border-box;overflow:hidden}
+#frame,#bar,#hint{width:min(100%,calc((100vh - 128px) * 2560 / 1440))}
+#frame{position:relative;flex-shrink:0;aspect-ratio:2560/1440;max-width:100%;box-shadow:0 30px 90px rgba(0,0,0,.55),0 0 0 1px var(--line);border-radius:3px;overflow:hidden;background:#10201f}
+canvas{display:block;width:100%;height:100%;cursor:crosshair;touch-action:none}
+#start{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:2px;border:0;margin:0;padding:0;color:var(--ink);cursor:pointer;background:radial-gradient(ellipse at center,rgba(6,14,16,.08),rgba(6,14,16,.62));font:inherit}
+#start .ring{width:92px;height:92px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;background:rgba(11,21,23,.4);transition:transform .2s}
+#start:hover .ring,#start:focus-visible .ring{transform:scale(1.06)}
+#start .tri{width:0;height:0;border-left:26px solid var(--accent);border-top:16px solid transparent;border-bottom:16px solid transparent;margin-left:8px}
+#start .name{font-family:ui-serif,"Iowan Old Style",Palatino,"Palatino Linotype",Georgia,serif;font-style:italic;font-size:clamp(28px,5.2vw,68px);margin:16px 0 2px;letter-spacing:.01em;text-shadow:0 2px 18px rgba(0,0,0,.45)}
+#start .spec{color:var(--ink);opacity:.78;font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+#bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+#bar button{font:inherit;font-size:13px;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:999px;padding:6px 13px;cursor:pointer;white-space:nowrap}
+#bar button:hover{border-color:var(--line2)}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#track{flex:1 1 220px;position:relative;height:30px;display:grid;grid-template-columns:repeat(var(--shots,1),1fr);gap:3px;cursor:pointer;touch-action:none;user-select:none}
+#track .seg{border-top:2px solid var(--line);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding-top:6px}
+#track .seg.on{border-color:var(--accent);color:var(--ink)}
+#head{position:absolute;top:-5px;left:0;width:2px;height:12px;background:var(--ink);transform:translateX(-1px);pointer-events:none}
+#tc{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-variant-numeric:tabular-nums;font-size:12px;color:var(--muted)}
+#hint{margin:0;color:var(--muted);font-size:12px;line-height:1.7}
+kbd{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;border:1px solid var(--line);border-radius:4px;padding:0 5px;font-size:11px;color:var(--ink)}
+#frame:fullscreen{width:100vw;height:100vh;border-radius:0}
+html.bare body{padding:0;gap:0}html.bare #bar,html.bare #hint{display:none}html.bare #frame{width:100vw;height:100vh;box-shadow:none;border-radius:0}
+@media (max-width:640px){#bar button{padding:5px 10px;font-size:12px}#track{order:10;flex-basis:100%}}
+</style>
+</head>
+<body>
+<div id="frame">
+  <canvas id="film" width="2560" height="1440" aria-label="清晨农场，像素风短片：天色由紫转橙，太阳从山后升起，农舍亮灯，公鸡打鸣，母鸡跑出鸡舍；农夫浇水惊起蝴蝶，棕色母鸡追蝶落进池塘，被农夫捞起抖干，蝴蝶停在草帽上。"></canvas>
+  <button id="start" aria-label="Play 清晨农场 with sound"><span class="ring"><span class="tri"></span></span><span class="name">清晨农场</span><span class="spec">5 s · 2560×1440 · 60 fps · sound on</span></button>
+</div>
+<div id="bar" role="toolbar" aria-label="Film controls">
+  <button id="pp" aria-pressed="false">Play</button>
+  <button id="rs">Restart</button>
+  <div id="track" aria-label="Scrub the film"><span class="seg">清晨</span><span class="seg">浇水</span><span class="seg">追蝶</span><span class="seg">落水</span><span class="seg">回家</span><span id="head"></span></div>
+  <span id="tc">00:00.00 / 00:19.38</span>
+  <button id="sm">Stop-motion · 12 poses/s</button>
+  <button id="snd">Sound off</button>
+  <button id="fs">Full screen</button>
+</div>
+<p id="hint">Click the world to poke it, drag to blow on it · <kbd>Space</kbd> play/pause · <kbd>←</kbd><kbd>→</kbd> one exposure · <kbd>S</kbd> stop-motion/smooth · <kbd>1</kbd>–<kbd>1</kbd> shots · <kbd>M</kbd> mute</p>
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+//  清晨农场 — a stop-motion film, drawn and scored entirely in code.
+//  No images, fonts, samples or libraries: every pixel and every sound is made here.
+//  Film: 2560×1440, 60 fps, 5 s. Puppets are "posed" 12× a second (every 5th
+//  frame, like stop motion on twos), the motion-control camera runs on every frame.
+// ═══════════════════════════════════════════════════════════════════════════
+"use strict";
+const W = 2560, H = 1440, FPS = 60, DUR = 19.375, NF = Math.round(FPS * DUR), EXPO = 5;
+// pixel mode: PIX > 0 means shots draw on an LW×LH buffer in whole pixels, scaled up ×PIX nearest-neighbour
+const PIX = 8, LW = PIX ? W / PIX : W, LH = PIX ? H / PIX : H;
+const TAU = Math.PI * 2, PI = Math.PI;
+const clamp = (x, a, b) => x < a ? a : x > b ? b : x;
+const lerp = (a, b, t) => a + (b - a) * t;
+const inv = (a, b, x) => clamp((x - a) / (b - a), 0, 1);
+const smooth = (a, b, x) => { x = inv(a, b, x); return x * x * (3 - 2 * x); };
+const eio = t => { t = clamp(t, 0, 1); return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; };
+const eo = t => 1 - Math.pow(1 - clamp(t, 0, 1), 3);
+const esine = t => .5 - .5 * Math.cos(PI * clamp(t, 0, 1));
+const rng = seed => { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; };
+const hash = (a, b = 0, c = 0) => { let h = Math.imul(a | 0, 374761393) ^ Math.imul((b | 0) + 7919, 668265263) ^ Math.imul((c | 0) + 104729, 1274126177); h = Math.imul(h ^ (h >>> 13), 1103515245); h ^= h >>> 16; h = Math.imul(h ^ (h >>> 15), 2246822519); h ^= h >>> 13; return (h >>> 0) / 4294967296; };
+
+// ── Perlin gradient noise ────────────────────────────────────────────────────
+const noise = (() => {
+  const r = rng(1337), p = new Uint8Array(512), gx = new Float32Array(256), gy = new Float32Array(256), perm = [];
+  for (let i = 0; i < 256; i++) perm[i] = i;
+  for (let i = 255; i > 0; i--) { const j = (r() * (i + 1)) | 0; const t = perm[i]; perm[i] = perm[j]; perm[j] = t; }
+  for (let i = 0; i < 512; i++) p[i] = perm[i & 255];
+  for (let i = 0; i < 256; i++) { const a = r() * TAU; gx[i] = Math.cos(a); gy[i] = Math.sin(a); }
+  const fade = t => t * t * t * (t * (t * 6 - 15) + 10);
+  return (x, y) => {
+    const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi, X = xi & 255, Y = yi & 255;
+    const aa = p[p[X] + Y], ab = p[p[X] + Y + 1], ba = p[p[X + 1] + Y], bb = p[p[X + 1] + Y + 1];
+    const u = fade(xf), v = fade(yf);
+    const x1 = lerp(gx[aa] * xf + gy[aa] * yf, gx[ba] * (xf - 1) + gy[ba] * yf, u);
+    const x2 = lerp(gx[ab] * xf + gy[ab] * (yf - 1), gx[bb] * (xf - 1) + gy[bb] * (yf - 1), u);
+    return lerp(x1, x2, v) * 1.42;
+  };
+})();
+const fbm = (x, y, o = 3) => { let s = 0, a = .5, f = 1; for (let i = 0; i < o; i++) { s += a * noise(x * f + i * 17.3, y * f - i * 9.1); f *= 2.03; a *= .5; } return s; };
+// divergence-free flow: curl of a drifting noise potential (px/s per unit amp)
+function curl(x, y, t, sc = .0032) {
+  const X = x * sc, Y = y * sc, h = .015;
+  const n = (a, b) => noise(a + t * .23, b - t * .31) + .5 * noise(a * 2.1 - t * .4 + 3.1, b * 2.1 + t * .2 + 5.2);
+  return [(n(X, Y + h) - n(X, Y - h)) / (2 * h), -(n(X + h, Y) - n(X - h, Y)) / (2 * h)];
+}
+
+// ── colour ──────────────────────────────────────────────────────────────────
+const C = {
+  teal: '#467f85', tealL: '#5a9197', tealD: '#2f6369', tealDD: '#20484f', sky: '#43808a', skyL: '#4f8b92',
+  navy: '#17404c', navyD: '#10313b', hill: '#1f4d5a', hillL: '#7fa6ad', hillLL: '#9dbfc3',
+  red: '#cf4b40', redD: '#a93a34', redL: '#dd6254', coral: '#d05b55', coralL: '#df746a', coralD: '#b2463f',
+  orange: '#de835d', ochre: '#cf9a48', terra: '#c86a47', pear: '#d9c46f', gold: '#d8a54a',
+  cream: '#e4dbc4', creamL: '#efe8d6', creamD: '#c9bfa6', paper: '#ebe3cf', skin: '#e3d4b4', cheek: '#e39a8c',
+  ink: '#15191b', inkS: '#262c2e', slate: '#46565c', floor: '#35494e', floorL: '#4a5f63', table: '#4c5a54', tableD: '#3b4843',
+  bag: '#61736e', wing: '#5d777c', bark: '#2a1715', brown: '#5b3526', cork: '#a8744b', grey: '#8d9696', blueGrey: '#88a6a1', lightBlue: '#8aaeb3'
+};
+const hexA = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+const css = (c, a = 1) => `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${a})`;
+const mixc = (a, b, t) => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
+const INKC = [12, 22, 25], LIGHTC = [242, 234, 216];
+// tone(h, k): k<0 darkens toward teal-ink, k>0 lightens toward paper — keeps every shade inside the print palette
+const tone = (h, k, a = 1) => { const c = hexA(h); return css(k < 0 ? mixc(c, INKC, -k) : mixc(c, LIGHTC, k), a); };
+
+// ── canvas helpers ──────────────────────────────────────────────────────────
+const mk = (w, h) => { const c = document.createElement('canvas'); c.width = Math.max(1, Math.ceil(w)); c.height = Math.max(1, Math.ceil(h)); return c; };
+const g2 = c => c.getContext('2d');
+
+// hand-cut outline: subdivide each edge and nudge it with noise so nothing is ruler-straight
+function cutPath(g, pts, { closed = true, amp = 1.2, step = 16, seed = 1, begin = true } = {}) {
+  if (begin) g.beginPath();
+  let first = true, k = 0; const n = pts.length, m = closed ? n : n - 1;
+  for (let i = 0; i < m; i++) {
+    const x0 = pts[i][0], y0 = pts[i][1], x1 = pts[(i + 1) % n][0], y1 = pts[(i + 1) % n][1];
+    const L = Math.hypot(x1 - x0, y1 - y0) || 1, s = Math.max(1, Math.round(L / step)), nx = -(y1 - y0) / L, ny = (x1 - x0) / L;
+    for (let j = 0; j < s; j++) {
+      const t = j / s, w = noise(seed * 7.13 + k * .31, seed * 3.7) * amp; k++;
+      const x = lerp(x0, x1, t) + nx * w, y = lerp(y0, y1, t) + ny * w;
+      if (first) { g.moveTo(x, y); first = false; } else g.lineTo(x, y);
+    }
+  }
+  if (!closed) g.lineTo(pts[n - 1][0], pts[n - 1][1]); else g.closePath();
+}
+function blobPath(g, cx, cy, rx, ry, { n = 56, amp = .03, seed = 1, rot = 0, begin = true, freq = 1.3 } = {}) {
+  if (begin) g.beginPath();
+  const cr = Math.cos(rot), sr = Math.sin(rot);
+  for (let i = 0; i <= n; i++) {
+    const a = i / n * TAU, r = 1 + amp * noise(Math.cos(a) * freq + seed * 1.7, Math.sin(a) * freq - seed * 2.3);
+    const x = Math.cos(a) * rx * r, y = Math.sin(a) * ry * r, X = cx + x * cr - y * sr, Y = cy + x * sr + y * cr;
+    i ? g.lineTo(X, Y) : g.moveTo(X, Y);
+  }
+  g.closePath();
+}
+// smooth closed/open curve through points (Catmull-Rom → Bézier)
+function curvePath(g, pts, closed = false, begin = true) {
+  const n = pts.length; if (begin) g.beginPath(); g.moveTo(pts[0][0], pts[0][1]);
+  const P = i => closed ? pts[(i + n) % n] : pts[clamp(i, 0, n - 1)];
+  const m = closed ? n : n - 1;
+  for (let i = 0; i < m; i++) {
+    const p0 = P(i - 1), p1 = P(i), p2 = P(i + 1), p3 = P(i + 2);
+    g.bezierCurveTo(p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6, p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6, p2[0], p2[1]);
+  }
+  if (closed) g.closePath();
+}
+// print-style line texture inside the current clip
+function hatch(g, x, y, w, h, { gap = 6, ang = 0, col = '#000', a = .15, lw = 1, wob = 0, seed = 1, av = .6, seg = 36 } = {}) {
+  const R = rng(seed); g.save(); g.lineWidth = lw; g.strokeStyle = col;
+  const D = Math.hypot(w, h) / 2 + 6; g.translate(x + w / 2, y + h / 2); g.rotate(ang);
+  for (let v = -D; v <= D; v += gap * (.75 + .5 * R())) {
+    g.globalAlpha = a * (1 - av + av * R()); g.beginPath();
+    for (let u = -D; u <= D + seg; u += seg) { const yy = v + (wob ? noise(u * .006 + seed, v * .04) * wob : 0); u === -D ? g.moveTo(u, yy) : g.lineTo(u, yy); }
+    g.stroke();
+  }
+  g.restore();
+}
+function stipple(g, x, y, w, h, { n = 400, col = '#fff', r0 = .7, r1 = 1.8, a = .5, seed = 2, dens = null } = {}) {
+  const R = rng(seed); g.save(); g.fillStyle = col;
+  for (let i = 0; i < n; i++) {
+    const px = x + R() * w, py = y + R() * h, q = R(), r = lerp(r0, r1, R()), al = a * (.35 + .65 * R());
+    if (dens && q > dens(px, py)) continue;
+    g.globalAlpha = al;
+    if (r < 1.3) g.fillRect(px - r, py - r, r * 2, r * 2); else { g.beginPath(); g.arc(px, py, r, 0, TAU); g.fill(); }
+  }
+  g.restore();
+}
+function withClip(g, pathFn, fn) { g.save(); pathFn(g); g.clip(); fn(g); g.restore(); }
+
+// ── shared textures ─────────────────────────────────────────────────────────
+// film grain: fine light+dark specks, re-laid every exposure
+const GRAIN = (() => {
+  const s = 384, c = mk(s, s), g = g2(c), id = g.createImageData(s, s), d = id.data, R = rng(99);
+  for (let i = 0; i < s * s; i++) {
+    const v = R(), k = i * 4;
+    if (v < .5) { d[k] = 8; d[k + 1] = 16; d[k + 2] = 18; d[k + 3] = (.5 - v) * 64; }
+    else { d[k] = 250; d[k + 1] = 244; d[k + 2] = 228; d[k + 3] = (v - .5) * 44; }
+  }
+  g.putImageData(id, 0, 0); return c;
+})();
+// paper fibre: soft blotches + fibres, pressed into every cut-out
+const PAPER = (() => {
+  const s = 512, c = mk(s, s), g = g2(c), id = g.createImageData(s, s), d = id.data, R = rng(7);
+  for (let y = 0; y < s; y++) for (let x = 0; x < s; x++) {
+    const k = (y * s + x) * 4;
+    // tileable blotch field
+    const fx = x / s * TAU, fy = y / s * TAU;
+    const v = noise(Math.cos(fx) * 2.2 + 11, Math.sin(fx) * 2.2 + Math.cos(fy) * 2.2) * .6 + noise(Math.cos(fx) * 6 + Math.sin(fy) * 6, Math.sin(fx) * 6 - 4) * .4 + (R() - .5) * .9;
+    if (v < 0) { d[k] = 10; d[k + 1] = 20; d[k + 2] = 22; d[k + 3] = Math.min(255, -v * 70); }
+    else { d[k] = 255; d[k + 1] = 248; d[k + 2] = 232; d[k + 3] = Math.min(255, v * 60); }
+  }
+  g.putImageData(id, 0, 0);
+  g.lineCap = 'round';
+  for (let i = 0; i < 260; i++) {
+    const x = R() * s, y = R() * s, a = R() * TAU, L = 6 + R() * 22;
+    g.strokeStyle = R() < .5 ? 'rgba(255,248,230,.22)' : 'rgba(10,20,22,.18)'; g.lineWidth = .6 + R() * .7;
+    g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + Math.cos(a + .5) * L * .5, y + Math.sin(a + .5) * L * .5, x + Math.cos(a) * L, y + Math.sin(a) * L); g.stroke();
+  }
+  return c;
+})();
+const PAT = (() => { const g = g2(mk(1, 1)); return { grain: g.createPattern(GRAIN, 'repeat'), paper: g.createPattern(PAPER, 'repeat') }; })();
+
+function paperize(g, k = .5) { g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'source-atop'; g.globalAlpha = k; g.fillStyle = PAT.paper; g.fillRect(0, 0, g.canvas.width, g.canvas.height); g.restore(); }
+
+// big printed backdrop: gradient + mottling + streaks + scratches + dust (all canvas ops, fast)
+function backdrop(w, h, o = {}) {
+  const c = mk(w, h), g = g2(c), R = rng(o.seed || 5);
+  const gr = g.createLinearGradient(0, 0, 0, h);
+  (o.grad || [[0, o.base], [1, o.base]]).forEach(([s, col]) => gr.addColorStop(s, col));
+  g.fillStyle = gr; g.fillRect(0, 0, w, h);
+  const noiseCanvas = (sw, sh) => { const m = mk(sw, sh), mg = g2(m), id = mg.createImageData(sw, sh); for (let i = 0; i < sw * sh; i++) { const v = R() * 255; id.data[i * 4] = id.data[i * 4 + 1] = id.data[i * 4 + 2] = v; id.data[i * 4 + 3] = 255; } mg.putImageData(id, 0, 0); return m; };
+  g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+  for (const [div, amt] of [[140, (o.mottle ?? .5) * .42], [26, (o.mottle ?? .5) * .3]]) {
+    const sw = Math.ceil(w / div) + 3, sh = Math.ceil(h / div) + 3, m = noiseCanvas(sw, sh);
+    g.save(); g.globalCompositeOperation = 'soft-light'; g.globalAlpha = amt; g.drawImage(m, 0, 0, sw, sh, -div * 1.5, -div * 1.5, sw * div, sh * div); g.restore();
+  }
+  if (o.vstreak) { // fine vertical fibres, broken along y
+    const rows = 40, m = mk(w, rows), mg = g2(m), id = mg.createImageData(w, rows);
+    for (let x = 0; x < w; x++) { let v = (R() - .5); for (let y = 0; y < rows; y++) { const q = 128 + (v + noise(x * .05, y * .6) * .35) * 255 * .5; const k = (y * w + x) * 4; id.data[k] = id.data[k + 1] = id.data[k + 2] = clamp(q, 0, 255); id.data[k + 3] = 255; } }
+    mg.putImageData(id, 0, 0); g.save(); g.globalCompositeOperation = 'soft-light'; g.globalAlpha = o.vstreak; g.drawImage(m, 0, 0, w, h); g.restore();
+  }
+  if (o.hstreak) { // horizontal print lines
+    const cols = 40, m = mk(cols, h), mg = g2(m), id = mg.createImageData(cols, h);
+    for (let y = 0; y < h; y++) { let v = (R() - .5); for (let x = 0; x < cols; x++) { const q = 128 + (v + noise(y * .05, x * .6) * .35) * 255 * .5; const k = (y * cols + x) * 4; id.data[k] = id.data[k + 1] = id.data[k + 2] = clamp(q, 0, 255); id.data[k + 3] = 255; } }
+    mg.putImageData(id, 0, 0); g.save(); g.globalCompositeOperation = 'soft-light'; g.globalAlpha = o.hstreak; g.drawImage(m, 0, 0, w, h); g.restore();
+  }
+  // scratches & scuffs
+  g.save(); g.lineCap = 'round';
+  for (let i = 0; i < (o.scratches ?? 260); i++) {
+    const x = R() * w, y = R() * h, L = 8 + R() * (o.scratchLen || 60), a = (o.scratchAng ?? PI / 2) + (R() - .5) * .5, light = R() < .6;
+    g.strokeStyle = light ? `rgba(236,230,212,${.05 + R() * .12})` : `rgba(10,26,30,${.05 + R() * .1})`; g.lineWidth = .5 + R() * 1.1;
+    g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(a) * L, y + Math.sin(a) * L); g.stroke();
+  }
+  g.restore();
+  stipple(g, 0, 0, w, h, { n: o.dust ?? 2200, col: '#ece4cf', r0: .5, r1: 1.7, a: .22, seed: (o.seed || 5) + 3 });
+  stipple(g, 0, 0, w, h, { n: (o.dust ?? 2200) * .6, col: '#0c1c20', r0: .5, r1: 1.4, a: .2, seed: (o.seed || 5) + 4 });
+  // key light from the upper left, falloff to the corners
+  const lx = (o.light?.[0] ?? .3) * w, ly = (o.light?.[1] ?? .2) * h, rg = g.createRadialGradient(lx, ly, 0, lx, ly, Math.hypot(w, h) * .75);
+  rg.addColorStop(0, `rgba(255,246,226,${o.glow ?? .1})`); rg.addColorStop(.55, 'rgba(255,246,226,0)'); rg.addColorStop(1, `rgba(6,20,24,${o.dark ?? .28})`);
+  g.fillStyle = rg; g.fillRect(0, 0, w, h);
+  return c;
+}
+
+// ── cut-out sprites: drawn once (paper texture baked in) + a soft contact shadow ──
+function sprite(w, h, ax, ay, draw, { ss = 1, pad = 28, shadow = { dx: 6, dy: 9, blur: 11, a: .3 }, paper = .45 } = {}) {
+  const c = mk((w + pad * 2) * ss, (h + pad * 2) * ss), g = g2(c);
+  g.setTransform(ss, 0, 0, ss, pad * ss, pad * ss); g.lineJoin = 'round'; g.lineCap = 'round'; draw(g);
+  if (paper) paperize(g, paper);
+  let s = null;
+  if (shadow) { s = mk(c.width, c.height); const sg = g2(s), off = c.width + 64; sg.shadowColor = `rgba(6,20,24,${shadow.a})`; sg.shadowBlur = shadow.blur * ss; sg.shadowOffsetX = off; sg.drawImage(c, -off, 0); }
+  return { c, s, w, h, ax, ay, pad, ss, sh: shadow };
+}
+// place a sprite: (x,y) = its anchor in world space; shadow offset stays in world space (one light)
+function put(ctx, sp, x, y, rot = 0, sc = 1, { alpha = 1, flip = false, shadow = true, sy = 1 } = {}) {
+  const k = sc / sp.ss, ox = -(sp.pad + sp.ax) * sp.ss, oy = -(sp.pad + sp.ay) * sp.ss;
+  if (sp.s && shadow) {
+    ctx.save(); ctx.translate(x + sp.sh.dx * sc, y + sp.sh.dy * sc); if (rot) ctx.rotate(rot); ctx.scale(flip ? -k : k, k * sy);
+    ctx.globalAlpha = alpha; ctx.drawImage(sp.s, ox, oy); ctx.restore();
+  }
+  ctx.save(); ctx.translate(x, y); if (rot) ctx.rotate(rot); ctx.scale(flip ? -k : k, k * sy); ctx.globalAlpha = alpha; ctx.drawImage(sp.c, ox, oy); ctx.restore();
+}
+
+// ── stop-motion clock helpers ───────────────────────────────────────────────
+// exposure index for boil: puppets are re-placed by hand 12× a second
+const boil = (id, e, amt = 1) => [(hash(id, e, 1) - .5) * 2.2 * amt, (hash(id, e, 2) - .5) * 2.2 * amt, (hash(id, e, 3) - .5) * .006 * amt];
+
+// ── verlet rope (wires, steam, hair) ───────────────────────────────────────
+class Rope {
+  constructor(pts, { grav = 0, damp = .985, iters = 8, slack = 1, mass = null } = {}) {
+    const n = pts.length; this.n = n;
+    this.x = new Float64Array(n); this.y = new Float64Array(n); this.px = new Float64Array(n); this.py = new Float64Array(n);
+    this.ax = new Float64Array(n); this.ay = new Float64Array(n); this.w = new Float64Array(n).fill(1); this.pin = new Uint8Array(n);
+    this.rest = new Float64Array(n - 1);
+    for (let i = 0; i < n; i++) { this.x[i] = this.px[i] = pts[i][0]; this.y[i] = this.py[i] = pts[i][1]; if (mass) this.w[i] = 1 / mass[i]; }
+    for (let i = 0; i < n - 1; i++) this.rest[i] = Math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]) * slack;
+    this.grav = grav; this.damp = damp; this.iters = iters;
+    this.rx = Float64Array.from(this.x); this.ry = Float64Array.from(this.y); // exposure snapshot (what the camera sees)
+  }
+  step(dt) {
+    const { x, y, px, py, ax, ay, pin, n } = this, d2 = dt * dt, dm = this.damp;
+    for (let i = 0; i < n; i++) {
+      if (pin[i]) { px[i] = x[i]; py[i] = y[i]; ax[i] = ay[i] = 0; continue; }
+      const vx = (x[i] - px[i]) * dm, vy = (y[i] - py[i]) * dm; px[i] = x[i]; py[i] = y[i];
+      x[i] += vx + ax[i] * d2; y[i] += vy + (ay[i] + this.grav) * d2; ax[i] = ay[i] = 0;
+    }
+    for (let k = 0; k < this.iters; k++) for (let i = 0; i < n - 1; i++) {
+      const j = i + 1, wi = pin[i] ? 0 : this.w[i], wj = pin[j] ? 0 : this.w[j], ws = wi + wj; if (!ws) continue;
+      const dx = x[j] - x[i], dy = y[j] - y[i], d = Math.hypot(dx, dy) || 1e-6, diff = (d - this.rest[i]) / (d * ws);
+      x[i] += dx * diff * wi; y[i] += dy * diff * wi; x[j] -= dx * diff * wj; y[j] -= dy * diff * wj;
+    }
+  }
+  snap() { this.rx.set(this.x); this.ry.set(this.y); }
+  // point along the rope at arc fraction u (from the snapshot)
+  at(u, live = false) { const X = live ? this.x : this.rx, Y = live ? this.y : this.ry, f = clamp(u, 0, 1) * (this.n - 1), i = Math.min(this.n - 2, Math.floor(f)), t = f - i; return [lerp(X[i], X[i + 1], t), lerp(Y[i], Y[i + 1], t), Math.atan2(Y[i + 1] - Y[i], X[i + 1] - X[i])]; }
+}
+
+// ── falling-petal aerodynamics ─────────────────────────────────────────────
+// Quasi-steady flat plate: orientation-dependent drag makes a tilted petal glide, lift acts ⟂ to the
+// relative wind, and a self-excited pitch oscillator keeps it fluttering (tuned offline: ±28 px sway,
+// ~210 px/s descent — cherry-blossom speeds at this scale).
+function petalStep(p, dt, wx, wy) {
+  const ux = p.vx - wx, uy = p.vy - wy, c = Math.cos(p.th), s = Math.sin(p.th);
+  const vt = ux * c + uy * s, vn = -ux * s + uy * c, V = Math.hypot(ux, uy) + 1e-6;
+  const An = p.An, At = An * .05, fdt = -At * vt * V, fdn = -An * vn * V, L = 2.5 * An * vt * vn / V;
+  const ax = fdt * c - fdn * s - L * uy, ay = fdt * s + fdn * c + L * ux + 1500;
+  const tau = -p.w0 * p.w0 * Math.sin(p.th) + 3 * (1 - (p.th / p.A) ** 2) * p.om - .001 * vt * vn;
+  p.om = clamp(p.om + tau * dt, -30, 30); p.th += p.om * dt; p.vx += ax * dt; p.vy += ay * dt; p.x += p.vx * dt; p.y += p.vy * dt;
+  p.phi += (2 + Math.abs(p.om) * .8) * dt * p.spin;
+}
+function newPetal(R, x, y, o = {}) {
+  return { x, y, vx: o.vx ?? (R() - .5) * 80, vy: o.vy ?? (R() - .3) * 60, th: (R() - .5) * 1.2, om: (R() - .5) * 4, phi: R() * TAU, spin: (R() < .5 ? -1 : 1) * (.6 + R()),
+    An: (o.An ?? .03) * (.8 + R() * .5), w0: 4.5 * (.8 + R() * .45), A: .8 + R() * .35, size: o.size ?? (11 + R() * 9), col: o.col ?? C.coral, landed: false, rx: x, ry: y, rth: 0, rphi: 0, id: (R() * 1e6) | 0, life: 0 };
+}
+function addPetal(path, p, e, ymul = 1) {
+  const flat = (.25 + .75 * Math.abs(Math.cos(p.rphi))) * ymul, s = p.size, bo = e < 0 ? [0, 0] : boil(p.id, e, .6), a = p.rth + (p.id % 7) * .4, c = Math.cos(a), si = Math.sin(a), X = p.rx + bo[0], Y = p.ry + bo[1];
+  const T = (x, y) => [X + x * c - y * flat * si, Y + x * si + y * flat * c];
+  const P0 = T(-s, 0), c1 = T(-s * .4, -s * .75), c2 = T(s * .5, -s * .6), P1 = T(s, 0), c3 = T(s * .5, s * .55), c4 = T(-s * .4, s * .7);
+  path.moveTo(P0[0], P0[1]); path.bezierCurveTo(c1[0], c1[1], c2[0], c2[1], P1[0], P1[1]); path.bezierCurveTo(c3[0], c3[1], c4[0], c4[1], P0[0], P0[1]); path.closePath();
+}
+function drawPetals(ctx, list, e, { ymul = 1, rim = 'rgba(96,24,22,.55)' } = {}) {
+  const by = new Map();
+  for (const p of list) { let path = by.get(p.col); if (!path) by.set(p.col, path = new Path2D()); addPetal(path, p, e, ymul); }
+  ctx.lineWidth = 1.4; ctx.strokeStyle = rim;
+  for (const [col, path] of by) { ctx.fillStyle = col; ctx.fill(path); ctx.stroke(path); }
+}
+// ── puppets shared across shots: birds, notes, flowers, townsfolk ──────────────
+// Bird, facing +x, feet at the origin (perched) or body centre (flying). s ≈ body length.
+function birdPerched(g, s, { body = C.ink, wing = null, belly = null, pose = 'sit', eye = null } = {}) {
+  const lift = pose === 'crouch' ? .07 : 0, hx = pose === 'peck' ? .42 : pose === 'up' ? .22 : .3, hy = pose === 'peck' ? -.62 : pose === 'up' ? -.95 : -.85;
+  g.fillStyle = body;
+  // tail
+  g.beginPath(); g.moveTo(-.28 * s, -.44 * s + lift * s); g.lineTo(-.8 * s, -.1 * s); g.lineTo(-.72 * s, .01 * s); g.lineTo(-.18 * s, -.3 * s + lift * s); g.closePath(); g.fill();
+  // body + head
+  g.beginPath(); g.ellipse(0, -.5 * s + lift * s, .41 * s, .27 * s, -.32, 0, TAU); g.fill();
+  if (belly) { g.fillStyle = belly; g.beginPath(); g.ellipse(.06 * s, -.42 * s + lift * s, .3 * s, .17 * s, -.3, 0, PI); g.fill(); g.fillStyle = body; }
+  g.beginPath(); g.moveTo(.1 * s, -.62 * s + lift * s); g.quadraticCurveTo(hx * s - .05 * s, hy * s + .12 * s, hx * s, hy * s + .1 * s); g.lineTo(hx * s + .12 * s, hy * s + .12 * s); g.lineTo(.3 * s, -.5 * s + lift * s); g.fill();
+  g.beginPath(); g.arc(hx * s, hy * s, .19 * s, 0, TAU); g.fill();
+  // beak
+  g.fillStyle = wing ? '#7c7a70' : body; const bd = pose === 'peck' ? .5 : pose === 'up' ? -.35 : 0;
+  g.save(); g.translate((hx + .16) * s, (hy - .01) * s); g.rotate(bd); g.beginPath(); g.moveTo(0, -.055 * s); g.lineTo(.17 * s, 0); g.lineTo(0, .05 * s); g.closePath(); g.fill(); g.restore();
+  if (wing) { // hero bird: slate wing + tail tips
+    g.fillStyle = wing; g.beginPath(); g.moveTo(.2 * s, -.66 * s + lift * s);
+    g.bezierCurveTo(-.05 * s, -.78 * s, -.5 * s, -.52 * s, -.62 * s, -.2 * s); g.bezierCurveTo(-.4 * s, -.3 * s, -.1 * s, -.35 * s, .2 * s, -.66 * s + lift * s); g.fill();
+    g.strokeStyle = tone(wing, -.35); g.lineWidth = .018 * s;
+    for (let i = 0; i < 3; i++) { g.beginPath(); g.moveTo((-.05 - i * .14) * s, (-.58 + i * .09) * s); g.lineTo((-.35 - i * .1) * s, (-.34 + i * .05) * s); g.stroke(); }
+    g.fillStyle = tone(wing, -.2); g.beginPath(); g.moveTo(-.55 * s, -.22 * s); g.lineTo(-.82 * s, -.06 * s); g.lineTo(-.74 * s, .02 * s); g.closePath(); g.fill();
+  }
+  if (eye) { g.fillStyle = eye; g.beginPath(); g.arc((hx + .06) * s, (hy - .03) * s, .036 * s, 0, TAU); g.fill(); }
+  // legs
+  g.strokeStyle = wing ? '#6f6a60' : body; g.lineWidth = .035 * s; g.lineCap = 'round';
+  g.beginPath(); g.moveTo(-.03 * s, -.27 * s + lift * s); g.lineTo(-.05 * s, 0); g.moveTo(.07 * s, -.27 * s + lift * s); g.lineTo(.08 * s, 0); g.stroke();
+}
+// flying bird, phase ph (0..1 per wingbeat): swept, tapered wings rise over the back and sweep below it
+function birdFlying(g, s, ph, { body = C.ink, wing = null, eye = null, glide = false } = {}) {
+  const a = glide ? .45 : Math.sin(ph * TAU), wc = wing || body;
+  const wingPath = (k, dy) => { // k: 1 near, .82 far; tip swings from above the back to below the belly
+    const tx = -.42 * s * k, ty = -a * .92 * s * k + dy, fx = .14 * s, rx = -.16 * s;
+    g.beginPath(); g.moveTo(fx, -.05 * s + dy);
+    g.bezierCurveTo(.1 * s, ty * .55 - (a > 0 ? .06 : -.02) * s, -.05 * s, ty * .95, tx, ty);
+    g.bezierCurveTo(-.3 * s * k, ty * .55, -.2 * s, ty * .2, rx, -.02 * s + dy); g.closePath();
+  };
+  g.fillStyle = wing ? tone(wing, -.28) : tone(body, .16); wingPath(.82, -.05 * s); g.fill();
+  g.fillStyle = body;
+  g.beginPath(); g.moveTo(-.3 * s, -.03 * s); g.lineTo(-.74 * s, -.13 * s); g.lineTo(-.7 * s, .09 * s); g.closePath(); g.fill();
+  g.beginPath(); g.ellipse(0, 0, .42 * s, .15 * s, -.04, 0, TAU); g.fill();
+  g.beginPath(); g.arc(.4 * s, -.07 * s, .145 * s, 0, TAU); g.fill();
+  g.fillStyle = wing ? '#7c7a70' : body; g.beginPath(); g.moveTo(.52 * s, -.11 * s); g.lineTo(.7 * s, -.06 * s); g.lineTo(.52 * s, -.02 * s); g.closePath(); g.fill();
+  if (eye) { g.fillStyle = eye; g.beginPath(); g.arc(.45 * s, -.1 * s, .03 * s, 0, TAU); g.fill(); }
+  g.fillStyle = wc; wingPath(1, 0); g.fill();
+  if (wing) { g.strokeStyle = tone(wing, -.4); g.lineWidth = .014 * s; for (let i = 1; i < 4; i++) { g.beginPath(); g.moveTo((.02 - i * .06) * s, -a * .12 * s); g.lineTo((-.12 - i * .07) * s, -a * .72 * s); g.stroke(); } }
+}
+// ♪ an eighth note, head at origin
+function noteGlyph(g, s, col = C.ink) {
+  g.fillStyle = col; g.strokeStyle = col;
+  g.beginPath(); g.ellipse(0, 0, 11 * s, 7.8 * s, -.4, 0, TAU); g.fill();
+  g.lineWidth = 2.6 * s; g.beginPath(); g.moveTo(9.6 * s, -3 * s); g.lineTo(9.6 * s, -36 * s); g.stroke();
+  g.beginPath(); g.moveTo(9.6 * s, -36 * s); g.bezierCurveTo(14 * s, -26 * s, 24 * s, -26 * s, 20 * s, -12 * s); g.bezierCurveTo(19 * s, -20 * s, 14 * s, -23 * s, 9.6 * s, -25 * s); g.closePath(); g.fill();
+}
+function daisy(g, r, { petals = 9, col = '#efe8d8', mid = C.gold, seed = 1, open = 1 } = {}) {
+  const R = rng(seed); g.fillStyle = col;
+  for (let i = 0; i < petals; i++) {
+    const a = i / petals * TAU + R() * .2, L = r * (.85 + R() * .25) * open;
+    g.save(); g.rotate(a); g.beginPath(); g.ellipse(L * .55, 0, L * .5, r * .2 * (.7 + .3 * open), 0, 0, TAU); g.fill(); g.restore();
+  }
+  g.fillStyle = mid; g.beginPath(); g.arc(0, 0, r * .3, 0, TAU); g.fill();
+  g.fillStyle = 'rgba(40,30,20,.55)'; g.beginPath(); g.arc(r * .06, r * .05, r * .12, 0, TAU); g.fill();
+}
+
+// Townsfolk, front view, feet at origin. Returns {body, head} sprites so heads can look up.
+function makePerson(o) {
+  const h = o.h, hw = h * .16, R = rng(o.seed);
+  const body = sprite(h * .5, h * .85, h * .25, h * .85, g => {
+    g.translate(h * .25, h * .85);
+    // legs + shoes
+    g.fillStyle = o.legs || C.ink;
+    g.fillRect(-hw * .42, -h * .3, hw * .22, h * .3); g.fillRect(hw * .2, -h * .3, hw * .22, h * .3);
+    g.fillStyle = o.shoes || '#2b2522'; g.beginPath(); g.ellipse(-hw * .34, -h * .012, hw * .22, h * .018, 0, 0, TAU); g.ellipse(hw * .34, -h * .012, hw * .22, h * .018, 0, 0, TAU); g.fill();
+    // coat
+    const top = -h * .79, hem = -h * (o.short ? .42 : .27);
+    cutPath(g, [[-hw * .78, top + h * .03], [-hw * .5, top], [hw * .5, top], [hw * .78, top + h * .03], [hw * 1.02, hem], [-hw * 1.02, hem]], { amp: .8, step: 10, seed: o.seed });
+    g.fillStyle = o.coat; g.fill();
+    withClip(g, gg => cutPath(gg, [[-hw * .78, top + h * .03], [-hw * .5, top], [hw * .5, top], [hw * .78, top + h * .03], [hw * 1.02, hem], [-hw * 1.02, hem]], { amp: .8, step: 10, seed: o.seed }), gg => {
+      hatch(gg, -hw * 1.2, top, hw * 2.4, hem - top, { gap: 3.2, ang: PI / 2, col: tone(o.coat, -.4), a: .12, seed: o.seed });
+      gg.fillStyle = tone(o.coat, -.22); gg.fillRect(-hw * 1.1, top, hw * .3, hem - top); // arm shadow
+      gg.fillRect(hw * .8, top, hw * .3, hem - top);
+    });
+    g.strokeStyle = tone(o.coat, -.45); g.lineWidth = 1.4; g.beginPath(); g.moveTo(0, top + h * .05); g.lineTo(0, hem); g.stroke();
+    g.beginPath(); g.moveTo(-hw * .7, top + h * .01); g.lineTo(0, top + h * .1); g.lineTo(hw * .7, top + h * .01); g.stroke();
+    if (o.scarf) { g.fillStyle = o.scarf; g.fillRect(-hw * .5, top - h * .01, hw, h * .05); g.fillRect(hw * .15, top, hw * .22, h * .16); }
+    // hands
+    g.fillStyle = o.skin || C.skin; g.beginPath(); g.arc(-hw * .95, hem + h * .02, h * .022, 0, TAU); g.arc(hw * .95, hem + h * .02, h * .022, 0, TAU); g.fill();
+    // neck
+    g.fillStyle = o.skin || C.skin; g.fillRect(-hw * .16, top - h * .04, hw * .32, h * .05);
+  }, { ss: 1.3, pad: 16, shadow: { dx: 5, dy: 6, blur: 7, a: .28 }, paper: .35 });
+  const hr = h * .072;
+  const head = sprite(hr * 3, hr * 3.2, hr * 1.5, hr * 2.5, g => {
+    g.translate(hr * 1.5, hr * 1.5);
+    g.fillStyle = o.skin || C.skin; g.beginPath(); g.ellipse(0, 0, hr * .86, hr, 0, 0, TAU); g.fill();
+    g.fillStyle = o.hair || C.ink;
+    if (o.hat) { g.fillStyle = o.hat; g.beginPath(); g.ellipse(0, -hr * .55, hr * 1.35, hr * .28, 0, 0, TAU); g.fill(); g.fillRect(-hr * .8, -hr * 1.35, hr * 1.6, hr * .85); g.fillStyle = tone(o.hat, -.3); g.fillRect(-hr * .8, -hr * .75, hr * 1.6, hr * .14); }
+    else {
+      g.beginPath(); g.ellipse(0, -hr * .35, hr * .98, hr * .8, 0, PI, TAU); g.fill();
+      if (o.bob) { g.fillRect(-hr * .98, -hr * .4, hr * .36, hr * 1.25); g.fillRect(hr * .62, -hr * .4, hr * .36, hr * 1.25); }
+      if (o.bun) { g.beginPath(); g.arc(0, -hr * 1.15, hr * .38, 0, TAU); g.fill(); }
+      g.beginPath(); g.ellipse(-hr * .25, -hr * .45, hr * .7, hr * .32, -.3, 0, PI); g.fill();
+    }
+    g.fillStyle = 'rgba(20,20,20,.75)'; g.beginPath(); g.arc(-hr * .3, hr * .08, hr * .07, 0, TAU); g.arc(hr * .3, hr * .08, hr * .07, 0, TAU); g.fill();
+    g.fillStyle = 'rgba(214,120,110,.4)'; g.beginPath(); g.arc(-hr * .45, hr * .35, hr * .15, 0, TAU); g.arc(hr * .45, hr * .35, hr * .15, 0, TAU); g.fill();
+  }, { ss: 1.3, pad: 12, shadow: { dx: 4, dy: 5, blur: 6, a: .25 }, paper: .3 });
+  return { body, head, h, neckY: -h * .8, x: o.x, look: 0, id: o.seed };
+}
+// the deer-headed gentleman from the corner shop (red jacket, antlers)
+function makeDeer(o) {
+  const h = o.h, hw = h * .17;
+  const body = sprite(h * .5, h * .85, h * .25, h * .85, g => {
+    g.translate(h * .25, h * .85);
+    g.fillStyle = C.ink; g.fillRect(-hw * .4, -h * .3, hw * .24, h * .3); g.fillRect(hw * .16, -h * .3, hw * .24, h * .3);
+    g.fillStyle = '#2b2522'; g.beginPath(); g.ellipse(-hw * .3, -h * .012, hw * .24, h * .018, 0, 0, TAU); g.ellipse(hw * .3, -h * .012, hw * .24, h * .018, 0, 0, TAU); g.fill();
+    const top = -h * .79, hem = -h * .36;
+    g.fillStyle = C.gold; g.fillRect(-hw * .55, top, hw * 1.1, hem - top); // sweater
+    g.fillStyle = '#e9e1cf'; g.beginPath(); g.moveTo(-hw * .32, top); g.lineTo(0, top + h * .09); g.lineTo(hw * .32, top); g.closePath(); g.fill();
+    g.strokeStyle = 'rgba(60,60,60,.45)'; g.lineWidth = 1; for (let i = -3; i <= 3; i++) { g.beginPath(); g.moveTo(i * hw * .08, top); g.lineTo(i * hw * .03, top + h * .06); g.stroke(); }
+    const J = [[-hw * .85, top + h * .03], [-hw * .5, top], [-hw * .2, top], [-hw * .08, hem + h * .02], [-hw * 1.05, hem + h * .01]];
+    const J2 = J.map(([x, y]) => [-x, y]);
+    for (const P of [J, J2]) { cutPath(g, P, { amp: .7, step: 9, seed: 4 }); g.fillStyle = C.red; g.fill(); }
+    withClip(g, gg => { cutPath(gg, J, { amp: .7, step: 9, seed: 4 }); cutPath(gg, J2, { amp: .7, step: 9, seed: 4, begin: false }); }, gg => stipple(gg, -hw * 1.2, top, hw * 2.4, hem - top, { n: 260, col: '#5e1714', r0: .5, r1: 1.1, a: .45, seed: 8 }));
+    g.fillStyle = tone(C.red, -.3); g.beginPath(); g.moveTo(-hw * .2, top); g.lineTo(-hw * .44, top + h * .16); g.lineTo(-hw * .2, top + h * .22); g.closePath(); g.moveTo(hw * .2, top); g.lineTo(hw * .44, top + h * .16); g.lineTo(hw * .2, top + h * .22); g.closePath(); g.fill();
+    g.fillStyle = C.ink; g.beginPath(); g.arc(-hw * .14, hem - h * .08, 1.8, 0, TAU); g.arc(-hw * .14, hem - h * .16, 1.8, 0, TAU); g.fill();
+    g.fillStyle = '#5a534b'; g.fillRect(-hw * .13, top - h * .05, hw * .26, h * .06);
+  }, { ss: 1.3, pad: 16, shadow: { dx: 5, dy: 6, blur: 7, a: .28 }, paper: .35 });
+  const hr = h * .085;
+  const head = sprite(hr * 6, hr * 5.4, hr * 3, hr * 4.6, g => {
+    g.translate(hr * 3, hr * 3.4);
+    // antlers
+    g.strokeStyle = '#e2d6bd'; g.lineCap = 'round';
+    for (const sd of [-1, 1]) {
+      g.lineWidth = hr * .13; g.beginPath(); g.moveTo(sd * hr * .45, -hr * .8); g.quadraticCurveTo(sd * hr * .7, -hr * 1.8, sd * hr * .95, -hr * 2.9); g.stroke();
+      g.lineWidth = hr * .09; g.beginPath(); g.moveTo(sd * hr * .62, -hr * 1.55); g.lineTo(sd * hr * 1.25, -hr * 2.05); g.moveTo(sd * hr * .8, -hr * 2.25); g.lineTo(sd * hr * .5, -hr * 2.8); g.moveTo(sd * hr * .88, -hr * 2.5); g.lineTo(sd * hr * 1.35, -hr * 2.85); g.stroke();
+    }
+    // ears
+    for (const sd of [-1, 1]) { g.fillStyle = '#d4c7ad'; g.beginPath(); g.ellipse(sd * hr * 1.45, -hr * .55, hr * .78, hr * .32, sd * -.35, 0, TAU); g.fill(); g.fillStyle = '#d99f8f'; g.beginPath(); g.ellipse(sd * hr * 1.45, -hr * .55, hr * .55, hr * .17, sd * -.35, 0, TAU); g.fill(); }
+    g.fillStyle = '#d6cab0'; g.beginPath(); g.ellipse(0, 0, hr * 1.02, hr * 1.12, 0, 0, TAU); g.fill();
+    withClip(g, gg => { gg.beginPath(); gg.ellipse(0, 0, hr * 1.02, hr * 1.12, 0, 0, TAU); }, gg => {
+      gg.fillStyle = '#6e6559'; gg.fillRect(-hr * 1.2, hr * .45, hr * 2.4, hr); hatch(gg, -hr * 1.2, -hr * 1.2, hr * 2.4, hr * 2.4, { gap: 2.6, ang: PI / 2, col: '#8a7c66', a: .35, wob: 1.5, seed: 12 });
+    });
+    for (const sd of [-1, 1]) { g.fillStyle = '#f0e9da'; g.beginPath(); g.arc(sd * hr * .45, -hr * .12, hr * .27, 0, TAU); g.fill(); g.fillStyle = C.ink; g.beginPath(); g.arc(sd * hr * .45, -hr * .12, hr * .2, 0, TAU); g.fill(); g.fillStyle = 'rgba(255,255,255,.7)'; g.beginPath(); g.arc(sd * hr * .45 - hr * .06, -hr * .18, hr * .05, 0, TAU); g.fill(); }
+    g.fillStyle = C.ink; g.beginPath(); g.ellipse(0, hr * .62, hr * .18, hr * .12, 0, 0, TAU); g.fill();
+  }, { ss: 1.3, pad: 12, shadow: { dx: 4, dy: 5, blur: 6, a: .25 }, paper: .3 });
+  return { body, head, h, neckY: -h * .8, x: o.x, look: 0, id: 77, deer: true };
+}
+
+// baked bird cut-outs: 4 perched poses + 3 wingbeat drawings, black and white (drawn once, shadow included)
+const BIRDS = {};
+function bakeBirds() {
+  const S = 80;
+  for (const white of [false, true]) {
+    const opt = white ? { body: '#ebe6d8', wing: C.wing, eye: C.ink, belly: '#f4efe3' } : { body: C.ink }, k0 = white ? 'w' : 'b';
+    for (const pose of ['sit', 'up', 'peck', 'crouch']) BIRDS[k0 + pose] = sprite(S * 1.62, S * 1.28, S * .86, S * 1.22, g => { g.translate(S * .86, S * 1.22); birdPerched(g, S, { ...opt, pose }); }, { ss: 1.25, pad: 14, shadow: { dx: 4, dy: 7, blur: 5, a: .28 }, paper: white ? .3 : 0 });
+    for (const k of [0, 1, 2]) BIRDS[k0 + 'f' + k] = sprite(S * 1.62, S * 2.12, S * .84, S * 1.06, g => { g.translate(S * .84, S * 1.06); birdFlying(g, S, k / 3, opt); }, { ss: 1.25, pad: 14, shadow: { dx: 2, dy: 11, blur: 7, a: .22 }, paper: white ? .3 : 0 });
+  }
+}
+const wingK = rph => ((Math.round(rph * 3) % 3) + 3) % 3;
+// ── sound: every tone and noise is synthesised; the same score drives live play and the offline mix ──
+const NOTE = n => { const m = /^([A-G])(#|b)?(\d)$/.exec(n); const i = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[m[1]] + (m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0); return 440 * Math.pow(2, (12 * (+m[3] + 1) + i - 69) / 12); };
+
+class Sound {
+  constructor(ctx, dest) {
+    this.ctx = ctx; const sr = ctx.sampleRate;
+    this.master = ctx.createGain(); this.master.gain.value = .92;
+    const sh = ctx.createWaveShaper(), cv = new Float32Array(2048); for (let i = 0; i < 2048; i++) { const x = i / 1023.5 - 1; cv[i] = Math.tanh(x * 1.25) / Math.tanh(1.25); } sh.curve = cv;
+    this.master.connect(sh); sh.connect(dest || ctx.destination);
+    this.verb = ctx.createConvolver(); this.verb.buffer = this.ir(2.3); const vo = ctx.createGain(); vo.gain.value = .55; this.verb.connect(vo); vo.connect(this.master);
+    const R = rng(4242), mono = (secs, fn) => { const b = ctx.createBuffer(1, Math.round(sr * secs), sr), d = b.getChannelData(0); fn(d, R); return b; };
+    this.white = mono(3, (d, R) => { for (let i = 0; i < d.length; i++) d[i] = R() * 2 - 1; });
+    this.pink = mono(4, (d, R) => { let b0 = 0, b1 = 0, b2 = 0; for (let i = 0; i < d.length; i++) { const w = R() * 2 - 1; b0 = .99765 * b0 + w * .099; b1 = .963 * b1 + w * .2965; b2 = .57 * b2 + w * 1.0527; d[i] = (b0 + b1 + b2 + w * .1848) * .2; } });
+    this.brown = mono(4, (d, R) => { let v = 0; for (let i = 0; i < d.length; i++) { v = (v + .02 * (R() * 2 - 1)) / 1.02; d[i] = v * 3.2; } });
+    this.bus = this.master; this.vbus = this.verb;
+  }
+  ir(dur) {
+    const c = this.ctx, sr = c.sampleRate, len = Math.round(sr * dur), b = c.createBuffer(2, len, sr), R = rng(31);
+    for (let ch = 0; ch < 2; ch++) {
+      const d = b.getChannelData(ch); let lp = 0;
+      for (let i = 0; i < len; i++) { const t = i / sr; lp = lp * .55 + (R() * 2 - 1) * .45; d[i] = t < .011 ? 0 : lp * Math.exp(-t * 3.1) * .5; }
+      for (let k = 0; k < 7; k++) { const at = Math.round(sr * (.013 + R() * .06)); if (at < len) d[at] += (R() - .5) * .6; }
+    }
+    return b;
+  }
+  out(pan = 0, wet = .25) {
+    const c = this.ctx, g = c.createGain(), p = c.createStereoPanner(); p.pan.value = clamp(pan, -1, 1);
+    g.connect(p); p.connect(this.bus);
+    if (wet > 0) { const s = c.createGain(); s.gain.value = wet; g.connect(s); s.connect(this.vbus); }
+    return g;
+  }
+  env(g, t, a, peak, tau) { g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(peak, t + a); g.gain.setTargetAtTime(0, t + a, tau); }
+  noiseSrc(buf, t, dur, off = 0) { const s = this.ctx.createBufferSource(); s.buffer = buf; s.loop = true; s.start(t, off % buf.duration); s.stop(t + dur); return s; }
+  filt(type, f, q = .7) { const b = this.ctx.createBiquadFilter(); b.type = type; b.frequency.value = f; b.Q.value = q; return b; }
+
+  musicBox(t, f, v = 1, pan = 0) {
+    const c = this.ctx, o = this.out(pan, .38);
+    for (const [r, a, tau] of [[1, 1, .95], [1.0032, .32, .75], [2, .1, .3], [3.01, .05, .12], [6.27, .07, .045]]) {
+      const os = c.createOscillator(), eg = c.createGain(); os.frequency.value = f * r; this.env(eg, t, .0025, a * v * .15, tau);
+      os.connect(eg); eg.connect(o); os.start(t); os.stop(t + tau * 7 + .05);
+    }
+    const hp = this.filt('highpass', 2600), ng = c.createGain(); this.env(ng, t, .001, v * .05, .004);
+    this.noiseSrc(this.white, t, .03, f % 1.3).connect(hp); hp.connect(ng); ng.connect(o);
+  }
+  // Karplus–Strong string (the telephone wire), with the tension settling after the pluck
+  pluck(t, f, dur = 2, v = 1, pan = 0, seed = 1) {
+    const c = this.ctx, sr = c.sampleRate, R = rng(seed), mk1 = (freq, decay, bright) => {
+      const N = Math.max(2, Math.round(sr / freq)), len = Math.round(sr * dur), b = c.createBuffer(1, len, sr), d = b.getChannelData(0), ring = new Float32Array(N);
+      let lp = 0; for (let i = 0; i < N; i++) { lp = lp * (1 - bright) + (R() * 2 - 1) * bright; ring[i] = lp; }
+      let idx = 0, peak = 0; for (let i = 0; i < len; i++) { const a = ring[idx], nb = ring[(idx + 1) % N]; ring[idx] = (a + nb) * .5 * decay; d[i] = a; peak = Math.max(peak, Math.abs(a)); idx = (idx + 1) % N; }
+      for (let i = 0; i < len; i++) d[i] /= peak || 1; return b;
+    };
+    const o = this.out(pan, .3);
+    for (const [freq, decay, bright, amp] of [[f, .997, .8, .42], [f * 4.03, .985, .95, .12]]) {
+      const s = c.createBufferSource(); s.buffer = mk1(freq, decay, bright); s.playbackRate.setValueAtTime(1.045, t); s.playbackRate.exponentialRampToValueAtTime(1, t + .35);
+      const g = c.createGain(); g.gain.setValueAtTime(amp * v, t); g.gain.setTargetAtTime(0, t + dur * .55, dur * .12); s.connect(g); g.connect(o); s.start(t); s.stop(t + dur);
+    }
+  }
+  flap(t, pan = 0, v = 1, n = 3, seed = 1) {
+    const R = rng(seed), o = this.out(pan, .12); let tt = t;
+    for (let i = 0; i < n; i++) {
+      const bp = this.filt('bandpass', 650 + R() * 600, .8), g = this.ctx.createGain(); this.env(g, tt, .007, v * (.34 - i * .05), .038);
+      this.noiseSrc(this.white, tt, .2, R() * 2).connect(bp); bp.connect(g); g.connect(o);
+      const lp = this.filt('lowpass', 260), g2 = this.ctx.createGain(); this.env(g2, tt, .005, v * .22, .03);
+      this.noiseSrc(this.brown, tt, .15, R() * 2).connect(lp); lp.connect(g2); g2.connect(o);
+      tt += .07 + R() * .03 + i * .012;
+    }
+  }
+  chirp(t, pan = 0, f0 = 3400, n = 2, v = 1, seed = 1) {
+    const c = this.ctx, R = rng(seed), o = this.out(pan, .3); let tt = t;
+    for (let i = 0; i < n; i++) {
+      const f = f0 * (.92 + R() * .2), os = c.createOscillator(), g = c.createGain(), fm = c.createOscillator(), fg = c.createGain();
+      os.frequency.setValueAtTime(f * .82, tt); os.frequency.exponentialRampToValueAtTime(f * 1.28, tt + .03); os.frequency.exponentialRampToValueAtTime(f * .95, tt + .07);
+      fm.frequency.value = 38 + R() * 20; fg.gain.value = f * .05; fm.connect(fg); fg.connect(os.frequency);
+      g.gain.setValueAtTime(0, tt); g.gain.linearRampToValueAtTime(v * .07, tt + .006); g.gain.linearRampToValueAtTime(v * .05, tt + .045); g.gain.linearRampToValueAtTime(0, tt + .08);
+      os.connect(g); g.connect(o); os.start(tt); fm.start(tt); os.stop(tt + .1); fm.stop(tt + .1);
+      tt += .085 + R() * .04;
+    }
+  }
+  whoosh(t, dur, p0 = -.6, p1 = .6, f0 = 300, f1 = 1400, v = 1) {
+    const c = this.ctx, g = c.createGain(), p = c.createStereoPanner(), bp = this.filt('bandpass', f0, 1.1);
+    bp.frequency.setValueAtTime(f0, t); bp.frequency.exponentialRampToValueAtTime(f1, t + dur * .6); bp.frequency.exponentialRampToValueAtTime(f0 * 1.2, t + dur);
+    p.pan.setValueAtTime(p0, t); p.pan.linearRampToValueAtTime(p1, t + dur);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v * .2, t + dur * .55); g.gain.linearRampToValueAtTime(0, t + dur);
+    this.noiseSrc(this.pink, t, dur + .05, t * 1.7).connect(bp); bp.connect(g); g.connect(p); p.connect(this.bus);
+    const s = c.createGain(); s.gain.value = .2; g.connect(s); s.connect(this.vbus);
+  }
+  // paper rustle: sparse crackle grains, band-limited
+  rustle(t, dur, v = 1, pan = 0, dens = 900, seed = 1) {
+    const c = this.ctx, sr = c.sampleRate, len = Math.round(sr * dur), b = c.createBuffer(1, len, sr), d = b.getChannelData(0), R = rng(seed);
+    let e = 0; for (let i = 0; i < len; i++) { if (R() < dens / sr) e = (R() * .8 + .2) * (R() < .5 ? -1 : 1); d[i] = e * (R() * 2 - 1); e *= .93; }
+    const s = c.createBufferSource(); s.buffer = b; const hp = this.filt('highpass', 1700), g = c.createGain(), o = this.out(pan, .2);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v * .5, t + dur * .15); g.gain.setTargetAtTime(0, t + dur * .35, dur * .22);
+    s.connect(hp); hp.connect(g); g.connect(o); s.start(t);
+  }
+  tick(t, v = 1, pan = 0) { const hp = this.filt('bandpass', 4200, 1.5), g = this.ctx.createGain(); this.env(g, t, .0008, v * .12, .006); this.noiseSrc(this.white, t, .04, t * 3.1).connect(hp); hp.connect(g); g.connect(this.out(pan, .15)); }
+  thump(t, v = 1, pan = 0) {
+    const c = this.ctx, os = c.createOscillator(), g = c.createGain(), o = this.out(pan, .12);
+    os.frequency.setValueAtTime(200, t); os.frequency.exponentialRampToValueAtTime(70, t + .06); this.env(g, t, .002, v * .3, .03); os.connect(g); g.connect(o); os.start(t); os.stop(t + .25);
+    const lp = this.filt('lowpass', 1800), g2 = c.createGain(); this.env(g2, t, .001, v * .12, .008); this.noiseSrc(this.white, t, .05, t).connect(lp); lp.connect(g2); g2.connect(o);
+  }
+  creak(t, v = 1, pan = 0) {
+    const c = this.ctx, os = c.createOscillator(), lfo = c.createOscillator(), lg = c.createGain(), bp = this.filt('bandpass', 720, 5), g = c.createGain();
+    os.type = 'sawtooth'; os.frequency.setValueAtTime(128, t); os.frequency.linearRampToValueAtTime(96, t + .38); lfo.frequency.value = 22; lg.gain.value = 9; lfo.connect(lg); lg.connect(os.frequency);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v * .09, t + .05); g.gain.linearRampToValueAtTime(v * .05, t + .25); g.gain.linearRampToValueAtTime(0, t + .4);
+    os.connect(bp); bp.connect(g); g.connect(this.out(pan, .3)); os.start(t); lfo.start(t); os.stop(t + .45); lfo.stop(t + .45);
+  }
+  bloom(t, v = 1, pan = 0) {
+    const c = this.ctx, os = c.createOscillator(), g = c.createGain();
+    os.frequency.setValueAtTime(620, t); os.frequency.exponentialRampToValueAtTime(1180, t + .035); this.env(g, t, .004, v * .045, .03);
+    os.connect(g); g.connect(this.out(pan, .3)); os.start(t); os.stop(t + .2);
+  }
+  cloth(t, v = 1, pan = 0) { const bp = this.filt('bandpass', 1900, .6), g = this.ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v * .05, t + .1); g.gain.linearRampToValueAtTime(0, t + .3); this.noiseSrc(this.pink, t, .32, t * 2).connect(bp); bp.connect(g); g.connect(this.out(pan, .15)); }
+  clink(t, v = 1, pan = 0) { // ceramic tap
+    const c = this.ctx, o = this.out(pan, .3);
+    for (const [f, a, tau] of [[2350, .5, .09], [3710, .3, .05], [5480, .2, .03], [1180, .25, .06]]) { const os = c.createOscillator(), g = c.createGain(); os.frequency.value = f; this.env(g, t, .001, a * v * .12, tau); os.connect(g); g.connect(o); os.start(t); os.stop(t + .4); }
+  }
+  // continuous room / street / field tone for one shot (cross-faded at the cuts)
+  // soft chiptune voice: triangle (warm) or square (bright) with a pluck envelope, optional slide to f2 and vibrato
+  chip(t, f, v = 1, pan = 0, { wave = 'triangle', dur = .35, f2 = 0, vib = 0 } = {}) {
+    const c = this.ctx, o = this.out(pan, .22), os = c.createOscillator(), g = c.createGain(), lp = this.filt('lowpass', wave === 'square' ? 2600 : 5200);
+    os.type = wave; os.frequency.setValueAtTime(f, t); if (f2) os.frequency.exponentialRampToValueAtTime(f2, t + dur * .8);
+    if (vib) { const l = c.createOscillator(), lg = c.createGain(); l.frequency.value = 7; lg.gain.value = f * vib; l.connect(lg); lg.connect(os.frequency); l.start(t); l.stop(t + dur * 2 + .1); }
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v * (wave === 'square' ? .045 : .12), t + .008); g.gain.setTargetAtTime(0, t + dur * .6, dur * .25);
+    os.connect(lp); lp.connect(g); g.connect(o); os.start(t); os.stop(t + dur * 2 + .1);
+  }
+  bed(t, dur, kind, off = 0) {
+    const c = this.ctx, g = c.createGain(), end = t + dur, lvl = { room: .5, street: .55, field: .6, stage: .42 }[kind];
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(lvl, t + .05); g.gain.setValueAtTime(lvl, end - .05); g.gain.linearRampToValueAtTime(0, end + .03); g.connect(this.bus);
+    const layer = (buf, type, f, q, amp, o2 = 0) => { const fl = this.filt(type, f, q), a = c.createGain(); a.gain.value = amp; this.noiseSrc(buf, t, dur + .06, off + o2).connect(fl); fl.connect(a); a.connect(g); return { fl, a }; };
+    if (kind === 'room') { layer(this.brown, 'lowpass', 320, .5, .16); const h = layer(this.white, 'highpass', 5200, .5, .012, 1); h.a.gain.setValueAtTime(.006, t); h.a.gain.linearRampToValueAtTime(.016, t + dur * .5); h.a.gain.linearRampToValueAtTime(.008, end); }
+    if (kind === 'street') { layer(this.pink, 'bandpass', 420, .45, .085); layer(this.brown, 'lowpass', 110, .6, .22, 2); }
+    if (kind === 'field') { const w = layer(this.pink, 'bandpass', 380, .8, .12); w.fl.frequency.setValueAtTime(330, t); w.fl.frequency.linearRampToValueAtTime(760, t + dur * .55); w.fl.frequency.linearRampToValueAtTime(420, end); layer(this.white, 'highpass', 3400, .5, .008, 1); }
+    if (kind === 'stage') { layer(this.brown, 'lowpass', 260, .5, .13); layer(this.pink, 'bandpass', 900, .4, .012, 2); }
+  }
+  play(e, t, off = 0) {
+    const R = rng((e.t * 1000) | 0);
+    switch (e.k) {
+      case 'mb': this.musicBox(t, NOTE(e.n), e.v ?? 1, e.pan ?? 0); break;
+      case 'chord': e.ns.forEach((n, i) => this.musicBox(t + i * (e.strum ?? .028), NOTE(n), (e.v ?? .8) * (1 - i * .08), (e.pan ?? 0) + (i - 1.5) * .12)); break;
+      case 'pluck': this.pluck(t, e.f, e.dur ?? 2.2, e.v ?? 1, e.pan ?? 0, (e.t * 100) | 0); break;
+      case 'flap': this.flap(t, e.pan ?? 0, e.v ?? 1, e.n ?? 3, (e.t * 1000) | 0); break;
+      case 'chirp': this.chirp(t, e.pan ?? 0, e.f ?? 3400, e.n ?? 2, e.v ?? 1, (e.t * 1000) | 0); break;
+      case 'whoosh': this.whoosh(t, e.dur, e.p0, e.p1, e.f0, e.f1, e.v ?? 1); break;
+      case 'rustle': this.rustle(t, e.dur ?? .4, e.v ?? 1, e.pan ?? 0, e.dens ?? 900, (e.t * 1000) | 0); break;
+      case 'tick': this.tick(t, e.v ?? 1, e.pan ?? 0); break;
+      case 'thump': this.thump(t, e.v ?? 1, e.pan ?? 0); break;
+      case 'creak': this.creak(t, e.v ?? 1, e.pan ?? 0); break;
+      case 'bloom': this.bloom(t, e.v ?? 1, e.pan ?? 0); break;
+      case 'cloth': this.cloth(t, e.v ?? 1, e.pan ?? 0); break;
+      case 'clink': this.clink(t, e.v ?? 1, e.pan ?? 0); break;
+      case 'chip': this.chip(t, e.f ?? NOTE(e.n), e.v ?? 1, e.pan ?? 0, { wave: e.wave, dur: e.dur, f2: e.f2, vib: e.vib }); break;
+      case 'bed': this.bed(t, e.dur - off, e.kind, off); break;
+    }
+  }
+}
+
+// ── pixel toolkit (used when PIX > 0; harmless otherwise) ──────────────────────────────────────
+const LO = PIX ? mk(LW, LH) : null, LOG = LO ? g2(LO) : null;
+// pixel camera: pans only (no zoom), snapped to whole pixels so nothing smears
+function setCamP(c, cam, p = 1) { const cx = LW / 2 + (cam.x - LW / 2) * p, cy = LH / 2 + (cam.y - LH / 2) * p; c.setTransform(1, 0, 0, 1, Math.round(LW / 2 - cx), Math.round(LH / 2 - cy)); }
+// sprite from ASCII art: one string per row, pal maps a char to a colour; '.' and ' ' stay clear
+function pxArt(rows, pal) { const w = Math.max(...rows.map(r => r.length)), c = mk(w, rows.length), g = g2(c); rows.forEach((r, y) => [...r].forEach((ch, x) => { const col = pal[ch]; if (col) { g.fillStyle = col; g.fillRect(x, y, 1, 1); } })); return c; }
+// place a pixel sprite by its anchor (default bottom-centre = feet), mirrored when flip
+function pxPut(g, spr, x, y, { flip = false, ax = spr.width >> 1, ay = spr.height } = {}) {
+  const X = Math.round(x - ax), Y = Math.round(y - ay);
+  if (!flip) { g.drawImage(spr, X, Y); return; }
+  g.save(); g.translate(X + spr.width, Y); g.scale(-1, 1); g.drawImage(spr, 0, 0); g.restore();
+}
+function pxRect(g, x, y, w, h, col) { g.fillStyle = col; g.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); }
+function pxDisc(g, cx, cy, r, col) { g.fillStyle = col; cx = Math.round(cx); cy = Math.round(cy); for (let y = -r; y <= r; y++) { const w = Math.floor(Math.sqrt(r * r - y * y) + .35); g.fillRect(cx - w, cy + y, w * 2 + 1, 1); } }
+// 4×4 ordered dither: fill with a, then pixels of b where the Bayer threshold < t (t 0..1, or a fn of x,y)
+const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+function pxDither(g, x, y, w, h, a, b, t) { g.fillStyle = a; g.fillRect(x, y, w, h); g.fillStyle = b; for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) { const k = typeof t === 'function' ? t(x + i, y + j) : t; if ((BAYER[((y + j) & 3) * 4 + ((x + i) & 3)] + .5) / 16 < k) g.fillRect(x + i, y + j, 1, 1); } }
+// ═══ STORY: 清晨农场 — original pixel-art farm morning (320×180 buffer, ×8) ═══════════════════════
+const P = { // warm farm palette
+  o: '#3b2a22', grass: '#5c9e48', grassL: '#79b85a', grassD: '#467f3a', dirt: '#b98a5c', dirtD: '#94693f',
+  soil: '#6e4a2f', soilD: '#553823', sprout: '#8fd05a', wood: '#c88c55', woodD: '#9a6437', woodL: '#e0ab70',
+  roof: '#b04640', roofD: '#86302e', coopRoof: '#4d6190', coopRoofD: '#38496f', win: '#ffd764', winL: '#fff1b0',
+  post: '#e2bb7c', postD: '#94633a', smoke: '#e6e0da', smokeD: '#bdb6b0', sun: '#ffe38a', sunL: '#fff6cf',
+};
+const BEAT = 60 / 96;
+// [time s, note] — D major, one soft chip note per event (rooster at .625, door at 1.25, a hen per note after)
+const MELODY = [[0, 'D5'], [.3125, 'F#5'], [.9375, 'A5'], [1.25, 'B5'], [1.5625, 'A5'], [1.875, 'B5'], [2.1875, 'D6'], [2.5, 'E6'], [2.8125, 'D6'], [3.4375, 'B5'], [3.75, 'A5'], [4.0625, 'F#5'], [4.375, 'D5']];
+function baseScore() {
+  const ev = [{ t: 0, k: 'bed', kind: 'field', dur: 19.495 }];
+  MELODY.forEach(([t, n], i) => ev.push({ t, k: 'chip', n, v: .9, pan: Math.sin(i * 1.7) * .25, dur: .4 }));
+  for (const [t, n] of [[0, 'D3'], [1.25, 'A2'], [2.5, 'D3'], [3.75, 'G2']]) ev.push({ t, k: 'chip', n, v: .8, dur: 1.1 });
+  ev.push({ t: 4.375, k: 'chord', ns: ['D4', 'F#4', 'A4', 'D5'], v: .45, strum: .04 });
+  return ev;
+}
+const SHOTS = [];
+
+// sprites: ASCII pixel art, facing right, feet at bottom-centre
+const HEN = (body, shade) => ({ o: P.o, W: body, w: shade, R: '#e0483e', K: '#1b1b1b', Y: '#f2a93b', y: '#d98a26' });
+const HEN_STAND = [
+  '.......RR...',
+  '......oRRo..',
+  '......oWWWo.',
+  'oo....oWKWYY',
+  'oWo..oWWWWo.',
+  'oWWooWWWWWo.',
+  'oWWWWWWwWWo.',
+  '.owWWWWwwo..',
+  '..ooooooo...',
+  '....y..y....',
+];
+const HEN_RUN = HEN_STAND.slice(0, 9).concat(['...y....y...']);
+const HEN_PECK = [
+  '............',
+  '............',
+  'oo..........',
+  'oWo.........',
+  'oWWoooooo...',
+  'oWWWWWWWWoRR',
+  'oWWWWWWwWWKo',
+  '.owWWWWwwoYY',
+  '..ooooooo...',
+  '....y..y....',
+];
+const ROO = { o: P.o, B: '#c0552f', b: '#8a3a22', G: '#2f5e4a', g: '#3f7a5e', R: '#e0483e', K: '#1b1b1b', Y: '#f2a93b', y: '#d98a26' };
+const ROO_STAND = [
+  '..........RR..',
+  '.........RRRo.',
+  '........oBBBo.',
+  '..G.....oBKBYY',
+  '.gGo...oBBBBo.',
+  'gGGGoooBBBBBo.',
+  'GGgGBBBBBBBBo.',
+  'G..oBBBBbBBBo.',
+  '...obBBBbbBo..',
+  '....obbbbbo...',
+  '.....ooooo....',
+  '......y.y.....',
+  '.....yy.yy....',
+];
+const ROO_CROW = [
+  '...........RR.',
+  '..........RRo.',
+  '.........oBBoY',
+  '..G......oBKo.',
+  '.gGo....oBBoYY',
+  'gGGGoooBBBBBo.',
+  'GGgGBBBBBBBBo.',
+  'G..oBBBBbBBBo.',
+  '...obBBBbbBo..',
+  '....obbbbbo...',
+  '.....ooooo....',
+  '......y.y.....',
+  '.....yy.yy....',
+];
+const BIRD = [['o...o', '.o.o.', '..o..'], ['.....', 'ooooo', '..o..']];
+
+const S1 = {
+  name: '清晨', t0: 0, t1: 5,
+  PHASES: [.9375, 1.875, 2.8125], DOOR: 1.25, CROW: .625,
+  HOUSE: [92, 140], COOP: [185, 146], DOORX: 185,
+  hens: [[1.5625, 160, 153, 'w'], [1.875, 224, 150, 'b'], [2.1875, 172, 157, 'w'], [2.5, 238, 155, 'w'], [2.8125, 202, 151, 'b']],
+  cam(st) { const u = eio(st / 5); return { x: lerp(150, 165, u), y: LH / 2, z: 1 }; },
+  phase(t) { return this.PHASES.filter(p => t >= p).length; },
+  build() {
+    const skyOf = cols => { const c = mk(LW + 40, LH), g = g2(c), band = 118 / cols.length; cols.forEach((col, i) => { const y0 = Math.round(i * band), y1 = Math.round((i + 1) * band); pxRect(g, 0, y0, LW + 40, y1 - y0, col); if (i < cols.length - 1) pxDither(g, 0, y1 - 3, LW + 40, 3, col, cols[i + 1], .5); }); pxRect(g, 0, 118, LW + 40, LH - 118, cols[cols.length - 1]); return c; };
+    this.skies = [
+      skyOf(['#2b2552', '#3b2f66', '#553a78', '#7a4a82', '#a8577f', '#d0707a']),
+      skyOf(['#3d4b8f', '#5a5fa6', '#8a6fae', '#c9819f', '#ef9e87', '#f7c27e']),
+      skyOf(['#4f7fc8', '#6493d4', '#7da8de', '#9cc0e6', '#c3d9e8', '#f0dfb4']),
+      skyOf(['#5b8fd6', '#6fa3de', '#86b6e4', '#a6c9e8', '#cde0e8', '#f3e8c4']),
+    ];
+    const ridge = (w, base, amp, seed, col, colD) => { const c = mk(w, LH), g = g2(c); for (let x = 0; x < w; x++) { const h = Math.round(base - (fbm(x * .018 + seed, seed, 3) * .5 + .5) * amp); pxRect(g, x, h, 1, LH - h, col); if (hash(x, seed) < .35) pxRect(g, x, h, 1, 1, colD); } return c; };
+    this.far = ridge(LW + 80, 112, 34, 3, '#6a7fa6', '#8195b8');
+    this.mid = ridge(LW + 80, 120, 22, 9, '#4b7a62', '#5d8f72');
+    const tr = mk(LW + 80, 40), tg = g2(tr);
+    for (let i = 0; i < 26; i++) { const x = i * 16 + (hash(i, 4) * 8 | 0), r = 7 + (hash(i, 5) * 4 | 0), y = 26 - (hash(i, 6) * 6 | 0); pxRect(tg, x - 1, y, 3, 14, '#6b4a30'); pxDisc(tg, x, y, r, '#2f6b3c'); pxDisc(tg, x - 2, y - 2, r - 3, '#3f8a4a'); pxRect(tg, x - 3, y - r + 2, 2, 1, '#62a85a'); }
+    this.trees = tr;
+    // ground: grass speckle, a dirt path, a tilled plot with sprouts
+    const gr = mk(LW + 80, 64), gg = g2(gr);
+    for (let y = 0; y < 64; y++) for (let x = 0; x < LW + 80; x++) { const h = hash(x, y, 7); pxRect(gg, x, y, 1, 1, h < .08 ? P.grassL : h > .93 ? P.grassD : P.grass); }
+    for (let y = 0; y < 64; y++) { const cx = 70 + Math.round(Math.sin(y * .08) * 6) + y, w = 10 + (y >> 3); for (let x = cx - w; x < cx + w; x++) pxRect(gg, x, y, 1, 1, hash(x, y, 9) < .12 ? P.dirtD : P.dirt); }
+    for (let r = 0; r < 4; r++) { pxRect(gg, 270, 6 + r * 7, 90, 5, P.soil); pxRect(gg, 270, 10 + r * 7, 90, 1, P.soilD); for (let x = 274; x < 356; x += 8) { pxRect(gg, x, 4 + r * 7, 1, 2, P.sprout); pxRect(gg, x - 1, 4 + r * 7, 1, 1, P.sprout); pxRect(gg, x + 1, 4 + r * 7, 1, 1, P.sprout); } }
+    this.ground = gr; this.grass1 = grassLayer(480, 62 + HZ, 11, 40);
+    this.house = (() => { const c = mk(76, 62), g = g2(c);
+      pxRect(g, 4, 26, 68, 36, P.o); pxRect(g, 5, 27, 66, 34, P.wood); for (let y = 30; y < 61; y += 4) pxRect(g, 5, y, 66, 1, P.woodD);
+      for (let i = 0; i < 26; i++) pxRect(g, 38 - i * 1.5 - 4, i, (i * 1.5 + 4) * 2, 1, i % 4 === 3 ? P.roofD : P.roof); pxRect(g, 0, 26, 76, 2, P.o);
+      pxRect(g, 52, 2, 8, 14, P.o); pxRect(g, 53, 3, 6, 13, '#8a6a5a');
+      pxRect(g, 30, 44, 12, 17, P.o); pxRect(g, 31, 45, 10, 16, P.woodD); pxRect(g, 38, 52, 1, 2, P.win);
+      return c; })();
+    this.coop = (() => { const c = mk(60, 46), g = g2(c);
+      pxRect(g, 4, 16, 52, 30, P.o); pxRect(g, 5, 17, 50, 28, P.woodL); for (let x = 8; x < 55; x += 5) pxRect(g, x, 17, 1, 28, P.wood);
+      for (let i = 0; i < 18; i++) pxRect(g, 30 - i * 1.7 - 3, i, (i * 1.7 + 3) * 2, 1, i % 3 === 2 ? P.coopRoofD : P.coopRoof); pxRect(g, 0, 16, 60, 2, P.o);
+      pxRect(g, 24, 32, 12, 13, P.o); pxRect(g, 25, 33, 10, 12, '#2a1b14');
+      pxRect(g, 8, 22, 8, 6, P.o); pxRect(g, 9, 23, 6, 4, '#f1d38a');
+      return c; })();
+    this.henSp = { w: {}, b: {} };
+    for (const [k, body, shade] of [['w', '#f7f3ea', '#d6cdbd'], ['b', '#c9874a', '#a36a38']]) for (const [pose, rows] of [['stand', HEN_STAND], ['run', HEN_RUN], ['peck', HEN_PECK]]) this.henSp[k][pose] = pxArt(rows, HEN(body, shade));
+    this.roo = { stand: pxArt(ROO_STAND, ROO), crow: pxArt(ROO_CROW, ROO) };
+    this.birdSp = BIRD.map(r => pxArt(r, { o: '#2b2233' }));
+  },
+  reset() {
+    this.R = rng(9101);
+    this.chicks = this.hens.map(([t, tx, ty, c], i) => ({ t, tx, ty, c, x: this.DOORX, y: this.COOP[1] + 2, out: false, arrived: false, flip: false, id: 500 + i, rx: this.DOORX, ry: this.COOP[1] + 2, pose: 'stand' }));
+    this.smoke = [];
+    for (let i = 0; i < 90; i++) this.step(1 / 60, -90 / 60 + i / 60, -90 + i);
+    this.snap();
+  },
+  step(dt, st, sf) {
+    const T = this.t0 + st, R = this.R;
+    if ((sf % 16 + 16) % 16 === 0) this.smoke.push({ x: this.HOUSE[0] - 38 + 56, y: this.HOUSE[1] - 62 + 2, vx: 4 + R() * 4, vy: -9 - R() * 4, life: 0, r: 2 + (R() * 2 | 0) });
+    for (const s of this.smoke) { const [gx, gy] = gustAt(s.x, s.y); s.x += (s.vx + gx * .02) * dt; s.y += (s.vy + gy * .02) * dt; s.life += dt; }
+    this.smoke = this.smoke.filter(s => s.life < 2.6);
+    for (const h of this.chicks) {
+      if (st < h.t) continue;
+      if (!h.out) { h.out = true; emit({ k: 'chirp', f: 1500, n: 2, v: .6, pan: (h.tx - 160) / 200 }); }
+      const dx = h.tx - h.x, dy = h.ty - h.y, d = Math.hypot(dx, dy);
+      if (d > 1) { const sp = 70 * dt; h.x += dx / d * Math.min(sp, d); h.y += dy / d * Math.min(sp, d); h.flip = dx < 0; }
+      else if (!h.arrived) { h.arrived = true; }
+    }
+  },
+  snap() {
+    for (const s of this.smoke) { s.rx = s.x; s.ry = s.y; }
+    for (const h of this.chicks) { h.rx = h.x; h.ry = h.y; }
+  },
+  // foreground drawn at 2× (same scale as shots 2–5): world → screen x' = 2(x − cam.x) + 160, y' = 2y − 148
+  fg(ctx, cam) { ctx.setTransform(2, 0, 0, 2, Math.round(LW / 2 - 2 * cam.x), -148); },
+  draw(ctx, st, sq, e, cam) {
+    const t = sq, ph = this.phase(t), dark = [.55, .32, .12, 0][ph];
+    setCamP(ctx, cam, .2); ctx.drawImage(this.skies[ph], -20 + 16, 0);
+    if (ph === 0) for (let i = 0; i < 24; i++) if (hash(i, e >> 2, 3) > .25) pxRect(ctx, 20 + hash(i, 1) * 320 | 0, 4 + hash(i, 2) * 50 | 0, 1, 1, '#f4ecff');
+    const sunY = lerp(98, 44, esine(clamp(t / 4.6, 0, 1)));
+    setCamP(ctx, cam, .3); pxDisc(ctx, 250, sunY, 12, P.sun); pxDisc(ctx, 248, sunY - 2, 7, P.sunL);
+    if (t > 2) for (let i = 0; i < 3; i++) { const k = t - 2 - i * .25; if (k < 0) continue; pxPut(ctx, this.birdSp[(e + i) & 1], 330 - k * 38 + i * 10, 30 + i * 6 - k * 4); }
+    setCamP(ctx, cam, .4); ctx.drawImage(DAY.far, -40, -HZ);
+    setCamP(ctx, cam, .6); ctx.drawImage(DAY.mid, -40, -HZ);
+    setCamP(ctx, cam, .8); ctx.drawImage(DAY.trees, -40, 96 - HZ);
+    setCamP(ctx, cam, 1); ctx.drawImage(this.grass1, -80, 118 - HZ);
+    this.fg(ctx, cam);
+    const [hx, hy] = this.HOUSE; pxPut(ctx, this.house, hx, hy, { ax: 38, ay: 62 });
+    const [cx, cy] = this.COOP; pxPut(ctx, this.coop, cx, cy, { ax: 30, ay: 46 });
+    const lift = Math.round(12 * eio(clamp((t - this.DOOR) / .3, 0, 1)));
+    pxRect(ctx, cx - 6, cy - 13 - lift, 12, 13, P.o); pxRect(ctx, cx - 5, cy - 12 - lift, 10, 11, P.woodD); pxRect(ctx, cx - 5, cy - 7 - lift, 10, 1, P.wood);
+    pxRect(ctx, cx - 5, cy - 1, 10, 1, P.woodD); pxRect(ctx, cx - 4, cy, 8, 3, P.woodD);
+    const hens = this.chicks.filter(h => t >= h.t).sort((a, b) => a.ry - b.ry);
+    for (const h of hens) {
+      const moving = Math.hypot(h.tx - h.rx, h.ty - h.ry) > 1, bob = moving && (e & 1) ? 1 : 0;
+      const pose = moving ? ((e & 1) ? 'run' : 'stand') : (hash(h.id, e >> 1) < .45 ? 'peck' : 'stand');
+      pxPut(ctx, this.henSp[h.c][pose], h.rx, h.ry - bob, { flip: moving ? h.flip : hash(h.id, e >> 3) < .5 });
+    }
+    for (let x = 124; x < 260; x += 14) { pxRect(ctx, x, 152, 4, 16, P.postD); pxRect(ctx, x, 152, 3, 15, P.post); }
+    pxRect(ctx, 120, 156, 140, 2, P.postD); pxRect(ctx, 120, 162, 140, 2, P.postD);
+    const crowing = t >= this.CROW && t < this.CROW + .5;
+    pxPut(ctx, crowing ? this.roo.crow : this.roo.stand, 139, 153, { ax: 6 });
+    if (dark > 0) { ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalCompositeOperation = 'multiply'; ctx.fillStyle = `rgba(70,55,140,${dark})`; ctx.fillRect(0, 0, LW, LH); ctx.restore(); }
+    this.fg(ctx, cam);
+    const lit = t < 3.4;
+    pxRect(ctx, hx + 10, hy - 26, 12, 10, P.o); pxRect(ctx, hx + 11, hy - 25, 10, 8, lit ? P.win : '#7fa7c9'); pxRect(ctx, hx + 15, hy - 25, 1, 8, P.o); pxRect(ctx, hx + 11, hy - 21, 10, 1, P.o);
+    if (lit) { pxRect(ctx, hx + 12, hy - 24, 2, 2, P.winL); pxRect(ctx, hx + 8, hy - 15, 16, 2, 'rgba(255,215,100,.35)'); }
+    for (const s of this.smoke) pxDisc(ctx, s.rx, s.ry, s.r, s.life > 1.4 ? P.smokeD : P.smoke);
+  },
+  score() {
+    return [
+      { t: this.CROW, k: 'chip', f: 620, f2: 980, wave: 'square', dur: .28, v: 1, vib: .03, pan: -.3 },
+      { t: this.CROW + .3, k: 'chip', f: 980, f2: 560, wave: 'square', dur: .4, v: 1, vib: .04, pan: -.3 },
+      { t: this.DOOR, k: 'creak', v: 1, pan: .3 }, { t: this.DOOR + .3, k: 'thump', v: .6, pan: .3 },
+    ];
+  },
+  poke(x, y) {
+    const c = this.cam(this._sq || 0); x = (x - c.x) / 2 + c.x; y = (y + 148) / 2;   // back to the 2× foreground's own units
+    for (const h of this.chicks) if (this._sq >= h.t && Math.abs(x - h.x) < 8 && Math.abs(y - h.y + 5) < 8) { h.tx = clamp(h.x + (x < h.x ? 24 : -24), 130, 245); h.ty = clamp(h.y + (hash(h.id, x) - .5) * 10, 150, 158); sfx({ k: 'chirp', f: 1700, n: 3, v: .8 }); return true; }
+    return false;
+  },
+};
+SHOTS.push(S1);
+
+
+// ═══ shared daytime rig: wide baked layers, farmer / can / plants / butterfly / duck sprites ═══════════
+const FARM_PAL = { o: P.o, H: '#f0cf6a', h: '#c9a23e', S: '#f2c7a0', K: '#1b1b1b', M: '#7a4a2a', C: '#d9544a', B: '#4f78b8', b: '#3a5c92', s: '#6b4a30' };
+const FARM_STAND = [
+  '....oooo....',
+  '...oHHHHo...',
+  '.ooHHhhHHoo.',
+  'oHHHHHHHHHHo',
+  '..oMSSSSo...',
+  '...oSSSKo...',
+  '...oSSSSSo..',
+  '....oSSo....',
+  '...oCCCCCo..',
+  '..oCBCCCBCo.',
+  '..oSBBBBBSo.',
+  '...oBBBBBo..',
+  '...oBBbBBo..',
+  '...oBBoBBo..',
+  '...oBo.oBo..',
+  '...oss.oss..',
+];
+const FARM_WALK = FARM_STAND.slice(0, 14).concat(['..oBo...oBo.', '..oss...oss.']);
+const CAN_ROWS = [
+  '........oo',
+  '..ooo..oGo',
+  '.oGGGooGo.',
+  'oGGGGGGGo.',
+  'oGgGGGGo..',
+  'oGGGGGGo..',
+  '.oooooo...',
+];
+const PLANT_LEAF = ['..g..', '.gGg.', 'gG.Gg', '..G..'];
+const PLANT_FLOWER = ['.ppp.', 'ppYpp', '.ppp.', 'g.G..', '.gG.g', '..Gg.', '..G..'];
+const BF_ROWS = [['yy.yy', 'yyoyy', '.y.y.'], ['..o..', '.yoy.', '..y..']];
+const DUCK_ROWS = [
+  '...ooo....',
+  '..oWWWo...',
+  '..oWKWoYY.',
+  'o..oWWWo..',
+  'oWooWWWWo.',
+  'oWWWWWWWWo',
+  '.oWWWwWWo.',
+  '..oooooo..',
+];
+const HEART = ['.r.r.', 'rrrrr', '.rrr.', '..r..'];
+const DAY = {}, HZ = 30; // HZ: how far the daytime horizon is raised above shot 1's
+function px2(c) { const o = mk(c.width * 2, c.height * 2), g = g2(o); g.imageSmoothingEnabled = false; g.drawImage(c, 0, 0, o.width, o.height); return o; }
+function ridgeLayer(w, base, amp, seed, col, colD) { const c = mk(w, LH), g = g2(c); for (let x = 0; x < w; x++) { const h = Math.round(base - (fbm(x * .018 + seed, seed, 3) * .5 + .5) * amp); pxRect(g, x, h, 1, LH - h, col); if (hash(x, seed) < .35) pxRect(g, x, h, 1, 1, colD); } return c; }
+function grassLayer(w, h, seed, flowers = 0) {
+  const c = mk(w, h), g = g2(c);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const k = hash(x, y, seed); pxRect(g, x, y, 1, 1, k < .08 ? P.grassL : k > .93 ? P.grassD : P.grass); }
+  for (let i = 0; i < flowers; i++) { const x = hash(i, seed, 1) * w | 0, y = 4 + hash(i, seed, 2) * (h - 6) | 0; pxRect(g, x, y, 1, 1, hash(i, 3) < .5 ? '#fff1a8' : '#f28fb0'); }
+  return c;
+}
+// water: an ellipse of pond blue with a darker rim and a few light streaks; returns canvas with centre at (rx+2, ry+2)
+function pondLayer(rx, ry, seed) {
+  const c = mk(rx * 2 + 4, ry * 2 + 4), g = g2(c), cx = rx + 2, cy = ry + 2;
+  for (let y = -ry; y <= ry; y++) { const w = Math.floor(rx * Math.sqrt(1 - (y / ry) ** 2)); pxRect(g, cx - w - 1, cy + y, w * 2 + 3, 1, '#3a6f5a'); pxRect(g, cx - w, cy + y, w * 2 + 1, 1, y < -ry + 3 ? '#3f86bd' : '#4f9bd1'); }
+  for (let i = 0; i < rx / 6; i++) { const y = -ry + 4 + (hash(i, seed) * (ry * 2 - 7) | 0), w = Math.floor(rx * Math.sqrt(1 - (y / ry) ** 2)), x = cx - w + 4 + (hash(i, seed, 2) * (w * 2 - 16) | 0); pxRect(g, x, cy + y, 3 + (hash(i, 5) * 6 | 0), 1, '#8cc6ea'); }
+  return c;
+}
+function dayBack(ctx, cam, sq) {
+  setCamP(ctx, cam, .2); ctx.drawImage(S1.skies[3], -4, 0);
+  setCamP(ctx, cam, .3); pxDisc(ctx, 250, 44, 12, P.sun); pxDisc(ctx, 248, 42, 7, P.sunL);
+  for (let i = 0; i < 4; i++) { const x = ((i * 97 + sq * 3) % 420) - 40, y = 12 + i * 9; pxDisc(ctx, x, y, 4, '#f7f3ea'); pxDisc(ctx, x + 5, y + 1, 3, '#f7f3ea'); pxDisc(ctx, x - 5, y + 1, 3, '#e8eef4'); }
+  setCamP(ctx, cam, .4); ctx.drawImage(DAY.far, -40, -HZ);
+  setCamP(ctx, cam, .6); ctx.drawImage(DAY.mid, -40, -HZ);
+  setCamP(ctx, cam, .8); ctx.drawImage(DAY.trees, -40, 96 - HZ);
+}
+function henSprite(c, pose, wet) { return wet ? DAY.wet[pose] : DAY.hen[pose]; }
+function drawFarmer(ctx, x, y, e, walking, flip, can) {
+  pxPut(ctx, walking && (e & 1) ? DAY.farmWalk : DAY.farm, x, y, { flip });
+  if (can) pxPut(ctx, DAY.can, x + 4, y - 18, { ax: 0, ay: 0 });
+}
+function bfDraw(ctx, x, y, e, rest) { pxPut(ctx, DAY.bf[rest ? 1 : e & 1], x, y); }
+
+// ═══ SHOT 2 · 浇水 (5–8.75 s) — each watered plant blooms on a note; the water startles a butterfly ═══
+const S2 = {
+  name: '浇水', t0: 5, t1: 8.75,
+  PLANTS: [0, 1, 2, 3, 4, 5].map(i => .3125 + .625 * i), BFI: 3,
+  fx(t) { return 40 + 46 * t; },
+  px(i) { return Math.round(52 + 46 * this.PLANTS[i]); },
+  cam(st) { return { x: lerp(150, 205, eio(st / 3.75)), y: LH / 2, z: 1 }; },
+  build() {
+    DAY.far = ridgeLayer(800, 112, 34, 3, '#6a7fa6', '#8195b8');
+    DAY.mid = ridgeLayer(800, 120, 22, 9, '#4b7a62', '#5d8f72');
+    const tr = mk(800, 40), tg = g2(tr);
+    for (let i = 0; i < 52; i++) { const x = i * 16 + (hash(i, 4) * 8 | 0), r = 7 + (hash(i, 5) * 4 | 0), y = 26 - (hash(i, 6) * 6 | 0); pxRect(tg, x - 1, y, 3, 14, '#6b4a30'); pxDisc(tg, x, y, r, '#2f6b3c'); pxDisc(tg, x - 2, y - 2, r - 3, '#3f8a4a'); pxRect(tg, x - 3, y - r + 2, 2, 1, '#62a85a'); }
+    DAY.trees = tr;
+    DAY.farm = px2(pxArt(FARM_STAND, FARM_PAL)); DAY.farmWalk = px2(pxArt(FARM_WALK, FARM_PAL));
+    DAY.can = px2(pxArt(CAN_ROWS, { o: P.o, G: '#9fb4c2', g: '#6f8796' }));
+    DAY.leaf = px2(pxArt(PLANT_LEAF, { g: P.sprout, G: '#5ea83f' }));
+    DAY.flower = ['#f28fb0', '#fff1a8'].map(p => px2(pxArt(PLANT_FLOWER, { p, Y: '#f2a93b', g: P.sprout, G: '#5ea83f' })));
+    DAY.bf = BF_ROWS.map(r => px2(pxArt(r, { y: '#ffe070', o: P.o })));
+    DAY.duck = px2(pxArt(DUCK_ROWS, { o: P.o, W: '#f7f3ea', w: '#d6cdbd', K: '#1b1b1b', Y: '#f2a93b' }));
+    DAY.heart = px2(pxArt(HEART, { r: '#e0483e' }));
+    DAY.wet = {}; DAY.hen = {};
+    for (const [pose, rows] of [['stand', HEN_STAND], ['run', HEN_RUN], ['peck', HEN_PECK]]) { DAY.wet[pose] = px2(pxArt(rows, HEN('#8a6a58', '#6a4e40'))); DAY.hen[pose] = px2(S1.henSp.b[pose]); }
+    this.grass = grassLayer(480, 62 + HZ, 21, 40);
+    const so = mk(420, 62 + HZ), sg = g2(so);   // tilled rows: two behind the farmer, one in front with the plants
+    for (const [y, h] of [[28, 6], [40, 6], [70, 8]]) { pxRect(sg, 20, y, 380, h, P.soil); pxRect(sg, 20, y + h - 1, 380, 1, P.soilD); for (let x = 22; x < 398; x++) if (hash(x, y, 8) < .15) pxRect(sg, x, y + 1, 1, 1, P.soilD); }
+    for (let x = 30; x < 396; x += 9) for (const y of [27, 39]) { pxRect(sg, x, y, 1, 2, P.sprout); pxRect(sg, x - 1, y, 1, 1, P.sprout); pxRect(sg, x + 1, y, 1, 1, P.sprout); }
+    this.soil = so;
+  },
+  reset() {
+    this.R = rng(9201); this.drops = [];
+    for (let i = 0; i < 30; i++) this.step(1 / 60, -30 / 60 + i / 60, -30 + i);
+    this.snap();
+  },
+  step(dt, st, sf) {
+    const R = this.R;
+    if (st >= -.4 && st < 3.5 && (sf % 3 + 3) % 3 === 0) { const x = this.fx(st); this.drops.push({ x: x + 23, y: 134, vx: 18 + R() * 5, vy: -4 + R() * 6 }); }
+    for (const d of this.drops) { d.vy += 300 * dt; d.x += d.vx * dt; d.y += d.vy * dt; }
+    this.drops = this.drops.filter(d => d.y < 164);
+  },
+  snap() { for (const d of this.drops) { d.rx = d.x; d.ry = d.y; } },
+  draw(ctx, st, sq, e, cam) {
+    dayBack(ctx, cam, this.t0 + sq);
+    setCamP(ctx, cam, 1); ctx.drawImage(this.grass, -80, 118 - HZ); ctx.drawImage(this.soil, 0, 118 - HZ);
+    // brown hen pecking behind the rows, then she spots the butterfly and bolts right
+    const bt = this.PLANTS[this.BFI], run = sq > 3.1, hx = run ? 118 + (sq - 3.1) * 90 : 118;
+    const hp = run ? ((e & 1) ? 'run' : 'stand') : sq > bt + .2 ? 'stand' : (hash(77, e >> 1) < .45 ? 'peck' : 'stand');
+    pxPut(ctx, henSprite('b', hp), hx, 124 - (run && (e & 1) ? 2 : 0), { flip: !run && sq < bt + .2 && hash(78, e >> 3) < .5 });
+    if (sq > bt + .2 && sq < bt + .7) { pxRect(ctx, hx + 1, 92, 2, 6, P.o); pxRect(ctx, hx + 1, 100, 2, 2, P.o); }
+    const fx = this.fx(sq);
+    drawFarmer(ctx, fx, 150, e, true, false, true);
+    for (const d of this.drops) pxRect(ctx, d.rx, d.ry, 2, 3, '#8cc6ea');
+    this.PLANTS.forEach((pt, i) => { const x = this.px(i); if (sq < pt) pxPut(ctx, DAY.leaf, x, 165); else pxPut(ctx, DAY.flower[i & 1], x, 165 - (sq < pt + .1 ? 2 : 0)); });
+    const bx = this.px(this.BFI);
+    if (sq < bt) bfDraw(ctx, bx, 160, e, true);
+    else { const k = sq - bt; bfDraw(ctx, bx + k * 42, 160 - k * 40 + Math.sin(k * 9) * 3, e, false); }
+  },
+  score() {
+    const t0 = this.t0, ev = [{ t: t0 + .05, k: 'rustle', dur: 3.5, v: .3, dens: 2600, pan: 0 }];
+    ['A5', 'B5', 'D6', 'E6', 'F#6', 'A6'].forEach((n, i) => { const t = t0 + this.PLANTS[i]; ev.push({ t, k: 'chip', n, v: .9, dur: .35, pan: (this.px(i) - 180) / 240 }, { t, k: 'bloom', v: .35 }); });
+    ev.push({ t: t0 + this.PLANTS[this.BFI] + .05, k: 'flap', n: 3, v: .5, pan: 0 });
+    ev.push({ t: t0 + 3.1, k: 'chirp', f: 1600, n: 3, v: .7, pan: -.3 });
+    for (const [t, n] of [[0, 'D3'], [1.25, 'G2'], [2.5, 'A2']]) ev.push({ t: t0 + t, k: 'chip', n, v: .8, dur: 1.1 });
+    return ev;
+  },
+};
+SHOTS.push(S2);
+
+// ═══ SHOT 3 · 追蝶 (8.75–12.5 s) — the brown hen chases the butterfly across the meadow, hopping a log ═══
+const S3 = {
+  name: '追蝶', t0: 8.75, t1: 12.5, J0: 1.875, J1: 2.3125, LOG: 207,
+  hx(t) { return 40 + 80 * t; },
+  cam(st) { return { x: lerp(150, 275, eio(st / 3.75)), y: LH / 2, z: 1 }; },
+  build() {
+    this.grass = grassLayer(600, 62 + HZ, 31, 90);
+    this.pond = pondLayer(70, 16, 3);
+    this.log = px2(pxArt(['.oooooooooo.', 'oWwWWWwWWWWo', 'oWWWwWWWwWwo', '.oooooooooo.'], { o: P.o, W: P.wood, w: P.woodD }));
+    const tf = mk(900, 14), tg = g2(tf);
+    for (let i = 0; i < 70; i++) { const x = i * 13 + (hash(i, 41) * 8 | 0); for (let k = 0; k < 5; k++) pxRect(tg, x + k * 2 - 4, 14 - (4 + (hash(i, k) * 7 | 0)), 1, 14, k & 1 ? P.grassD : '#3a6e30'); }
+    this.tufts = tf;
+  },
+  reset() { this.snap(); },
+  step() { },
+  snap() { },
+  hy(t) { if (t < this.J0 || t > this.J1) return 160; return 160 - Math.sin(PI * (t - this.J0) / (this.J1 - this.J0)) * 26; },
+  draw(ctx, st, sq, e, cam) {
+    dayBack(ctx, cam, this.t0 + sq);
+    setCamP(ctx, cam, 1); ctx.drawImage(this.grass, -80, 118 - HZ);
+    ctx.drawImage(this.pond, 360, 142);
+    for (const [x, h] of [[372, 10], [376, 14], [380, 9], [486, 12], [490, 8]]) { pxRect(ctx, x, 156 - h, 1, h, '#3a6e30'); pxRect(ctx, x, 156 - h, 1, 3, '#7a4a2a'); }
+    pxPut(ctx, this.log, this.LOG, 163);
+    const x = this.hx(sq), air = sq >= this.J0 && sq <= this.J1;
+    pxPut(ctx, henSprite('b', air ? 'run' : (e & 1) ? 'run' : 'stand'), x, this.hy(sq) - (!air && (e & 1) ? 2 : 0));
+    bfDraw(ctx, x + 40 + Math.sin(sq * 6) * 6, 118 + Math.sin(sq * 4.3) * 8, e, false);
+    setCamP(ctx, cam, 1.25); ctx.drawImage(this.tufts, -80, 166);
+  },
+  score() {
+    const t0 = this.t0, ev = [];
+    [[0, 'F#5'], [.625, 'A5'], [1.25, 'B5'], [this.J0, 'D6'], [this.J1, 'A5'], [2.8125, 'B5'], [3.4375, 'D6']].forEach(([t, n]) => ev.push({ t: t0 + t, k: 'chip', n, v: .9, dur: .3, pan: Math.sin(t * 2) * .2 }));
+    for (let k = 0; k < 12; k++) if (k * .3125 < this.J0 || k * .3125 > this.J1) ev.push({ t: t0 + k * .3125, k: 'tick', v: .25, pan: -.2 + k * .04 });
+    ev.push({ t: t0 + this.J0, k: 'whoosh', dur: .45, p0: -.2, p1: .2, f0: 500, f1: 1200, v: .5 });
+    ev.push({ t: t0 + this.J1, k: 'thump', v: .5, pan: .1 });
+    ev.push({ t: t0 + .9, k: 'chirp', f: 1500, n: 2, v: .6, pan: -.2 }, { t: t0 + 2.9, k: 'chirp', f: 1700, n: 2, v: .6, pan: .2 });
+    for (const [t, n] of [[0, 'G2'], [1.25, 'D3'], [2.5, 'A2']]) ev.push({ t: t0 + t, k: 'chip', n, v: .8, dur: 1.1 });
+    return ev;
+  },
+};
+SHOTS.push(S3);
+
+// ═══ SHOT 4 · 落水 (12.5–15.625 s) — the turn: she leaps for the butterfly, misses, and splashes into the pond ═══
+const POND = { cx: 200, cy: 152, rx: 110, ry: 22 };
+const S4 = {
+  name: '落水', t0: 12.5, t1: 15.625, CROUCH: .3125, JUMP: .9375, SPLASH: 1.25, QUACK: 1.5625,
+  HOME: [56, 144], LAND: [150, 162],
+  cam(st) { const sh = st >= this.SPLASH && st < this.SPLASH + .25 ? ((Math.floor(st * 12) & 1) ? 1 : -1) : 0; return { x: 160 + sh, y: LH / 2 + (sh ? 1 : 0), z: 1 }; },
+  build() {
+    this.grass = grassLayer(480, 62 + HZ, 41, 50);
+    this.pond = pondLayer(POND.rx, POND.ry, 7);
+    const rd = mk(40, 30), rg = g2(rd);
+    for (let i = 0; i < 9; i++) { const x = 3 + i * 4 + (hash(i, 51) * 3 | 0), h = 14 + (hash(i, 52) * 14 | 0); pxRect(rg, x, 30 - h, 1, h, i & 1 ? '#3a6e30' : P.grassD); if (i % 3 === 0) pxRect(rg, x, 30 - h, 1, 4, '#7a4a2a'); }
+    this.reeds = rd;
+  },
+  reset() { this.R = rng(9401); this.spl = []; this.done = false; for (let i = 0; i < 20; i++) this.step(1 / 60, -20 / 60 + i / 60, -20 + i); this.snap(); },
+  step(dt, st) {
+    if (!this.done && st >= this.SPLASH) { this.done = true; const R = this.R; for (let i = 0; i < 26; i++) this.spl.push({ x: this.LAND[0] + (R() - .5) * 14, y: 154, vx: (R() - .5) * 110, vy: -70 - R() * 80 }); }
+    for (const d of this.spl) { d.vy += 280 * dt; d.x += d.vx * dt; d.y += d.vy * dt; }
+    this.spl = this.spl.filter(d => d.y < 166);
+  },
+  snap() { for (const d of this.spl) { d.rx = d.x; d.ry = d.y; } },
+  henAt(sq) {
+    const [x0, y0] = this.HOME, [x1, y1] = this.LAND;
+    if (sq < this.JUMP) return [x0, y0, sq >= this.CROUCH ? 'peck' : 'stand', false];
+    if (sq < this.SPLASH) { const u = (sq - this.JUMP) / (this.SPLASH - this.JUMP); return [lerp(x0, x1, u), lerp(y0, y1, u) - Math.sin(PI * u) * 44, 'run', false]; }
+    return [x1, y1 + (Math.floor(sq * 6) & 1) * 2, 'run', true];
+  },
+  drawBase(ctx, cam, sq) {
+    dayBack(ctx, cam, this.t0 + sq);
+    setCamP(ctx, cam, 1); ctx.drawImage(this.grass, -80, 118 - HZ);
+    ctx.drawImage(this.pond, POND.cx - POND.rx - 2, POND.cy - POND.ry - 2);
+    for (const [x, y] of [[236, 168], [270, 140], [118, 166]]) { pxRect(ctx, x - 4, y, 9, 2, '#4e9a52'); pxRect(ctx, x - 2, y - 1, 5, 1, '#4e9a52'); pxRect(ctx, x, y, 2, 1, '#3a7a3e'); }
+    pxPut(ctx, this.reeds, 302, 160);
+  },
+  ducks(ctx, sq, e, dir) {
+    for (const [i, x0, y] of [[0, 244, 150], [1, 272, 162]]) { const x = x0 + dir * sq * 6, bob = (hash(i, e >> 1) < .5) ? 1 : 0; pxPut(ctx, DAY.duck, x, y + bob, { flip: dir < 0 }); pxRect(ctx, x - 12, y - 2, 24, 3, '#4f9bd1'); pxRect(ctx, x - 12, y - 2, 24, 1, '#8cc6ea'); }
+  },
+  draw(ctx, st, sq, e, cam) {
+    this.drawBase(ctx, cam, sq);
+    this.ducks(ctx, sq, e, -1);
+    if (sq >= this.QUACK && sq < this.QUACK + .6) for (const [x, y] of [[244, 126], [272, 138]]) { const xx = x - sq * 6; pxRect(ctx, xx, y - 8, 2, 6, P.o); pxRect(ctx, xx, y, 2, 2, P.o); }
+    const [hx, hy, pose, wet] = this.henAt(sq);
+    pxPut(ctx, henSprite('b', pose, wet), hx, hy);
+    if (wet) { pxRect(ctx, hx - 13, hy - 7, 26, 8, '#4f9bd1'); pxRect(ctx, hx - 15, hy - 7, 30, 1, '#8cc6ea'); }
+    if (sq >= this.SPLASH) for (let k = 0; k < 2; k++) { const r = (sq - this.SPLASH - k * .2) * 44; if (r <= 4 || r > 60) continue; for (let a = 0; a < 56; a++) { const ang = a / 56 * TAU; pxRect(ctx, this.LAND[0] + Math.cos(ang) * r, 156 + Math.sin(ang) * r * .22, 1, 1, '#b8def4'); } }
+    for (const d of this.spl) pxRect(ctx, d.rx, d.ry, 2, 2, '#d8eefa');
+    if (sq < 1.0) bfDraw(ctx, 124 + Math.sin(sq * 7) * 4, 96 + Math.sin(sq * 5) * 3, e, false);
+    else bfDraw(ctx, 124 + (sq - 1) * 60, 96 - (sq - 1) * 44, e, false);
+  },
+  score() {
+    const t0 = this.t0, ev = [
+      { t: t0 + this.CROUCH, k: 'chip', n: 'E6', v: .8, dur: .25 },
+      { t: t0 + this.JUMP, k: 'chip', n: 'F#5', f2: NOTE('F#6'), wave: 'square', v: .7, dur: .3 },
+      { t: t0 + this.JUMP, k: 'flap', n: 3, v: .6, pan: -.2 },
+      { t: t0 + this.SPLASH, k: 'thump', v: 1, pan: 0 }, { t: t0 + this.SPLASH, k: 'rustle', dur: .7, v: 1, dens: 6000, pan: 0 },
+      { t: t0 + this.SPLASH, k: 'chip', f: 900, f2: 220, wave: 'square', v: .6, dur: .35 },
+      { t: t0 + 1.4, k: 'chirp', f: 1800, n: 4, v: .8, pan: -.1 },
+    ];
+    for (const dt of [0, .3125]) for (const [x, p] of [[0, .4], [.12, .5]]) ev.push({ t: t0 + this.QUACK + dt + x, k: 'chip', f: 420, f2: 300, wave: 'square', v: .55, dur: .1, pan: p });
+    [[2.1875, 'B5'], [2.5, 'A5'], [2.8125, 'F#5']].forEach(([t, n]) => ev.push({ t: t0 + t, k: 'chip', n, v: .85, dur: .35 }));
+    for (const [t, n] of [[0, 'B2'], [1.25, 'G2'], [2.5, 'A2']]) ev.push({ t: t0 + t, k: 'chip', n, v: .8, dur: 1.1 });
+    return ev;
+  },
+};
+SHOTS.push(S4);
+
+// ═══ SHOT 5 · 回家 (15.625–19.375 s) — the farmer lifts her out, she shakes dry, the butterfly lands on his hat ═══
+const S5 = {
+  name: '回家', t0: 15.625, t1: 19.375, LIFT: .625, TURN: 1.25, SHAKE: 1.5625, LAND: 2.1875, HEART: 2.5,
+  FX: 70, FY: 156,
+  cam(st) { return { x: lerp(160, 140, eio(st / 3.75)), y: LH / 2, z: 1 }; },
+  build() { },
+  reset() { this.R = rng(9501); this.drip = []; this.shook = false; for (let i = 0; i < 20; i++) this.step(1 / 60, -20 / 60 + i / 60, -20 + i); this.snap(); },
+  henAt(sq) {
+    const hold = [this.FX + 14, this.FY - 8], down = [this.FX - 32, this.FY + 4];
+    if (sq < this.LIFT) { const u = eio(sq / this.LIFT); return [lerp(S4.LAND[0], hold[0], u), lerp(S4.LAND[1], hold[1], u) - Math.sin(PI * u) * 14, 'stand']; }
+    if (sq < this.TURN) return [hold[0], hold[1], 'stand'];
+    if (sq < this.TURN + .3125) { const u = (sq - this.TURN) / .3125; return [lerp(this.FX - 14, down[0], u), lerp(hold[1], down[1], u), 'stand']; }
+    return [down[0], down[1], sq > this.SHAKE + .4 && hash(88, Math.floor(sq * 12) >> 1) < .45 ? 'peck' : 'stand'];
+  },
+  step(dt, st) {
+    const R = this.R, [hx, hy] = this.henAt(st);
+    if (st < this.SHAKE && Math.floor(st * 60) % 9 === 0) this.drip.push({ x: hx + (R() - .5) * 16, y: hy - 6, vx: 0, vy: 0 });
+    if (!this.shook && st >= this.SHAKE) { this.shook = true; for (let i = 0; i < 30; i++) { const a = R() * TAU, v = 60 + R() * 60; this.drip.push({ x: hx, y: hy - 10, vx: Math.cos(a) * v, vy: Math.sin(a) * v * .7 - 30 }); } }
+    for (const d of this.drip) { d.vy += 280 * dt; d.x += d.vx * dt; d.y += d.vy * dt; }
+    this.drip = this.drip.filter(d => d.y < 168);
+  },
+  snap() { for (const d of this.drip) { d.rx = d.x; d.ry = d.y; } },
+  draw(ctx, st, sq, e, cam) {
+    S4.drawBase(ctx, cam, 3.125 + sq);
+    S4.ducks(ctx, 3.125 + sq, e, 1);
+    const turned = sq >= this.TURN, [hx, hy, pose] = this.henAt(sq), wet = sq < this.SHAKE, held = sq < this.TURN + .3125;
+    if (!held) pxPut(ctx, henSprite('b', pose, wet), hx, hy, { flip: true });
+    drawFarmer(ctx, this.FX, this.FY, e, false, turned, false);
+    if (held) pxPut(ctx, henSprite('b', pose, wet), hx, hy, { flip: turned });
+    for (const d of this.drip) pxRect(ctx, d.rx, d.ry, 2, 2, '#b8def4');
+    // the butterfly comes back from the top right and settles on the hat brim
+    if (sq > 1.6) { const u = clamp((sq - 1.6) / (this.LAND - 1.6), 0, 1), hat = [this.FX + (turned ? -2 : 2), this.FY - 32]; bfDraw(ctx, lerp(300, hat[0], eio(u)), lerp(30, hat[1], eio(u)) - Math.sin(PI * u) * 12, e, u >= 1 && (e >> 2 & 1)); }
+    if (sq >= this.HEART && sq < this.HEART + .9) pxPut(ctx, DAY.heart, hx, hy - 24 - Math.round((sq - this.HEART) * 10));
+    const f = clamp((sq - 3.1875) / .5, 0, 1);
+    if (f > 0) { ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = `rgba(43,34,51,${Math.ceil(f * 4) / 4})`; ctx.fillRect(0, 0, LW, LH); ctx.restore(); }
+  },
+  score() {
+    const t0 = this.t0, ev = [
+      { t: t0 + .05, k: 'rustle', dur: .4, v: .6, dens: 4000, pan: 0 },
+      { t: t0 + this.TURN + .3125, k: 'thump', v: .35, pan: -.2 },
+      { t: t0 + this.SHAKE, k: 'rustle', dur: .45, v: .9, dens: 5000, pan: -.2 },
+      { t: t0 + this.SHAKE, k: 'chip', n: 'D6', f2: NOTE('A6'), vib: .05, v: .5, dur: .3 },
+      { t: t0 + this.SHAKE + .35, k: 'chirp', f: 1500, n: 3, v: .7, pan: -.2 },
+      { t: t0 + this.LAND, k: 'chord', ns: ['D4', 'F#4', 'A4', 'D5'], v: .5, strum: .04 },
+      { t: t0 + this.LAND + .6, k: 'chip', n: 'A6', v: .5, dur: .6 },
+    ];
+    [[0, 'D5'], [.3125, 'F#5'], [this.LIFT, 'A5'], [this.TURN, 'G5'], [this.SHAKE, 'F#5'], [1.875, 'E5'], [this.LAND, 'D6'], [this.HEART, 'F#6']].forEach(([t, n]) => ev.push({ t: t0 + t, k: 'chip', n, v: .85, dur: .4 }));
+    for (const [t, n, d] of [[0, 'D3', 1.1], [1.25, 'G2', 1.1], [2.5, 'D2', 1.3]]) ev.push({ t: t0 + t, k: 'chip', n, v: .8, dur: d });
+    return ev;
+  },
+};
+SHOTS.push(S5);
+
+document.getElementById('track').style.gridTemplateColumns = SHOTS.map(s => (s.t1 - s.t0) + 'fr').join(' ');
+// ═══ ENGINE · clock, stop-motion stepping, camera, post, sound schedule, interaction ═══════════════
+const Q = new URLSearchParams(location.search);
+const cv = document.getElementById('film'), ctx = cv.getContext('2d', { alpha: false });
+const film = { f: -1, shotIdx: -1, shot: null, playing: false, smooth: Q.get('smooth') === '1', clock: 0, audio: false, muted: false, seeking: false, ready: false, started: false };
+
+// motion-control camera with depth: p=1 is the puppet plane, p<1 sits further back
+function setCam(c, cam, p = 1) {
+  const z = 1 + (cam.z - 1) * p, cx = W / 2 + (cam.x - W / 2) * p, cy = H / 2 + (cam.y - H / 2) * p;
+  c.setTransform(z, 0, 0, z, W / 2 - cx * z, H / 2 - cy * z);
+}
+const toWorld = (sx, sy) => { const c = film.cam || { x: W / 2, y: H / 2, z: 1 }; if (PIX) return [sx / PIX - LW / 2 + c.x, sy / PIX - LH / 2 + c.y]; return [(sx - W / 2) / c.z + c.x, (sy - H / 2) / c.z + c.y]; };
+
+// the viewer's breath: transient wind blobs that every simulation samples
+let GUSTS = [];
+function gustAt(x, y) {
+  let vx = 0, vy = 0;
+  for (const g of GUSTS) { const dx = x - g.x, dy = y - g.y, d2 = dx * dx + dy * dy, r2 = g.r * g.r; if (d2 > r2 * 6) continue; const f = Math.exp(-d2 / r2) * g.s, d = Math.sqrt(d2) || 1; vx += (g.vx + dx / d * g.push) * f; vy += (g.vy + dy / d * g.push) * f; }
+  return [vx, vy];
+}
+const stepGusts = () => { for (const g of GUSTS) g.s *= .9; GUSTS = GUSTS.filter(g => g.s > .02); };
+
+// physics-born sounds (landings, petals): baked for the offline mix, played live otherwise
+let BAKING = false, EMITTED = [];
+function emit(e) { const t = film.f / FPS; if (BAKING) { EMITTED.push({ ...e, t }); return; } if (film.audio && film.playing && !film.seeking) liveSfx(e); }
+function sfx(e) { if (film.audio) liveSfx(e); }
+
+// ── simulation: each shot resets to its own frame 0, then steps at a fixed 60 Hz ──
+const shotAt = f => { let i = 0; for (let k = 0; k < SHOTS.length; k++) if (f >= Math.round(SHOTS[k].t0 * FPS)) i = k; return i; };
+function simTo(f) {
+  const i = shotAt(f), s = SHOTS[i], f0 = Math.round(s.t0 * FPS);
+  if (i !== film.shotIdx || f < film.f) { film.shotIdx = i; film.shot = s; s.reset(); film.f = f0; GUSTS = []; }
+  while (film.f < f) { film.f++; const sf = film.f - f0; s.step(1 / FPS, sf / FPS, sf); stepGusts(); if (film.smooth || sf % EXPO === 0) s.snap(); }
+}
+// post: exposure flicker (each stop-motion frame is its own photograph), grain, lens falloff
+const VIGN = (() => { const c = mk(W, H), g = g2(c); g.save(); g.translate(W / 2, H / 2); g.scale(1, H / W); const rg = g.createRadialGradient(0, 0, W * .22, 0, 0, W * .72); rg.addColorStop(0, 'rgba(4,14,16,0)'); rg.addColorStop(.7, 'rgba(4,14,16,.18)'); rg.addColorStop(1, 'rgba(4,14,16,.55)'); g.fillStyle = rg; g.fillRect(-W, -W, W * 2, W * 2); g.restore(); return c; })();
+function render() {
+  const f = film.f, s = film.shot, f0 = Math.round(s.t0 * FPS), sf = f - f0, st = sf / FPS;
+  const e = film.smooth ? 0 : Math.floor(f / EXPO), sq = film.smooth ? st : Math.floor(sf / EXPO) * EXPO / FPS;
+  const cam = film.cam = s.cam(st); s._sq = sq;
+  if (PIX) { // pixel mode: draw small, scale up hard-edged; no grain, flicker or vignette (they would blur the pixels)
+    LOG.setTransform(1, 0, 0, 1, 0, 0); LOG.globalAlpha = 1; LOG.globalCompositeOperation = 'source-over'; LOG.imageSmoothingEnabled = false; LOG.fillStyle = '#000'; LOG.fillRect(0, 0, LW, LH);
+    s.draw(LOG, st, sq, e, cam);
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.imageSmoothingEnabled = false; ctx.drawImage(LO, 0, 0, W, H);
+    return;
+  }
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = '#0c1719'; ctx.fillRect(0, 0, W, H);
+  s.draw(ctx, st, sq, e, cam);
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.shadowColor = 'transparent';
+  if (!film.smooth) { const fl = (hash(e, 77) - .5) * .05; ctx.fillStyle = fl > 0 ? `rgba(255,244,226,${fl * .55})` : `rgba(4,14,16,${-fl * .7})`; ctx.fillRect(0, 0, W, H); }
+  const ox = (hash(e + 1, 5) * 384) | 0, oy = (hash(e + 1, 6) * 384) | 0;
+  ctx.save(); ctx.translate(-ox, -oy); ctx.globalAlpha = .6; ctx.fillStyle = PAT.grain; ctx.fillRect(ox, oy, W, H); ctx.restore();
+  ctx.drawImage(VIGN, 0, 0);
+}
+
+// ── sound schedule on the audio clock (the picture follows the sound when it's on) ──
+let AC = null, SND = null, audioT0 = 0, cursor = 0, SCORE = [];
+const buildScore = () => { SCORE = baseScore().concat(...SHOTS.map(s => s.score())).sort((a, b) => a.t - b.t); };
+function liveSfx(e) { if (!SND || film.muted) return; SND.play({ ...e, t: film.f / FPS }, AC.currentTime + .01); }
+function cutSession() { if (!SND || !SND.sess) return; const s = SND.sess; s.dry.gain.setTargetAtTime(0, AC.currentTime, .02); s.wet.gain.setTargetAtTime(0, AC.currentTime, .02); setTimeout(() => { s.dry.disconnect(); s.wet.disconnect(); }, 500); SND.sess = null; }
+function audioFrom(tf) {
+  if (!AC) { AC = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'interactive' }); SND = new Sound(AC); }
+  if (AC.state !== 'running') AC.resume();
+  cutSession();
+  const dry = AC.createGain(), wet = AC.createGain(); dry.connect(SND.master); wet.connect(SND.verb); SND.sess = { dry, wet }; SND.bus = dry; SND.vbus = wet;
+  SND.master.gain.value = film.muted ? 0 : .92;
+  audioT0 = AC.currentTime + .06 - tf;
+  cursor = 0; while (cursor < SCORE.length && SCORE[cursor].t < tf - 1e-6) cursor++;
+  for (const e of SCORE) if (e.k === 'bed' && e.t < tf && e.t + e.dur > tf + .05) SND.play(e, AC.currentTime + .06, tf - e.t);
+}
+function audioPump() {
+  if (!film.audio || !film.playing || !AC) return;
+  const horizon = AC.currentTime + .25;
+  while (cursor < SCORE.length && SCORE[cursor].t + audioT0 < horizon) { const e = SCORE[cursor++]; if (!film.muted) SND.play(e, Math.max(AC.currentTime, e.t + audioT0)); }
+}
+async function renderWav() { // offline mix of exactly what the film does (for the video file)
+  BAKING = true; EMITTED = []; film.shotIdx = -1; for (let f = 0; f < NF; f++) simTo(f); BAKING = false; film.shotIdx = -1;
+  const sr = 48000, O = new OfflineAudioContext(2, sr * DUR, sr), S = new Sound(O);
+  for (const e of SCORE.concat(EMITTED).sort((a, b) => a.t - b.t)) S.play(e, e.t);
+  S.master.gain.setValueAtTime(.92, DUR - .45); S.master.gain.linearRampToValueAtTime(0, DUR - .005);
+  const buf = await O.startRendering(), L = buf.getChannelData(0), Rr = buf.getChannelData(1), n = L.length, ab = new ArrayBuffer(44 + n * 4), dv = new DataView(ab);
+  const ws = (o, s) => { for (let i = 0; i < s.length; i++) dv.setUint8(o + i, s.charCodeAt(i)); };
+  ws(0, 'RIFF'); dv.setUint32(4, 36 + n * 4, true); ws(8, 'WAVE'); ws(12, 'fmt '); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 2, true); dv.setUint32(24, sr, true); dv.setUint32(28, sr * 4, true); dv.setUint16(32, 4, true); dv.setUint16(34, 16, true); ws(36, 'data'); dv.setUint32(40, n * 4, true);
+  for (let i = 0; i < n; i++) { dv.setInt16(44 + i * 4, clamp(L[i], -1, 1) * 32767, true); dv.setInt16(46 + i * 4, clamp(Rr[i], -1, 1) * 32767, true); }
+  const u8 = new Uint8Array(ab); let s = ''; for (let i = 0; i < u8.length; i += 32768) s += String.fromCharCode.apply(null, u8.subarray(i, i + 32768));
+  return btoa(s);
+}
+
+// ── transport ──
+function seek(f, keepPlaying = film.playing) {
+  f = clamp(Math.round(f), 0, NF - 1); film.seeking = true; simTo(f); film.seeking = false; render();
+  film.clock = f / FPS; if (film.audio && keepPlaying) audioFrom(film.clock);
+  ui();
+}
+function play(on = !film.playing) {
+  film.playing = on;
+  if (on) { if (film.f >= NF - 1) seek(0, false); film.clock = film.f / FPS; if (film.audio) audioFrom(film.clock); }
+  else if (film.audio) cutSession();
+  ui();
+}
+let lastNow = 0;
+function tick(now) {
+  requestAnimationFrame(tick);
+  const dt = Math.min(.1, (now - lastNow) / 1000); lastNow = now;
+  if (!film.ready || !film.playing) return;
+  let t = film.audio && AC && AC.state === 'running' ? AC.currentTime - audioT0 : film.clock + dt;
+  if (t >= DUR) { t -= DUR; if (film.audio) { audioT0 += DUR; cursor = 0; } }
+  film.clock = t;
+  // frame pacing with hysteresis: one film frame per 60 Hz refresh, every other one at 120 Hz; a clock that sits on a
+  // frame boundary can no longer make frames stutter (repeat, then skip). Big jumps (loop, seek) resync outright.
+  const want = t * FPS, d = want - film.f;
+  let f = d < -1 || d > 6 ? Math.floor(want) : d >= .6 ? film.f + Math.max(1, Math.floor(d + .4)) : film.f;
+  f = clamp(f, 0, NF - 1);
+  if (f !== film.f) { if (f < film.f) { film.seeking = true; simTo(f); film.seeking = false; } else simTo(f); render(); }
+  audioPump(); ui();
+}
+
+// ── UI ──
+const $ = id => document.getElementById(id);
+const tcFmt = t => `00:${String(Math.floor(t)).padStart(2, '0')}.${String(Math.floor((t % 1) * 100)).padStart(2, '0')}`;
+function ui() {
+  const t = Math.max(0, film.f) / FPS;
+  $('tc').textContent = `${tcFmt(t)} / ${tcFmt(DUR)}`; $('head').style.left = `${(t / DUR) * 100}%`;
+  $('pp').textContent = film.playing ? 'Pause' : 'Play'; $('pp').setAttribute('aria-pressed', film.playing);
+  $('sm').textContent = film.smooth ? 'Smooth · 60 poses/s' : 'Stop-motion · 12 poses/s';
+  $('snd').textContent = !film.audio ? 'Sound off' : film.muted ? 'Muted' : 'Sound on';
+  document.querySelectorAll('#track .seg').forEach((el, i) => el.classList.toggle('on', i === film.shotIdx));
+}
+function startFilm() { $('start').hidden = true; film.audio = true; film.started = true; seek(0, false); play(true); }
+$('start').addEventListener('click', e => { e.stopPropagation(); startFilm(); });
+$('pp').addEventListener('click', () => { if (!film.started) return startFilm(); play(); });
+$('rs').addEventListener('click', () => { if (!film.started) return startFilm(); seek(0); if (!film.playing) play(true); });
+$('sm').addEventListener('click', () => { film.smooth = !film.smooth; seek(film.f); });
+$('snd').addEventListener('click', () => { if (!film.audio) { film.audio = true; film.muted = false; if (film.playing) audioFrom(film.clock); } else { film.muted = !film.muted; if (SND) SND.master.gain.setTargetAtTime(film.muted ? 0 : .92, AC.currentTime, .03); } ui(); });
+$('fs').addEventListener('click', () => { const el = $('frame'); (document.fullscreenElement ? document.exitFullscreen() : el.requestFullscreen?.())?.catch?.(() => {}); });
+// scrubber (drag to scrub; paused scrubbing lands on exposures, like an animator's frame flip)
+(() => {
+  const tr = $('track'); let drag = false, was = false;
+  const at = ev => { const r = tr.getBoundingClientRect(); return clamp((ev.clientX - r.left) / r.width, 0, 1) * (NF - 1); };
+  tr.addEventListener('pointerdown', ev => { if (!film.started) { $('start').hidden = true; film.started = true; } drag = true; was = film.playing; film.playing = false; if (film.audio) cutSession(); tr.setPointerCapture(ev.pointerId); seek(at(ev), false); });
+  tr.addEventListener('pointermove', ev => { if (drag) seek(at(ev), false); });
+  tr.addEventListener('pointerup', () => { if (!drag) return; drag = false; if (was) play(true); });
+})();
+// poking the world
+(() => {
+  let down = false, lx = 0, ly = 0, lt = 0;
+  const pos = ev => { const r = cv.getBoundingClientRect(); return [(ev.clientX - r.left) / r.width * W, (ev.clientY - r.top) / r.height * H]; };
+  cv.addEventListener('pointerdown', ev => {
+    if (!film.started) return startFilm();
+    const [sx, sy] = pos(ev), [x, y] = toWorld(sx, sy); down = true; lx = x; ly = y; lt = performance.now(); cv.setPointerCapture(ev.pointerId);
+    const hit = film.shot && film.shot.poke(x, y);
+    GUSTS.push({ x, y, vx: 0, vy: -60, r: hit ? 170 : 260, s: 1, push: hit ? 380 : 720 });
+    if (!hit) sfx({ k: 'whoosh', dur: .45, p0: (sx / W - .5) * 1.4, p1: (sx / W - .5) * 1.6, f0: 380, f1: 1600, v: .55 });
+    if (!film.playing && film.started) play(true);
+  });
+  cv.addEventListener('pointermove', ev => {
+    const [sx, sy] = pos(ev), [x, y] = toWorld(sx, sy), now = performance.now(), dt = Math.max(8, now - lt) / 1000;
+    const vx = clamp((x - lx) / dt, -2600, 2600), vy = clamp((y - ly) / dt, -2600, 2600), sp = Math.hypot(vx, vy);
+    if (film.playing && (down || sp > 900)) GUSTS.push({ x, y, vx: vx * (down ? .9 : .35), vy: vy * (down ? .9 : .35), r: down ? 230 : 160, s: down ? 1 : .5, push: 0 });
+    if (down && sp > 1400 && now - (cv._w || 0) > 260) { cv._w = now; sfx({ k: 'whoosh', dur: .5, p0: (sx / W - .5) * 1.4 - .3 * Math.sign(vx), p1: (sx / W - .5) * 1.4 + .3 * Math.sign(vx), f0: 300, f1: 1300, v: .5 }); }
+    lx = x; ly = y; lt = now;
+  });
+  const up = () => { down = false; }; cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+})();
+addEventListener('keydown', ev => {
+  if (ev.target.closest && ev.target.closest('button') && (ev.key === ' ' || ev.key === 'Enter')) return;
+  const k = ev.key;
+  if (k === ' ') { ev.preventDefault(); if (!film.started) return startFilm(); play(); }
+  else if (k === 'ArrowRight' || k === 'ArrowLeft') { ev.preventDefault(); if (!film.started) { $('start').hidden = true; film.started = true; } play(false); const step = ev.shiftKey ? 1 : film.smooth ? 1 : EXPO, base = film.smooth || ev.shiftKey ? film.f : Math.round(film.f / EXPO) * EXPO; seek(base + (k === 'ArrowRight' ? step : -step), false); }
+  else if (k === 'r' || k === 'R' || k === 'Home') { if (!film.started) return startFilm(); seek(0); if (!film.playing) play(true); }
+  else if (k === 's' || k === 'S') $('sm').click();
+  else if (k === 'm' || k === 'M') $('snd').click();
+  else if (k === 'f' || k === 'F') $('fs').click();
+  else if (k >= '1' && k <= String(SHOTS.length)) { if (!film.started) { $('start').hidden = true; film.started = true; film.audio = true; } seek(Math.round(SHOTS[+k - 1].t0 * FPS)); if (!film.playing) play(true); }
+});
+
+// ── boot ──
+(async () => {
+  for (const s of SHOTS) s.build();
+  buildScore();
+  const t = Q.get('t'), fr = Q.get('frame');
+  if (Q.get('ui') === '0') document.documentElement.classList.add('bare');
+  seek(fr != null ? +fr : t != null ? +t * FPS : 0, false);
+  film.ready = true; window.__READY = true;
+  if (t != null || fr != null || Q.get('ui') === '0') { $('start').hidden = true; film.started = true; }
+  requestAnimationFrame(tick);
+})();
+// test hooks (headless capture + review)
+window.__film = {
+  seek: f => { film.seeking = true; simTo(f); film.seeking = false; render(); return film.f; },
+  time: () => { const t0 = performance.now(); render(); return performance.now() - t0; },
+  wav: () => renderWav(), score: () => SCORE, info: () => ({ f: film.f, shot: film.shot && film.shot.name, smooth: film.smooth }),
+};
+</script>
+</body>
+</html>

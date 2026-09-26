@@ -1,0 +1,1188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>小克剪辑</title>
+<style>
+:root{--ground:#0b1517;--ink:#e7dec8;--muted:#8fa4a2;--accent:#d04b40;--line:rgba(231,222,200,.16);--line2:rgba(231,222,200,.42);color-scheme:dark}
+html,body{height:100%;margin:0;background:var(--ground);color:var(--ink)}
+[hidden]{display:none!important}
+body{font:14px/1.4 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding-inline:16px;padding-block:16px;box-sizing:border-box;overflow:hidden}
+#frame,#bar,#hint{width:min(100%,calc((100vh - 128px) * 2560 / 1440))}
+#frame{position:relative;flex-shrink:0;aspect-ratio:2560/1440;max-width:100%;box-shadow:0 30px 90px rgba(0,0,0,.55),0 0 0 1px var(--line);border-radius:3px;overflow:hidden;background:#10201f}
+canvas{display:block;width:100%;height:100%;cursor:crosshair;touch-action:none}
+#start{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:2px;border:0;margin:0;padding:0;color:var(--ink);cursor:pointer;background:radial-gradient(ellipse at center,rgba(6,14,16,.08),rgba(6,14,16,.62));font:inherit}
+#start .ring{width:92px;height:92px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;background:rgba(11,21,23,.4);transition:transform .2s}
+#start:hover .ring,#start:focus-visible .ring{transform:scale(1.06)}
+#start .tri{width:0;height:0;border-left:26px solid var(--accent);border-top:16px solid transparent;border-bottom:16px solid transparent;margin-left:8px}
+#start .name{font-family:ui-serif,"Iowan Old Style",Palatino,"Palatino Linotype",Georgia,serif;font-style:italic;font-size:clamp(28px,5.2vw,68px);margin:16px 0 2px;letter-spacing:.01em;text-shadow:0 2px 18px rgba(0,0,0,.45)}
+#start .spec{color:var(--ink);opacity:.78;font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+#bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+#bar button{font:inherit;font-size:13px;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:999px;padding:6px 13px;cursor:pointer;white-space:nowrap}
+#bar button:hover{border-color:var(--line2)}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#track{flex:1 1 220px;position:relative;height:30px;display:grid;grid-template-columns:repeat(var(--shots,1),1fr);gap:3px;cursor:pointer;touch-action:none;user-select:none}
+#track .seg{border-top:2px solid var(--line);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding-top:6px}
+#track .seg.on{border-color:var(--accent);color:var(--ink)}
+#head{position:absolute;top:-5px;left:0;width:2px;height:12px;background:var(--ink);transform:translateX(-1px);pointer-events:none}
+#tc{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-variant-numeric:tabular-nums;font-size:12px;color:var(--muted)}
+#hint{margin:0;color:var(--muted);font-size:12px;line-height:1.7}
+kbd{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;border:1px solid var(--line);border-radius:4px;padding:0 5px;font-size:11px;color:var(--ink)}
+#frame:fullscreen{width:100vw;height:100vh;border-radius:0}
+html.bare body{padding:0;gap:0}html.bare #bar,html.bare #hint{display:none}html.bare #frame{width:100vw;height:100vh;box-shadow:none;border-radius:0}
+@media (max-width:640px){#bar button{padding:5px 10px;font-size:12px}#track{order:10;flex-basis:100%}}
+</style>
+</head>
+<body>
+<div id="frame">
+  <canvas id="film" width="2560" height="1440" aria-label="红色方块小克在剪辑软件里播放素材，发现一段发虚的画面，停下、两刀切掉、扔进垃圾桶、补齐空隙，预览随之变清楚"></canvas>
+  <button id="start" aria-label="Play 小克剪辑 with sound"><span class="ring"><span class="tri"></span></span><span class="name">小克剪辑</span><span class="spec">8 s · 2560×1440 · 60 fps · sound on</span></button>
+</div>
+<div id="bar" role="toolbar" aria-label="Film controls">
+  <button id="pp" aria-pressed="false">Play</button>
+  <button id="rs">Restart</button>
+  <div id="track" aria-label="Scrub the film"><span class="seg">Cut</span><span id="head"></span></div>
+  <span id="tc">00:00.00 / 00:08.00</span>
+  <button id="sm">Poses · 30/s</button>
+  <button id="snd">Sound off</button>
+  <button id="fs">Full screen</button>
+</div>
+<p id="hint">Click the world to poke it, drag to blow on it · <kbd>Space</kbd> play/pause · <kbd>←</kbd><kbd>→</kbd> one exposure · <kbd>S</kbd> stop-motion/smooth · <kbd>1</kbd>–<kbd>1</kbd> shots · <kbd>M</kbd> mute</p>
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+//  小克剪辑 — a stop-motion film, drawn and scored entirely in code.
+//  No images, fonts, samples or libraries: every pixel and every sound is made here.
+//  Film: 2560×1440, 60 fps, 8 s. Puppets are "posed" 12× a second (every 5th
+//  frame, like stop motion on twos), the motion-control camera runs on every frame.
+// ═══════════════════════════════════════════════════════════════════════════
+"use strict";
+const W = 2560, H = 1440, FPS = 60, DUR = 8, NF = Math.round(FPS * DUR), EXPO = 2; // flat 2D: poses on twos (30/s) for fluid, springy motion
+// pixel mode: PIX > 0 means shots draw on an LW×LH buffer in whole pixels, scaled up ×PIX nearest-neighbour
+const FLAT = true; // kawaii flat look: no film grain, exposure flicker or dark vignette
+const PIX = 0, LW = PIX ? W / PIX : W, LH = PIX ? H / PIX : H;
+const TAU = Math.PI * 2, PI = Math.PI;
+const clamp = (x, a, b) => x < a ? a : x > b ? b : x;
+const lerp = (a, b, t) => a + (b - a) * t;
+const inv = (a, b, x) => clamp((x - a) / (b - a), 0, 1);
+const smooth = (a, b, x) => { x = inv(a, b, x); return x * x * (3 - 2 * x); };
+const eio = t => { t = clamp(t, 0, 1); return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; };
+const eo = t => 1 - Math.pow(1 - clamp(t, 0, 1), 3);
+const esine = t => .5 - .5 * Math.cos(PI * clamp(t, 0, 1));
+const rng = seed => { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; };
+const hash = (a, b = 0, c = 0) => { let h = Math.imul(a | 0, 374761393) ^ Math.imul((b | 0) + 7919, 668265263) ^ Math.imul((c | 0) + 104729, 1274126177); h = Math.imul(h ^ (h >>> 13), 1103515245); h ^= h >>> 16; h = Math.imul(h ^ (h >>> 15), 2246822519); h ^= h >>> 13; return (h >>> 0) / 4294967296; };
+
+// ── Perlin gradient noise ────────────────────────────────────────────────────
+const noise = (() => {
+  const r = rng(1337), p = new Uint8Array(512), gx = new Float32Array(256), gy = new Float32Array(256), perm = [];
+  for (let i = 0; i < 256; i++) perm[i] = i;
+  for (let i = 255; i > 0; i--) { const j = (r() * (i + 1)) | 0; const t = perm[i]; perm[i] = perm[j]; perm[j] = t; }
+  for (let i = 0; i < 512; i++) p[i] = perm[i & 255];
+  for (let i = 0; i < 256; i++) { const a = r() * TAU; gx[i] = Math.cos(a); gy[i] = Math.sin(a); }
+  const fade = t => t * t * t * (t * (t * 6 - 15) + 10);
+  return (x, y) => {
+    const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi, X = xi & 255, Y = yi & 255;
+    const aa = p[p[X] + Y], ab = p[p[X] + Y + 1], ba = p[p[X + 1] + Y], bb = p[p[X + 1] + Y + 1];
+    const u = fade(xf), v = fade(yf);
+    const x1 = lerp(gx[aa] * xf + gy[aa] * yf, gx[ba] * (xf - 1) + gy[ba] * yf, u);
+    const x2 = lerp(gx[ab] * xf + gy[ab] * (yf - 1), gx[bb] * (xf - 1) + gy[bb] * (yf - 1), u);
+    return lerp(x1, x2, v) * 1.42;
+  };
+})();
+const fbm = (x, y, o = 3) => { let s = 0, a = .5, f = 1; for (let i = 0; i < o; i++) { s += a * noise(x * f + i * 17.3, y * f - i * 9.1); f *= 2.03; a *= .5; } return s; };
+// divergence-free flow: curl of a drifting noise potential (px/s per unit amp)
+function curl(x, y, t, sc = .0032) {
+  const X = x * sc, Y = y * sc, h = .015;
+  const n = (a, b) => noise(a + t * .23, b - t * .31) + .5 * noise(a * 2.1 - t * .4 + 3.1, b * 2.1 + t * .2 + 5.2);
+  return [(n(X, Y + h) - n(X, Y - h)) / (2 * h), -(n(X + h, Y) - n(X - h, Y)) / (2 * h)];
+}
+
+// ── colour ──────────────────────────────────────────────────────────────────
+const C = {
+  teal: '#467f85', tealL: '#5a9197', tealD: '#2f6369', tealDD: '#20484f', sky: '#43808a', skyL: '#4f8b92',
+  navy: '#17404c', navyD: '#10313b', hill: '#1f4d5a', hillL: '#7fa6ad', hillLL: '#9dbfc3',
+  red: '#cf4b40', redD: '#a93a34', redL: '#dd6254', coral: '#d05b55', coralL: '#df746a', coralD: '#b2463f',
+  orange: '#de835d', ochre: '#cf9a48', terra: '#c86a47', pear: '#d9c46f', gold: '#d8a54a',
+  cream: '#e4dbc4', creamL: '#efe8d6', creamD: '#c9bfa6', paper: '#ebe3cf', skin: '#e3d4b4', cheek: '#e39a8c',
+  ink: '#15191b', inkS: '#262c2e', slate: '#46565c', floor: '#35494e', floorL: '#4a5f63', table: '#4c5a54', tableD: '#3b4843',
+  bag: '#61736e', wing: '#5d777c', bark: '#2a1715', brown: '#5b3526', cork: '#a8744b', grey: '#8d9696', blueGrey: '#88a6a1', lightBlue: '#8aaeb3'
+};
+const hexA = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+const css = (c, a = 1) => `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${a})`;
+const mixc = (a, b, t) => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
+const INKC = [12, 22, 25], LIGHTC = [242, 234, 216];
+// tone(h, k): k<0 darkens toward teal-ink, k>0 lightens toward paper — keeps every shade inside the print palette
+const tone = (h, k, a = 1) => { const c = hexA(h); return css(k < 0 ? mixc(c, INKC, -k) : mixc(c, LIGHTC, k), a); };
+
+// ── canvas helpers ──────────────────────────────────────────────────────────
+const mk = (w, h) => { const c = document.createElement('canvas'); c.width = Math.max(1, Math.ceil(w)); c.height = Math.max(1, Math.ceil(h)); return c; };
+const g2 = c => c.getContext('2d');
+
+// hand-cut outline: subdivide each edge and nudge it with noise so nothing is ruler-straight
+function cutPath(g, pts, { closed = true, amp = 1.2, step = 16, seed = 1, begin = true } = {}) {
+  if (begin) g.beginPath();
+  let first = true, k = 0; const n = pts.length, m = closed ? n : n - 1;
+  for (let i = 0; i < m; i++) {
+    const x0 = pts[i][0], y0 = pts[i][1], x1 = pts[(i + 1) % n][0], y1 = pts[(i + 1) % n][1];
+    const L = Math.hypot(x1 - x0, y1 - y0) || 1, s = Math.max(1, Math.round(L / step)), nx = -(y1 - y0) / L, ny = (x1 - x0) / L;
+    for (let j = 0; j < s; j++) {
+      const t = j / s, w = noise(seed * 7.13 + k * .31, seed * 3.7) * amp; k++;
+      const x = lerp(x0, x1, t) + nx * w, y = lerp(y0, y1, t) + ny * w;
+      if (first) { g.moveTo(x, y); first = false; } else g.lineTo(x, y);
+    }
+  }
+  if (!closed) g.lineTo(pts[n - 1][0], pts[n - 1][1]); else g.closePath();
+}
+function blobPath(g, cx, cy, rx, ry, { n = 56, amp = .03, seed = 1, rot = 0, begin = true, freq = 1.3 } = {}) {
+  if (begin) g.beginPath();
+  const cr = Math.cos(rot), sr = Math.sin(rot);
+  for (let i = 0; i <= n; i++) {
+    const a = i / n * TAU, r = 1 + amp * noise(Math.cos(a) * freq + seed * 1.7, Math.sin(a) * freq - seed * 2.3);
+    const x = Math.cos(a) * rx * r, y = Math.sin(a) * ry * r, X = cx + x * cr - y * sr, Y = cy + x * sr + y * cr;
+    i ? g.lineTo(X, Y) : g.moveTo(X, Y);
+  }
+  g.closePath();
+}
+// smooth closed/open curve through points (Catmull-Rom → Bézier)
+function curvePath(g, pts, closed = false, begin = true) {
+  const n = pts.length; if (begin) g.beginPath(); g.moveTo(pts[0][0], pts[0][1]);
+  const P = i => closed ? pts[(i + n) % n] : pts[clamp(i, 0, n - 1)];
+  const m = closed ? n : n - 1;
+  for (let i = 0; i < m; i++) {
+    const p0 = P(i - 1), p1 = P(i), p2 = P(i + 1), p3 = P(i + 2);
+    g.bezierCurveTo(p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6, p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6, p2[0], p2[1]);
+  }
+  if (closed) g.closePath();
+}
+// print-style line texture inside the current clip
+function hatch(g, x, y, w, h, { gap = 6, ang = 0, col = '#000', a = .15, lw = 1, wob = 0, seed = 1, av = .6, seg = 36 } = {}) {
+  const R = rng(seed); g.save(); g.lineWidth = lw; g.strokeStyle = col;
+  const D = Math.hypot(w, h) / 2 + 6; g.translate(x + w / 2, y + h / 2); g.rotate(ang);
+  for (let v = -D; v <= D; v += gap * (.75 + .5 * R())) {
+    g.globalAlpha = a * (1 - av + av * R()); g.beginPath();
+    for (let u = -D; u <= D + seg; u += seg) { const yy = v + (wob ? noise(u * .006 + seed, v * .04) * wob : 0); u === -D ? g.moveTo(u, yy) : g.lineTo(u, yy); }
+    g.stroke();
+  }
+  g.restore();
+}
+function stipple(g, x, y, w, h, { n = 400, col = '#fff', r0 = .7, r1 = 1.8, a = .5, seed = 2, dens = null } = {}) {
+  const R = rng(seed); g.save(); g.fillStyle = col;
+  for (let i = 0; i < n; i++) {
+    const px = x + R() * w, py = y + R() * h, q = R(), r = lerp(r0, r1, R()), al = a * (.35 + .65 * R());
+    if (dens && q > dens(px, py)) continue;
+    g.globalAlpha = al;
+    if (r < 1.3) g.fillRect(px - r, py - r, r * 2, r * 2); else { g.beginPath(); g.arc(px, py, r, 0, TAU); g.fill(); }
+  }
+  g.restore();
+}
+function withClip(g, pathFn, fn) { g.save(); pathFn(g); g.clip(); fn(g); g.restore(); }
+
+// ── shared textures ─────────────────────────────────────────────────────────
+// film grain: fine light+dark specks, re-laid every exposure
+const GRAIN = (() => {
+  const s = 384, c = mk(s, s), g = g2(c), id = g.createImageData(s, s), d = id.data, R = rng(99);
+  for (let i = 0; i < s * s; i++) {
+    const v = R(), k = i * 4;
+    if (v < .5) { d[k] = 8; d[k + 1] = 16; d[k + 2] = 18; d[k + 3] = (.5 - v) * 64; }
+    else { d[k] = 250; d[k + 1] = 244; d[k + 2] = 228; d[k + 3] = (v - .5) * 44; }
+  }
+  g.putImageData(id, 0, 0); return c;
+})();
+// paper fibre: soft blotches + fibres, pressed into every cut-out
+const PAPER = (() => {
+  const s = 512, c = mk(s, s), g = g2(c), id = g.createImageData(s, s), d = id.data, R = rng(7);
+  for (let y = 0; y < s; y++) for (let x = 0; x < s; x++) {
+    const k = (y * s + x) * 4;
+    // tileable blotch field
+    const fx = x / s * TAU, fy = y / s * TAU;
+    const v = noise(Math.cos(fx) * 2.2 + 11, Math.sin(fx) * 2.2 + Math.cos(fy) * 2.2) * .6 + noise(Math.cos(fx) * 6 + Math.sin(fy) * 6, Math.sin(fx) * 6 - 4) * .4 + (R() - .5) * .9;
+    if (v < 0) { d[k] = 10; d[k + 1] = 20; d[k + 2] = 22; d[k + 3] = Math.min(255, -v * 70); }
+    else { d[k] = 255; d[k + 1] = 248; d[k + 2] = 232; d[k + 3] = Math.min(255, v * 60); }
+  }
+  g.putImageData(id, 0, 0);
+  g.lineCap = 'round';
+  for (let i = 0; i < 260; i++) {
+    const x = R() * s, y = R() * s, a = R() * TAU, L = 6 + R() * 22;
+    g.strokeStyle = R() < .5 ? 'rgba(255,248,230,.22)' : 'rgba(10,20,22,.18)'; g.lineWidth = .6 + R() * .7;
+    g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + Math.cos(a + .5) * L * .5, y + Math.sin(a + .5) * L * .5, x + Math.cos(a) * L, y + Math.sin(a) * L); g.stroke();
+  }
+  return c;
+})();
+const PAT = (() => { const g = g2(mk(1, 1)); return { grain: g.createPattern(GRAIN, 'repeat'), paper: g.createPattern(PAPER, 'repeat') }; })();
+
+function paperize(g, k = .5) { g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'source-atop'; g.globalAlpha = k; g.fillStyle = PAT.paper; g.fillRect(0, 0, g.canvas.width, g.canvas.height); g.restore(); }
+
+// big printed backdrop: gradient + mottling + streaks + scratches + dust (all canvas ops, fast)
+function backdrop(w, h, o = {}) {
+  const c = mk(w, h), g = g2(c), R = rng(o.seed || 5);
+  const gr = g.createLinearGradient(0, 0, 0, h);
+  (o.grad || [[0, o.base], [1, o.base]]).forEach(([s, col]) => gr.addColorStop(s, col));
+  g.fillStyle = gr; g.fillRect(0, 0, w, h);
+  const noiseCanvas = (sw, sh) => { const m = mk(sw, sh), mg = g2(m), id = mg.createImageData(sw, sh); for (let i = 0; i < sw * sh; i++) { const v = R() * 255; id.data[i * 4] = id.data[i * 4 + 1] = id.data[i * 4 + 2] = v; id.data[i * 4 + 3] = 255; } mg.putImageData(id, 0, 0); return m; };
+  g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+  for (const [div, amt] of [[140, (o.mottle ?? .5) * .42], [26, (o.mottle ?? .5) * .3]]) {
+    const sw = Math.ceil(w / div) + 3, sh = Math.ceil(h / div) + 3, m = noiseCanvas(sw, sh);
+    g.save(); g.globalCompositeOperation = 'soft-light'; g.globalAlpha = amt; g.drawImage(m, 0, 0, sw, sh, -div * 1.5, -div * 1.5, sw * div, sh * div); g.restore();
+  }
+  if (o.vstreak) { // fine vertical fibres, broken along y
+    const rows = 40, m = mk(w, rows), mg = g2(m), id = mg.createImageData(w, rows);
+    for (let x = 0; x < w; x++) { let v = (R() - .5); for (let y = 0; y < rows; y++) { const q = 128 + (v + noise(x * .05, y * .6) * .35) * 255 * .5; const k = (y * w + x) * 4; id.data[k] = id.data[k + 1] = id.data[k + 2] = clamp(q, 0, 255); id.data[k + 3] = 255; } }
+    mg.putImageData(id, 0, 0); g.save(); g.globalCompositeOperation = 'soft-light'; g.globalAlpha = o.vstreak; g.drawImage(m, 0, 0, w, h); g.restore();
+  }
+  if (o.hstreak) { // horizontal print lines
+    const cols = 40, m = mk(cols, h), mg = g2(m), id = mg.createImageData(cols, h);
+    for (let y = 0; y < h; y++) { let v = (R() - .5); for (let x = 0; x < cols; x++) { const q = 128 + (v + noise(y * .05, x * .6) * .35) * 255 * .5; const k = (y * cols + x) * 4; id.data[k] = id.data[k + 1] = id.data[k + 2] = clamp(q, 0, 255); id.data[k + 3] = 255; } }
+    mg.putImageData(id, 0, 0); g.save(); g.globalCompositeOperation = 'soft-light'; g.globalAlpha = o.hstreak; g.drawImage(m, 0, 0, w, h); g.restore();
+  }
+  // scratches & scuffs
+  g.save(); g.lineCap = 'round';
+  for (let i = 0; i < (o.scratches ?? 260); i++) {
+    const x = R() * w, y = R() * h, L = 8 + R() * (o.scratchLen || 60), a = (o.scratchAng ?? PI / 2) + (R() - .5) * .5, light = R() < .6;
+    g.strokeStyle = light ? `rgba(236,230,212,${.05 + R() * .12})` : `rgba(10,26,30,${.05 + R() * .1})`; g.lineWidth = .5 + R() * 1.1;
+    g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(a) * L, y + Math.sin(a) * L); g.stroke();
+  }
+  g.restore();
+  stipple(g, 0, 0, w, h, { n: o.dust ?? 2200, col: '#ece4cf', r0: .5, r1: 1.7, a: .22, seed: (o.seed || 5) + 3 });
+  stipple(g, 0, 0, w, h, { n: (o.dust ?? 2200) * .6, col: '#0c1c20', r0: .5, r1: 1.4, a: .2, seed: (o.seed || 5) + 4 });
+  // key light from the upper left, falloff to the corners
+  const lx = (o.light?.[0] ?? .3) * w, ly = (o.light?.[1] ?? .2) * h, rg = g.createRadialGradient(lx, ly, 0, lx, ly, Math.hypot(w, h) * .75);
+  rg.addColorStop(0, `rgba(255,246,226,${o.glow ?? .1})`); rg.addColorStop(.55, 'rgba(255,246,226,0)'); rg.addColorStop(1, `rgba(6,20,24,${o.dark ?? .28})`);
+  g.fillStyle = rg; g.fillRect(0, 0, w, h);
+  return c;
+}
+
+// ── cut-out sprites: drawn once (paper texture baked in) + a soft contact shadow ──
+function sprite(w, h, ax, ay, draw, { ss = 1, pad = 28, shadow = { dx: 6, dy: 9, blur: 11, a: .3 }, paper = .45 } = {}) {
+  const c = mk((w + pad * 2) * ss, (h + pad * 2) * ss), g = g2(c);
+  g.setTransform(ss, 0, 0, ss, pad * ss, pad * ss); g.lineJoin = 'round'; g.lineCap = 'round'; draw(g);
+  if (paper) paperize(g, paper);
+  let s = null;
+  if (shadow) { s = mk(c.width, c.height); const sg = g2(s), off = c.width + 64; sg.shadowColor = `rgba(6,20,24,${shadow.a})`; sg.shadowBlur = shadow.blur * ss; sg.shadowOffsetX = off; sg.drawImage(c, -off, 0); }
+  return { c, s, w, h, ax, ay, pad, ss, sh: shadow };
+}
+// place a sprite: (x,y) = its anchor in world space; shadow offset stays in world space (one light)
+function put(ctx, sp, x, y, rot = 0, sc = 1, { alpha = 1, flip = false, shadow = true, sy = 1 } = {}) {
+  const k = sc / sp.ss, ox = -(sp.pad + sp.ax) * sp.ss, oy = -(sp.pad + sp.ay) * sp.ss;
+  if (sp.s && shadow) {
+    ctx.save(); ctx.translate(x + sp.sh.dx * sc, y + sp.sh.dy * sc); if (rot) ctx.rotate(rot); ctx.scale(flip ? -k : k, k * sy);
+    ctx.globalAlpha = alpha; ctx.drawImage(sp.s, ox, oy); ctx.restore();
+  }
+  ctx.save(); ctx.translate(x, y); if (rot) ctx.rotate(rot); ctx.scale(flip ? -k : k, k * sy); ctx.globalAlpha = alpha; ctx.drawImage(sp.c, ox, oy); ctx.restore();
+}
+
+// ── stop-motion clock helpers ───────────────────────────────────────────────
+// exposure index for boil: puppets are re-placed by hand 12× a second
+const boil = (id, e, amt = 1) => [(hash(id, e, 1) - .5) * 2.2 * amt, (hash(id, e, 2) - .5) * 2.2 * amt, (hash(id, e, 3) - .5) * .006 * amt];
+
+// ── verlet rope (wires, steam, hair) ───────────────────────────────────────
+class Rope {
+  constructor(pts, { grav = 0, damp = .985, iters = 8, slack = 1, mass = null } = {}) {
+    const n = pts.length; this.n = n;
+    this.x = new Float64Array(n); this.y = new Float64Array(n); this.px = new Float64Array(n); this.py = new Float64Array(n);
+    this.ax = new Float64Array(n); this.ay = new Float64Array(n); this.w = new Float64Array(n).fill(1); this.pin = new Uint8Array(n);
+    this.rest = new Float64Array(n - 1);
+    for (let i = 0; i < n; i++) { this.x[i] = this.px[i] = pts[i][0]; this.y[i] = this.py[i] = pts[i][1]; if (mass) this.w[i] = 1 / mass[i]; }
+    for (let i = 0; i < n - 1; i++) this.rest[i] = Math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]) * slack;
+    this.grav = grav; this.damp = damp; this.iters = iters;
+    this.rx = Float64Array.from(this.x); this.ry = Float64Array.from(this.y); // exposure snapshot (what the camera sees)
+  }
+  step(dt) {
+    const { x, y, px, py, ax, ay, pin, n } = this, d2 = dt * dt, dm = this.damp;
+    for (let i = 0; i < n; i++) {
+      if (pin[i]) { px[i] = x[i]; py[i] = y[i]; ax[i] = ay[i] = 0; continue; }
+      const vx = (x[i] - px[i]) * dm, vy = (y[i] - py[i]) * dm; px[i] = x[i]; py[i] = y[i];
+      x[i] += vx + ax[i] * d2; y[i] += vy + (ay[i] + this.grav) * d2; ax[i] = ay[i] = 0;
+    }
+    for (let k = 0; k < this.iters; k++) for (let i = 0; i < n - 1; i++) {
+      const j = i + 1, wi = pin[i] ? 0 : this.w[i], wj = pin[j] ? 0 : this.w[j], ws = wi + wj; if (!ws) continue;
+      const dx = x[j] - x[i], dy = y[j] - y[i], d = Math.hypot(dx, dy) || 1e-6, diff = (d - this.rest[i]) / (d * ws);
+      x[i] += dx * diff * wi; y[i] += dy * diff * wi; x[j] -= dx * diff * wj; y[j] -= dy * diff * wj;
+    }
+  }
+  snap() { this.rx.set(this.x); this.ry.set(this.y); }
+  // point along the rope at arc fraction u (from the snapshot)
+  at(u, live = false) { const X = live ? this.x : this.rx, Y = live ? this.y : this.ry, f = clamp(u, 0, 1) * (this.n - 1), i = Math.min(this.n - 2, Math.floor(f)), t = f - i; return [lerp(X[i], X[i + 1], t), lerp(Y[i], Y[i + 1], t), Math.atan2(Y[i + 1] - Y[i], X[i + 1] - X[i])]; }
+}
+
+// ── falling-petal aerodynamics ─────────────────────────────────────────────
+// Quasi-steady flat plate: orientation-dependent drag makes a tilted petal glide, lift acts ⟂ to the
+// relative wind, and a self-excited pitch oscillator keeps it fluttering (tuned offline: ±28 px sway,
+// ~210 px/s descent — cherry-blossom speeds at this scale).
+function petalStep(p, dt, wx, wy) {
+  const ux = p.vx - wx, uy = p.vy - wy, c = Math.cos(p.th), s = Math.sin(p.th);
+  const vt = ux * c + uy * s, vn = -ux * s + uy * c, V = Math.hypot(ux, uy) + 1e-6;
+  const An = p.An, At = An * .05, fdt = -At * vt * V, fdn = -An * vn * V, L = 2.5 * An * vt * vn / V;
+  const ax = fdt * c - fdn * s - L * uy, ay = fdt * s + fdn * c + L * ux + 1500;
+  const tau = -p.w0 * p.w0 * Math.sin(p.th) + 3 * (1 - (p.th / p.A) ** 2) * p.om - .001 * vt * vn;
+  p.om = clamp(p.om + tau * dt, -30, 30); p.th += p.om * dt; p.vx += ax * dt; p.vy += ay * dt; p.x += p.vx * dt; p.y += p.vy * dt;
+  p.phi += (2 + Math.abs(p.om) * .8) * dt * p.spin;
+}
+function newPetal(R, x, y, o = {}) {
+  return { x, y, vx: o.vx ?? (R() - .5) * 80, vy: o.vy ?? (R() - .3) * 60, th: (R() - .5) * 1.2, om: (R() - .5) * 4, phi: R() * TAU, spin: (R() < .5 ? -1 : 1) * (.6 + R()),
+    An: (o.An ?? .03) * (.8 + R() * .5), w0: 4.5 * (.8 + R() * .45), A: .8 + R() * .35, size: o.size ?? (11 + R() * 9), col: o.col ?? C.coral, landed: false, rx: x, ry: y, rth: 0, rphi: 0, id: (R() * 1e6) | 0, life: 0 };
+}
+function addPetal(path, p, e, ymul = 1) {
+  const flat = (.25 + .75 * Math.abs(Math.cos(p.rphi))) * ymul, s = p.size, bo = e < 0 ? [0, 0] : boil(p.id, e, .6), a = p.rth + (p.id % 7) * .4, c = Math.cos(a), si = Math.sin(a), X = p.rx + bo[0], Y = p.ry + bo[1];
+  const T = (x, y) => [X + x * c - y * flat * si, Y + x * si + y * flat * c];
+  const P0 = T(-s, 0), c1 = T(-s * .4, -s * .75), c2 = T(s * .5, -s * .6), P1 = T(s, 0), c3 = T(s * .5, s * .55), c4 = T(-s * .4, s * .7);
+  path.moveTo(P0[0], P0[1]); path.bezierCurveTo(c1[0], c1[1], c2[0], c2[1], P1[0], P1[1]); path.bezierCurveTo(c3[0], c3[1], c4[0], c4[1], P0[0], P0[1]); path.closePath();
+}
+function drawPetals(ctx, list, e, { ymul = 1, rim = 'rgba(96,24,22,.55)' } = {}) {
+  const by = new Map();
+  for (const p of list) { let path = by.get(p.col); if (!path) by.set(p.col, path = new Path2D()); addPetal(path, p, e, ymul); }
+  ctx.lineWidth = 1.4; ctx.strokeStyle = rim;
+  for (const [col, path] of by) { ctx.fillStyle = col; ctx.fill(path); ctx.stroke(path); }
+}
+// ── puppets shared across shots: birds, notes, flowers, townsfolk ──────────────
+// Bird, facing +x, feet at the origin (perched) or body centre (flying). s ≈ body length.
+function birdPerched(g, s, { body = C.ink, wing = null, belly = null, pose = 'sit', eye = null } = {}) {
+  const lift = pose === 'crouch' ? .07 : 0, hx = pose === 'peck' ? .42 : pose === 'up' ? .22 : .3, hy = pose === 'peck' ? -.62 : pose === 'up' ? -.95 : -.85;
+  g.fillStyle = body;
+  // tail
+  g.beginPath(); g.moveTo(-.28 * s, -.44 * s + lift * s); g.lineTo(-.8 * s, -.1 * s); g.lineTo(-.72 * s, .01 * s); g.lineTo(-.18 * s, -.3 * s + lift * s); g.closePath(); g.fill();
+  // body + head
+  g.beginPath(); g.ellipse(0, -.5 * s + lift * s, .41 * s, .27 * s, -.32, 0, TAU); g.fill();
+  if (belly) { g.fillStyle = belly; g.beginPath(); g.ellipse(.06 * s, -.42 * s + lift * s, .3 * s, .17 * s, -.3, 0, PI); g.fill(); g.fillStyle = body; }
+  g.beginPath(); g.moveTo(.1 * s, -.62 * s + lift * s); g.quadraticCurveTo(hx * s - .05 * s, hy * s + .12 * s, hx * s, hy * s + .1 * s); g.lineTo(hx * s + .12 * s, hy * s + .12 * s); g.lineTo(.3 * s, -.5 * s + lift * s); g.fill();
+  g.beginPath(); g.arc(hx * s, hy * s, .19 * s, 0, TAU); g.fill();
+  // beak
+  g.fillStyle = wing ? '#7c7a70' : body; const bd = pose === 'peck' ? .5 : pose === 'up' ? -.35 : 0;
+  g.save(); g.translate((hx + .16) * s, (hy - .01) * s); g.rotate(bd); g.beginPath(); g.moveTo(0, -.055 * s); g.lineTo(.17 * s, 0); g.lineTo(0, .05 * s); g.closePath(); g.fill(); g.restore();
+  if (wing) { // hero bird: slate wing + tail tips
+    g.fillStyle = wing; g.beginPath(); g.moveTo(.2 * s, -.66 * s + lift * s);
+    g.bezierCurveTo(-.05 * s, -.78 * s, -.5 * s, -.52 * s, -.62 * s, -.2 * s); g.bezierCurveTo(-.4 * s, -.3 * s, -.1 * s, -.35 * s, .2 * s, -.66 * s + lift * s); g.fill();
+    g.strokeStyle = tone(wing, -.35); g.lineWidth = .018 * s;
+    for (let i = 0; i < 3; i++) { g.beginPath(); g.moveTo((-.05 - i * .14) * s, (-.58 + i * .09) * s); g.lineTo((-.35 - i * .1) * s, (-.34 + i * .05) * s); g.stroke(); }
+    g.fillStyle = tone(wing, -.2); g.beginPath(); g.moveTo(-.55 * s, -.22 * s); g.lineTo(-.82 * s, -.06 * s); g.lineTo(-.74 * s, .02 * s); g.closePath(); g.fill();
+  }
+  if (eye) { g.fillStyle = eye; g.beginPath(); g.arc((hx + .06) * s, (hy - .03) * s, .036 * s, 0, TAU); g.fill(); }
+  // legs
+  g.strokeStyle = wing ? '#6f6a60' : body; g.lineWidth = .035 * s; g.lineCap = 'round';
+  g.beginPath(); g.moveTo(-.03 * s, -.27 * s + lift * s); g.lineTo(-.05 * s, 0); g.moveTo(.07 * s, -.27 * s + lift * s); g.lineTo(.08 * s, 0); g.stroke();
+}
+// flying bird, phase ph (0..1 per wingbeat): swept, tapered wings rise over the back and sweep below it
+function birdFlying(g, s, ph, { body = C.ink, wing = null, eye = null, glide = false } = {}) {
+  const a = glide ? .45 : Math.sin(ph * TAU), wc = wing || body;
+  const wingPath = (k, dy) => { // k: 1 near, .82 far; tip swings from above the back to below the belly
+    const tx = -.42 * s * k, ty = -a * .92 * s * k + dy, fx = .14 * s, rx = -.16 * s;
+    g.beginPath(); g.moveTo(fx, -.05 * s + dy);
+    g.bezierCurveTo(.1 * s, ty * .55 - (a > 0 ? .06 : -.02) * s, -.05 * s, ty * .95, tx, ty);
+    g.bezierCurveTo(-.3 * s * k, ty * .55, -.2 * s, ty * .2, rx, -.02 * s + dy); g.closePath();
+  };
+  g.fillStyle = wing ? tone(wing, -.28) : tone(body, .16); wingPath(.82, -.05 * s); g.fill();
+  g.fillStyle = body;
+  g.beginPath(); g.moveTo(-.3 * s, -.03 * s); g.lineTo(-.74 * s, -.13 * s); g.lineTo(-.7 * s, .09 * s); g.closePath(); g.fill();
+  g.beginPath(); g.ellipse(0, 0, .42 * s, .15 * s, -.04, 0, TAU); g.fill();
+  g.beginPath(); g.arc(.4 * s, -.07 * s, .145 * s, 0, TAU); g.fill();
+  g.fillStyle = wing ? '#7c7a70' : body; g.beginPath(); g.moveTo(.52 * s, -.11 * s); g.lineTo(.7 * s, -.06 * s); g.lineTo(.52 * s, -.02 * s); g.closePath(); g.fill();
+  if (eye) { g.fillStyle = eye; g.beginPath(); g.arc(.45 * s, -.1 * s, .03 * s, 0, TAU); g.fill(); }
+  g.fillStyle = wc; wingPath(1, 0); g.fill();
+  if (wing) { g.strokeStyle = tone(wing, -.4); g.lineWidth = .014 * s; for (let i = 1; i < 4; i++) { g.beginPath(); g.moveTo((.02 - i * .06) * s, -a * .12 * s); g.lineTo((-.12 - i * .07) * s, -a * .72 * s); g.stroke(); } }
+}
+// ♪ an eighth note, head at origin
+function noteGlyph(g, s, col = C.ink) {
+  g.fillStyle = col; g.strokeStyle = col;
+  g.beginPath(); g.ellipse(0, 0, 11 * s, 7.8 * s, -.4, 0, TAU); g.fill();
+  g.lineWidth = 2.6 * s; g.beginPath(); g.moveTo(9.6 * s, -3 * s); g.lineTo(9.6 * s, -36 * s); g.stroke();
+  g.beginPath(); g.moveTo(9.6 * s, -36 * s); g.bezierCurveTo(14 * s, -26 * s, 24 * s, -26 * s, 20 * s, -12 * s); g.bezierCurveTo(19 * s, -20 * s, 14 * s, -23 * s, 9.6 * s, -25 * s); g.closePath(); g.fill();
+}
+function daisy(g, r, { petals = 9, col = '#efe8d8', mid = C.gold, seed = 1, open = 1 } = {}) {
+  const R = rng(seed); g.fillStyle = col;
+  for (let i = 0; i < petals; i++) {
+    const a = i / petals * TAU + R() * .2, L = r * (.85 + R() * .25) * open;
+    g.save(); g.rotate(a); g.beginPath(); g.ellipse(L * .55, 0, L * .5, r * .2 * (.7 + .3 * open), 0, 0, TAU); g.fill(); g.restore();
+  }
+  g.fillStyle = mid; g.beginPath(); g.arc(0, 0, r * .3, 0, TAU); g.fill();
+  g.fillStyle = 'rgba(40,30,20,.55)'; g.beginPath(); g.arc(r * .06, r * .05, r * .12, 0, TAU); g.fill();
+}
+
+// Townsfolk, front view, feet at origin. Returns {body, head} sprites so heads can look up.
+function makePerson(o) {
+  const h = o.h, hw = h * .16, R = rng(o.seed);
+  const body = sprite(h * .5, h * .85, h * .25, h * .85, g => {
+    g.translate(h * .25, h * .85);
+    // legs + shoes
+    g.fillStyle = o.legs || C.ink;
+    g.fillRect(-hw * .42, -h * .3, hw * .22, h * .3); g.fillRect(hw * .2, -h * .3, hw * .22, h * .3);
+    g.fillStyle = o.shoes || '#2b2522'; g.beginPath(); g.ellipse(-hw * .34, -h * .012, hw * .22, h * .018, 0, 0, TAU); g.ellipse(hw * .34, -h * .012, hw * .22, h * .018, 0, 0, TAU); g.fill();
+    // coat
+    const top = -h * .79, hem = -h * (o.short ? .42 : .27);
+    cutPath(g, [[-hw * .78, top + h * .03], [-hw * .5, top], [hw * .5, top], [hw * .78, top + h * .03], [hw * 1.02, hem], [-hw * 1.02, hem]], { amp: .8, step: 10, seed: o.seed });
+    g.fillStyle = o.coat; g.fill();
+    withClip(g, gg => cutPath(gg, [[-hw * .78, top + h * .03], [-hw * .5, top], [hw * .5, top], [hw * .78, top + h * .03], [hw * 1.02, hem], [-hw * 1.02, hem]], { amp: .8, step: 10, seed: o.seed }), gg => {
+      hatch(gg, -hw * 1.2, top, hw * 2.4, hem - top, { gap: 3.2, ang: PI / 2, col: tone(o.coat, -.4), a: .12, seed: o.seed });
+      gg.fillStyle = tone(o.coat, -.22); gg.fillRect(-hw * 1.1, top, hw * .3, hem - top); // arm shadow
+      gg.fillRect(hw * .8, top, hw * .3, hem - top);
+    });
+    g.strokeStyle = tone(o.coat, -.45); g.lineWidth = 1.4; g.beginPath(); g.moveTo(0, top + h * .05); g.lineTo(0, hem); g.stroke();
+    g.beginPath(); g.moveTo(-hw * .7, top + h * .01); g.lineTo(0, top + h * .1); g.lineTo(hw * .7, top + h * .01); g.stroke();
+    if (o.scarf) { g.fillStyle = o.scarf; g.fillRect(-hw * .5, top - h * .01, hw, h * .05); g.fillRect(hw * .15, top, hw * .22, h * .16); }
+    // hands
+    g.fillStyle = o.skin || C.skin; g.beginPath(); g.arc(-hw * .95, hem + h * .02, h * .022, 0, TAU); g.arc(hw * .95, hem + h * .02, h * .022, 0, TAU); g.fill();
+    // neck
+    g.fillStyle = o.skin || C.skin; g.fillRect(-hw * .16, top - h * .04, hw * .32, h * .05);
+  }, { ss: 1.3, pad: 16, shadow: { dx: 5, dy: 6, blur: 7, a: .28 }, paper: .35 });
+  const hr = h * .072;
+  const head = sprite(hr * 3, hr * 3.2, hr * 1.5, hr * 2.5, g => {
+    g.translate(hr * 1.5, hr * 1.5);
+    g.fillStyle = o.skin || C.skin; g.beginPath(); g.ellipse(0, 0, hr * .86, hr, 0, 0, TAU); g.fill();
+    g.fillStyle = o.hair || C.ink;
+    if (o.hat) { g.fillStyle = o.hat; g.beginPath(); g.ellipse(0, -hr * .55, hr * 1.35, hr * .28, 0, 0, TAU); g.fill(); g.fillRect(-hr * .8, -hr * 1.35, hr * 1.6, hr * .85); g.fillStyle = tone(o.hat, -.3); g.fillRect(-hr * .8, -hr * .75, hr * 1.6, hr * .14); }
+    else {
+      g.beginPath(); g.ellipse(0, -hr * .35, hr * .98, hr * .8, 0, PI, TAU); g.fill();
+      if (o.bob) { g.fillRect(-hr * .98, -hr * .4, hr * .36, hr * 1.25); g.fillRect(hr * .62, -hr * .4, hr * .36, hr * 1.25); }
+      if (o.bun) { g.beginPath(); g.arc(0, -hr * 1.15, hr * .38, 0, TAU); g.fill(); }
+      g.beginPath(); g.ellipse(-hr * .25, -hr * .45, hr * .7, hr * .32, -.3, 0, PI); g.fill();
+    }
+    g.fillStyle = 'rgba(20,20,20,.75)'; g.beginPath(); g.arc(-hr * .3, hr * .08, hr * .07, 0, TAU); g.arc(hr * .3, hr * .08, hr * .07, 0, TAU); g.fill();
+    g.fillStyle = 'rgba(214,120,110,.4)'; g.beginPath(); g.arc(-hr * .45, hr * .35, hr * .15, 0, TAU); g.arc(hr * .45, hr * .35, hr * .15, 0, TAU); g.fill();
+  }, { ss: 1.3, pad: 12, shadow: { dx: 4, dy: 5, blur: 6, a: .25 }, paper: .3 });
+  return { body, head, h, neckY: -h * .8, x: o.x, look: 0, id: o.seed };
+}
+// the deer-headed gentleman from the corner shop (red jacket, antlers)
+function makeDeer(o) {
+  const h = o.h, hw = h * .17;
+  const body = sprite(h * .5, h * .85, h * .25, h * .85, g => {
+    g.translate(h * .25, h * .85);
+    g.fillStyle = C.ink; g.fillRect(-hw * .4, -h * .3, hw * .24, h * .3); g.fillRect(hw * .16, -h * .3, hw * .24, h * .3);
+    g.fillStyle = '#2b2522'; g.beginPath(); g.ellipse(-hw * .3, -h * .012, hw * .24, h * .018, 0, 0, TAU); g.ellipse(hw * .3, -h * .012, hw * .24, h * .018, 0, 0, TAU); g.fill();
+    const top = -h * .79, hem = -h * .36;
+    g.fillStyle = C.gold; g.fillRect(-hw * .55, top, hw * 1.1, hem - top); // sweater
+    g.fillStyle = '#e9e1cf'; g.beginPath(); g.moveTo(-hw * .32, top); g.lineTo(0, top + h * .09); g.lineTo(hw * .32, top); g.closePath(); g.fill();
+    g.strokeStyle = 'rgba(60,60,60,.45)'; g.lineWidth = 1; for (let i = -3; i <= 3; i++) { g.beginPath(); g.moveTo(i * hw * .08, top); g.lineTo(i * hw * .03, top + h * .06); g.stroke(); }
+    const J = [[-hw * .85, top + h * .03], [-hw * .5, top], [-hw * .2, top], [-hw * .08, hem + h * .02], [-hw * 1.05, hem + h * .01]];
+    const J2 = J.map(([x, y]) => [-x, y]);
+    for (const P of [J, J2]) { cutPath(g, P, { amp: .7, step: 9, seed: 4 }); g.fillStyle = C.red; g.fill(); }
+    withClip(g, gg => { cutPath(gg, J, { amp: .7, step: 9, seed: 4 }); cutPath(gg, J2, { amp: .7, step: 9, seed: 4, begin: false }); }, gg => stipple(gg, -hw * 1.2, top, hw * 2.4, hem - top, { n: 260, col: '#5e1714', r0: .5, r1: 1.1, a: .45, seed: 8 }));
+    g.fillStyle = tone(C.red, -.3); g.beginPath(); g.moveTo(-hw * .2, top); g.lineTo(-hw * .44, top + h * .16); g.lineTo(-hw * .2, top + h * .22); g.closePath(); g.moveTo(hw * .2, top); g.lineTo(hw * .44, top + h * .16); g.lineTo(hw * .2, top + h * .22); g.closePath(); g.fill();
+    g.fillStyle = C.ink; g.beginPath(); g.arc(-hw * .14, hem - h * .08, 1.8, 0, TAU); g.arc(-hw * .14, hem - h * .16, 1.8, 0, TAU); g.fill();
+    g.fillStyle = '#5a534b'; g.fillRect(-hw * .13, top - h * .05, hw * .26, h * .06);
+  }, { ss: 1.3, pad: 16, shadow: { dx: 5, dy: 6, blur: 7, a: .28 }, paper: .35 });
+  const hr = h * .085;
+  const head = sprite(hr * 6, hr * 5.4, hr * 3, hr * 4.6, g => {
+    g.translate(hr * 3, hr * 3.4);
+    // antlers
+    g.strokeStyle = '#e2d6bd'; g.lineCap = 'round';
+    for (const sd of [-1, 1]) {
+      g.lineWidth = hr * .13; g.beginPath(); g.moveTo(sd * hr * .45, -hr * .8); g.quadraticCurveTo(sd * hr * .7, -hr * 1.8, sd * hr * .95, -hr * 2.9); g.stroke();
+      g.lineWidth = hr * .09; g.beginPath(); g.moveTo(sd * hr * .62, -hr * 1.55); g.lineTo(sd * hr * 1.25, -hr * 2.05); g.moveTo(sd * hr * .8, -hr * 2.25); g.lineTo(sd * hr * .5, -hr * 2.8); g.moveTo(sd * hr * .88, -hr * 2.5); g.lineTo(sd * hr * 1.35, -hr * 2.85); g.stroke();
+    }
+    // ears
+    for (const sd of [-1, 1]) { g.fillStyle = '#d4c7ad'; g.beginPath(); g.ellipse(sd * hr * 1.45, -hr * .55, hr * .78, hr * .32, sd * -.35, 0, TAU); g.fill(); g.fillStyle = '#d99f8f'; g.beginPath(); g.ellipse(sd * hr * 1.45, -hr * .55, hr * .55, hr * .17, sd * -.35, 0, TAU); g.fill(); }
+    g.fillStyle = '#d6cab0'; g.beginPath(); g.ellipse(0, 0, hr * 1.02, hr * 1.12, 0, 0, TAU); g.fill();
+    withClip(g, gg => { gg.beginPath(); gg.ellipse(0, 0, hr * 1.02, hr * 1.12, 0, 0, TAU); }, gg => {
+      gg.fillStyle = '#6e6559'; gg.fillRect(-hr * 1.2, hr * .45, hr * 2.4, hr); hatch(gg, -hr * 1.2, -hr * 1.2, hr * 2.4, hr * 2.4, { gap: 2.6, ang: PI / 2, col: '#8a7c66', a: .35, wob: 1.5, seed: 12 });
+    });
+    for (const sd of [-1, 1]) { g.fillStyle = '#f0e9da'; g.beginPath(); g.arc(sd * hr * .45, -hr * .12, hr * .27, 0, TAU); g.fill(); g.fillStyle = C.ink; g.beginPath(); g.arc(sd * hr * .45, -hr * .12, hr * .2, 0, TAU); g.fill(); g.fillStyle = 'rgba(255,255,255,.7)'; g.beginPath(); g.arc(sd * hr * .45 - hr * .06, -hr * .18, hr * .05, 0, TAU); g.fill(); }
+    g.fillStyle = C.ink; g.beginPath(); g.ellipse(0, hr * .62, hr * .18, hr * .12, 0, 0, TAU); g.fill();
+  }, { ss: 1.3, pad: 12, shadow: { dx: 4, dy: 5, blur: 6, a: .25 }, paper: .3 });
+  return { body, head, h, neckY: -h * .8, x: o.x, look: 0, id: 77, deer: true };
+}
+
+// baked bird cut-outs: 4 perched poses + 3 wingbeat drawings, black and white (drawn once, shadow included)
+const BIRDS = {};
+function bakeBirds() {
+  const S = 80;
+  for (const white of [false, true]) {
+    const opt = white ? { body: '#ebe6d8', wing: C.wing, eye: C.ink, belly: '#f4efe3' } : { body: C.ink }, k0 = white ? 'w' : 'b';
+    for (const pose of ['sit', 'up', 'peck', 'crouch']) BIRDS[k0 + pose] = sprite(S * 1.62, S * 1.28, S * .86, S * 1.22, g => { g.translate(S * .86, S * 1.22); birdPerched(g, S, { ...opt, pose }); }, { ss: 1.25, pad: 14, shadow: { dx: 4, dy: 7, blur: 5, a: .28 }, paper: white ? .3 : 0 });
+    for (const k of [0, 1, 2]) BIRDS[k0 + 'f' + k] = sprite(S * 1.62, S * 2.12, S * .84, S * 1.06, g => { g.translate(S * .84, S * 1.06); birdFlying(g, S, k / 3, opt); }, { ss: 1.25, pad: 14, shadow: { dx: 2, dy: 11, blur: 7, a: .22 }, paper: white ? .3 : 0 });
+  }
+}
+const wingK = rph => ((Math.round(rph * 3) % 3) + 3) % 3;
+// ── sound: every tone and noise is synthesised; the same score drives live play and the offline mix ──
+const NOTE = n => { const m = /^([A-G])(#|b)?(\d)$/.exec(n); const i = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[m[1]] + (m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0); return 440 * Math.pow(2, (12 * (+m[3] + 1) + i - 69) / 12); };
+
+class Sound {
+  constructor(ctx, dest) {
+    this.ctx = ctx; const sr = ctx.sampleRate;
+    this.master = ctx.createGain(); this.master.gain.value = .92;
+    const sh = ctx.createWaveShaper(), cv = new Float32Array(2048); for (let i = 0; i < 2048; i++) { const x = i / 1023.5 - 1; cv[i] = Math.tanh(x * 1.25) / Math.tanh(1.25); } sh.curve = cv;
+    this.master.connect(sh); sh.connect(dest || ctx.destination);
+    this.verb = ctx.createConvolver(); this.verb.buffer = this.ir(2.3); const vo = ctx.createGain(); vo.gain.value = .55; this.verb.connect(vo); vo.connect(this.master);
+    const R = rng(4242), mono = (secs, fn) => { const b = ctx.createBuffer(1, Math.round(sr * secs), sr), d = b.getChannelData(0); fn(d, R); return b; };
+    this.white = mono(3, (d, R) => { for (let i = 0; i < d.length; i++) d[i] = R() * 2 - 1; });
+    this.pink = mono(4, (d, R) => { let b0 = 0, b1 = 0, b2 = 0; for (let i = 0; i < d.length; i++) { const w = R() * 2 - 1; b0 = .99765 * b0 + w * .099; b1 = .963 * b1 + w * .2965; b2 = .57 * b2 + w * 1.0527; d[i] = (b0 + b1 + b2 + w * .1848) * .2; } });
+    this.brown = mono(4, (d, R) => { let v = 0; for (let i = 0; i < d.length; i++) { v = (v + .02 * (R() * 2 - 1)) / 1.02; d[i] = v * 3.2; } });
+    this.bus = this.master; this.vbus = this.verb;
+  }
+  ir(dur) {
+    const c = this.ctx, sr = c.sampleRate, len = Math.round(sr * dur), b = c.createBuffer(2, len, sr), R = rng(31);
+    for (let ch = 0; ch < 2; ch++) {
+      const d = b.getChannelData(ch); let lp = 0;
+      for (let i = 0; i < len; i++) { const t = i / sr; lp = lp * .55 + (R() * 2 - 1) * .45; d[i] = t < .011 ? 0 : lp * Math.exp(-t * 3.1) * .5; }
+      for (let k = 0; k < 7; k++) { const at = Math.round(sr * (.013 + R() * .06)); if (at < len) d[at] += (R() - .5) * .6; }
+    }
+    return b;
+  }
+  out(pan = 0, wet = .25) {
+    const c = this.ctx, g = c.createGain(), p = c.createStereoPanner(); p.pan.value = clamp(pan, -1, 1);
+    g.connect(p); p.connect(this.bus);
+    if (wet > 0) { const s = c.createGain(); s.gain.value = wet; g.connect(s); s.connect(this.vbus); }
+    return g;
+  }
+  env(g, t, a, peak, tau) { g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(peak, t + a); g.gain.setTargetAtTime(0, t + a, tau); }
+  noiseSrc(buf, t, dur, off = 0) { const s = this.ctx.createBufferSource(); s.buffer = buf; s.loop = true; s.start(t, off % buf.duration); s.stop(t + dur); return s; }
+  filt(type, f, q = .7) { const b = this.ctx.createBiquadFilter(); b.type = type; b.frequency.value = f; b.Q.value = q; return b; }
+
+  musicBox(t, f, v = 1, pan = 0) {
+    const c = this.ctx, o = this.out(pan, .38);
+    for (const [r, a, tau] of [[1, 1, .95], [1.0032, .32, .75], [2, .1, .3], [3.01, .05, .12], [6.27, .07, .045]]) {
+      const os = c.createOscillator(), eg = c.createGain(); os.frequency.value = f * r; this.env(eg, t, .0025, a * v * .15, tau);
+      os.connect(eg); eg.connect(o); os.start(t); os.stop(t + tau * 7 + .05);
+    }
+    const hp = this.filt('highpass', 2600), ng = c.createGain(); this.env(ng, t, .001, v * .05, .004);
+    this.noiseSrc(this.white, t, .03, f % 1.3).connect(hp); hp.connect(ng); ng.connect(o);
+  }
+  // Karplus–Strong string (the telephone wire), with the tension settling after the pluck
+  pluck(t, f, dur = 2, v = 1, pan = 0, seed = 1) {
+    const c = this.ctx, sr = c.sampleRate, R = rng(seed), mk1 = (freq, decay, bright) => {
+      const N = Math.max(2, Math.round(sr / freq)), len = Math.round(sr * dur), b = c.createBuffer(1, len, sr), d = b.getChannelData(0), ring = new Float32Array(N);
+      let lp = 0; for (let i = 0; i < N; i++) { lp = lp * (1 - bright) + (R() * 2 - 1) * bright; ring[i] = lp; }
+      let idx = 0, peak = 0; for (let i = 0; i < len; i++) { const a = ring[idx], nb = ring[(idx + 1) % N]; ring[idx] = (a + nb) * .5 * decay; d[i] = a; peak = Math.max(peak, Math.abs(a)); idx = (idx + 1) % N; }
+      for (let i = 0; i < len; i++) d[i] /= peak || 1; return b;
+    };
+    const o = this.out(pan, .3);
+    for (const [freq, decay, bright, amp] of [[f, .997, .8, .42], [f * 4.03, .985, .95, .12]]) {
+      const s = c.createBufferSource(); s.buffer = mk1(freq, decay, bright); s.playbackRate.setValueAtTime(1.045, t); s.playbackRate.exponentialRampToValueAtTime(1, t + .35);
+      const g = c.createGain(); g.gain.setValueAtTime(amp * v, t); g.gain.setTargetAtTime(0, t + dur * .55, dur * .12); s.connect(g); g.connect(o); s.start(t); s.stop(t + dur);
+    }
+  }
+  flap(t, pan = 0, v = 1, n = 3, seed = 1) {
+    const R = rng(seed), o = this.out(pan, .12); let tt = t;
+    for (let i = 0; i < n; i++) {
+      const bp = this.filt('bandpass', 650 + R() * 600, .8), g = this.ctx.createGain(); this.env(g, tt, .007, v * (.34 - i * .05), .038);
+      this.noiseSrc(this.white, tt, .2, R() * 2).connect(bp); bp.connect(g); g.connect(o);
+      const lp = this.filt('lowpass', 260), g2 = this.ctx.createGain(); this.env(g2, tt, .005, v * .22, .03);
+      this.noiseSrc(this.brown, tt, .15, R() * 2).connect(lp); lp.connect(g2); g2.connect(o);
+      tt += .07 + R() * .03 + i * .012;
+    }
+  }
+  chirp(t, pan = 0, f0 = 3400, n = 2, v = 1, seed = 1) {
+    const c = this.ctx, R = rng(seed), o = this.out(pan, .3); let tt = t;
+    for (let i = 0; i < n; i++) {
+      const f = f0 * (.92 + R() * .2), os = c.createOscillator(), g = c.createGain(), fm = c.createOscillator(), fg = c.createGain();
+      os.frequency.setValueAtTime(f * .82, tt); os.frequency.exponentialRampToValueAtTime(f * 1.28, tt + .03); os.frequency.exponentialRampToValueAtTime(f * .95, tt + .07);
+      fm.frequency.value = 38 + R() * 20; fg.gain.value = f * .05; fm.connect(fg); fg.connect(os.frequency);
+      g.gain.setValueAtTime(0, tt); g.gain.linearRampToValueAtTime(v * .07, tt + .006); g.gain.linearRampToValueAtTime(v * .05, tt + .045); g.gain.linearRampToValueAtTime(0, tt + .08);
+      os.connect(g); g.connect(o); os.start(tt); fm.start(tt); os.stop(tt + .1); fm.stop(tt + .1);
+      tt += .085 + R() * .04;
+    }
+  }
+  whoosh(t, dur, p0 = -.6, p1 = .6, f0 = 300, f1 = 1400, v = 1) {
+    const c = this.ctx, g = c.createGain(), p = c.createStereoPanner(), bp = this.filt('bandpass', f0, 1.1);
+    bp.frequency.setValueAtTime(f0, t); bp.frequency.exponentialRampToValueAtTime(f1, t + dur * .6); bp.frequency.exponentialRampToValueAtTime(f0 * 1.2, t + dur);
+    p.pan.setValueAtTime(p0, t); p.pan.linearRampToValueAtTime(p1, t + dur);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v * .2, t + dur * .55); g.gain.linearRampToValueAtTime(0, t + dur);
+    this.noiseSrc(this.pink, t, dur + .05, t * 1.7).connect(bp); bp.connect(g); g.connect(p); p.connect(this.bus);
+    const s = c.createGain(); s.gain.value = .2; g.connect(s); s.connect(this.vbus);
+  }
+  // paper rustle: sparse crackle grains, band-limited
+  rustle(t, dur, v = 1, pan = 0, dens = 900, seed = 1) {
+    const c = this.ctx, sr = c.sampleRate, len = Math.round(sr * dur), b = c.createBuffer(1, len, sr), d = b.getChannelData(0), R = rng(seed);
+    let e = 0; for (let i = 0; i < len; i++) { if (R() < dens / sr) e = (R() * .8 + .2) * (R() < .5 ? -1 : 1); d[i] = e * (R() * 2 - 1); e *= .93; }
+    const s = c.createBufferSource(); s.buffer = b; const hp = this.filt('highpass', 1700), g = c.createGain(), o = this.out(pan, .2);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v * .5, t + dur * .15); g.gain.setTargetAtTime(0, t + dur * .35, dur * .22);
+    s.connect(hp); hp.connect(g); g.connect(o); s.start(t);
+  }
+  tick(t, v = 1, pan = 0) { const hp = this.filt('bandpass', 4200, 1.5), g = this.ctx.createGain(); this.env(g, t, .0008, v * .12, .006); this.noiseSrc(this.white, t, .04, t * 3.1).connect(hp); hp.connect(g); g.connect(this.out(pan, .15)); }
+  thump(t, v = 1, pan = 0) {
+    const c = this.ctx, os = c.createOscillator(), g = c.createGain(), o = this.out(pan, .12);
+    os.frequency.setValueAtTime(200, t); os.frequency.exponentialRampToValueAtTime(70, t + .06); this.env(g, t, .002, v * .3, .03); os.connect(g); g.connect(o); os.start(t); os.stop(t + .25);
+    const lp = this.filt('lowpass', 1800), g2 = c.createGain(); this.env(g2, t, .001, v * .12, .008); this.noiseSrc(this.white, t, .05, t).connect(lp); lp.connect(g2); g2.connect(o);
+  }
+  creak(t, v = 1, pan = 0) {
+    const c = this.ctx, os = c.createOscillator(), lfo = c.createOscillator(), lg = c.createGain(), bp = this.filt('bandpass', 720, 5), g = c.createGain();
+    os.type = 'sawtooth'; os.frequency.setValueAtTime(128, t); os.frequency.linearRampToValueAtTime(96, t + .38); lfo.frequency.value = 22; lg.gain.value = 9; lfo.connect(lg); lg.connect(os.frequency);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v * .09, t + .05); g.gain.linearRampToValueAtTime(v * .05, t + .25); g.gain.linearRampToValueAtTime(0, t + .4);
+    os.connect(bp); bp.connect(g); g.connect(this.out(pan, .3)); os.start(t); lfo.start(t); os.stop(t + .45); lfo.stop(t + .45);
+  }
+  bloom(t, v = 1, pan = 0) {
+    const c = this.ctx, os = c.createOscillator(), g = c.createGain();
+    os.frequency.setValueAtTime(620, t); os.frequency.exponentialRampToValueAtTime(1180, t + .035); this.env(g, t, .004, v * .045, .03);
+    os.connect(g); g.connect(this.out(pan, .3)); os.start(t); os.stop(t + .2);
+  }
+  cloth(t, v = 1, pan = 0) { const bp = this.filt('bandpass', 1900, .6), g = this.ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v * .05, t + .1); g.gain.linearRampToValueAtTime(0, t + .3); this.noiseSrc(this.pink, t, .32, t * 2).connect(bp); bp.connect(g); g.connect(this.out(pan, .15)); }
+  clink(t, v = 1, pan = 0) { // ceramic tap
+    const c = this.ctx, o = this.out(pan, .3);
+    for (const [f, a, tau] of [[2350, .5, .09], [3710, .3, .05], [5480, .2, .03], [1180, .25, .06]]) { const os = c.createOscillator(), g = c.createGain(); os.frequency.value = f; this.env(g, t, .001, a * v * .12, tau); os.connect(g); g.connect(o); os.start(t); os.stop(t + .4); }
+  }
+  // continuous room / street / field tone for one shot (cross-faded at the cuts)
+  // soft chiptune voice: triangle (warm) or square (bright) with a pluck envelope, optional slide to f2 and vibrato
+  chip(t, f, v = 1, pan = 0, { wave = 'triangle', dur = .35, f2 = 0, vib = 0 } = {}) {
+    const c = this.ctx, o = this.out(pan, .22), os = c.createOscillator(), g = c.createGain(), lp = this.filt('lowpass', wave === 'square' ? 2600 : 5200);
+    os.type = wave; os.frequency.setValueAtTime(f, t); if (f2) os.frequency.exponentialRampToValueAtTime(f2, t + dur * .8);
+    if (vib) { const l = c.createOscillator(), lg = c.createGain(); l.frequency.value = 7; lg.gain.value = f * vib; l.connect(lg); lg.connect(os.frequency); l.start(t); l.stop(t + dur * 2 + .1); }
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v * (wave === 'square' ? .045 : .12), t + .008); g.gain.setTargetAtTime(0, t + dur * .6, dur * .25);
+    os.connect(lp); lp.connect(g); g.connect(o); os.start(t); os.stop(t + dur * 2 + .1);
+  }
+  bed(t, dur, kind, off = 0) {
+    const c = this.ctx, g = c.createGain(), end = t + dur, lvl = { room: .5, street: .55, field: .6, stage: .42 }[kind];
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(lvl, t + .05); g.gain.setValueAtTime(lvl, end - .05); g.gain.linearRampToValueAtTime(0, end + .03); g.connect(this.bus);
+    const layer = (buf, type, f, q, amp, o2 = 0) => { const fl = this.filt(type, f, q), a = c.createGain(); a.gain.value = amp; this.noiseSrc(buf, t, dur + .06, off + o2).connect(fl); fl.connect(a); a.connect(g); return { fl, a }; };
+    if (kind === 'room') { layer(this.brown, 'lowpass', 320, .5, .16); const h = layer(this.white, 'highpass', 5200, .5, .012, 1); h.a.gain.setValueAtTime(.006, t); h.a.gain.linearRampToValueAtTime(.016, t + dur * .5); h.a.gain.linearRampToValueAtTime(.008, end); }
+    if (kind === 'street') { layer(this.pink, 'bandpass', 420, .45, .085); layer(this.brown, 'lowpass', 110, .6, .22, 2); }
+    if (kind === 'field') { const w = layer(this.pink, 'bandpass', 380, .8, .12); w.fl.frequency.setValueAtTime(330, t); w.fl.frequency.linearRampToValueAtTime(760, t + dur * .55); w.fl.frequency.linearRampToValueAtTime(420, end); layer(this.white, 'highpass', 3400, .5, .008, 1); }
+    if (kind === 'stage') { layer(this.brown, 'lowpass', 260, .5, .13); layer(this.pink, 'bandpass', 900, .4, .012, 2); }
+  }
+  play(e, t, off = 0) {
+    const R = rng((e.t * 1000) | 0);
+    switch (e.k) {
+      case 'mb': this.musicBox(t, NOTE(e.n), e.v ?? 1, e.pan ?? 0); break;
+      case 'vo': { const b = VO.buf[e.id]; if (!b) break; const s = this.ctx.createBufferSource(), g = this.ctx.createGain(); s.buffer = b; g.gain.value = e.v ?? .85; s.connect(g); g.connect(this.master); s.start(t, off); break; }
+      case 'chord': e.ns.forEach((n, i) => this.musicBox(t + i * (e.strum ?? .028), NOTE(n), (e.v ?? .8) * (1 - i * .08), (e.pan ?? 0) + (i - 1.5) * .12)); break;
+      case 'pluck': this.pluck(t, e.f, e.dur ?? 2.2, e.v ?? 1, e.pan ?? 0, (e.t * 100) | 0); break;
+      case 'flap': this.flap(t, e.pan ?? 0, e.v ?? 1, e.n ?? 3, (e.t * 1000) | 0); break;
+      case 'chirp': this.chirp(t, e.pan ?? 0, e.f ?? 3400, e.n ?? 2, e.v ?? 1, (e.t * 1000) | 0); break;
+      case 'whoosh': this.whoosh(t, e.dur, e.p0, e.p1, e.f0, e.f1, e.v ?? 1); break;
+      case 'rustle': this.rustle(t, e.dur ?? .4, e.v ?? 1, e.pan ?? 0, e.dens ?? 900, (e.t * 1000) | 0); break;
+      case 'tick': this.tick(t, e.v ?? 1, e.pan ?? 0); break;
+      case 'thump': this.thump(t, e.v ?? 1, e.pan ?? 0); break;
+      case 'creak': this.creak(t, e.v ?? 1, e.pan ?? 0); break;
+      case 'bloom': this.bloom(t, e.v ?? 1, e.pan ?? 0); break;
+      case 'cloth': this.cloth(t, e.v ?? 1, e.pan ?? 0); break;
+      case 'clink': this.clink(t, e.v ?? 1, e.pan ?? 0); break;
+      case 'chip': this.chip(t, e.f ?? NOTE(e.n), e.v ?? 1, e.pan ?? 0, { wave: e.wave, dur: e.dur, f2: e.f2, vib: e.vib }); break;
+      case 'bed': this.bed(t, e.dur - off, e.kind, off); break;
+    }
+  }
+}
+
+// ── narration (optional): the story sets VO.src = [base64 mp3, …] and schedules { t, k: 'vo', id, dur } events;
+//    clips are decoded once and shared by the live player and the offline mix (see shot-contract §9)
+const VO = { src: [], buf: [], _p: null };
+function voReady() { return VO._p || (VO._p = Promise.all(VO.src.map((b, i) => { const u8 = Uint8Array.from(atob(b), c => c.charCodeAt(0)); return new OfflineAudioContext(1, 1, 48000).decodeAudioData(u8.buffer).then(buf => { VO.buf[i] = buf; }); }))); }
+
+// ── pixel toolkit (used when PIX > 0; harmless otherwise) ──────────────────────────────────────
+const LO = PIX ? mk(LW, LH) : null, LOG = LO ? g2(LO) : null;
+// pixel camera: pans only (no zoom), snapped to whole pixels so nothing smears
+function setCamP(c, cam, p = 1) { const cx = LW / 2 + (cam.x - LW / 2) * p, cy = LH / 2 + (cam.y - LH / 2) * p; c.setTransform(1, 0, 0, 1, Math.round(LW / 2 - cx), Math.round(LH / 2 - cy)); }
+// sprite from ASCII art: one string per row, pal maps a char to a colour; '.' and ' ' stay clear
+function pxArt(rows, pal) { const w = Math.max(...rows.map(r => r.length)), c = mk(w, rows.length), g = g2(c); rows.forEach((r, y) => [...r].forEach((ch, x) => { const col = pal[ch]; if (col) { g.fillStyle = col; g.fillRect(x, y, 1, 1); } })); return c; }
+// place a pixel sprite by its anchor (default bottom-centre = feet), mirrored when flip
+function pxPut(g, spr, x, y, { flip = false, ax = spr.width >> 1, ay = spr.height } = {}) {
+  const X = Math.round(x - ax), Y = Math.round(y - ay);
+  if (!flip) { g.drawImage(spr, X, Y); return; }
+  g.save(); g.translate(X + spr.width, Y); g.scale(-1, 1); g.drawImage(spr, 0, 0); g.restore();
+}
+// double a baked pixel sprite (nearest-neighbour): characters are drawn in ASCII at 1× and shown at 2×
+function px2(c) { const o = mk(c.width * 2, c.height * 2), g = g2(o); g.imageSmoothingEnabled = false; g.drawImage(c, 0, 0, o.width, o.height); return o; }
+function pxRect(g, x, y, w, h, col) { g.fillStyle = col; g.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); }
+function pxDisc(g, cx, cy, r, col) { g.fillStyle = col; cx = Math.round(cx); cy = Math.round(cy); for (let y = -r; y <= r; y++) { const w = Math.floor(Math.sqrt(r * r - y * y) + .35); g.fillRect(cx - w, cy + y, w * 2 + 1, 1); } }
+// 4×4 ordered dither: fill with a, then pixels of b where the Bayer threshold < t (t 0..1, or a fn of x,y)
+const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+function pxDither(g, x, y, w, h, a, b, t) { g.fillStyle = a; g.fillRect(x, y, w, h); g.fillStyle = b; for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) { const k = typeof t === 'function' ? t(x + i, y + j) : t; if ((BAYER[((y + j) & 3) * 4 + ((x + i) & 3)] + .5) / 16 < k) g.fillRect(x + i, y + j, 1, 1); } }
+// ═══ STORY: 小克剪辑 ═══════════════════════════════════════════════════════════
+// ═══ UI-DEMO KIT BEGIN — generic: copy this whole block into any software-product demo film ═══
+// palette: warm paper, one warm-dark hairline for all UI, muted brick-red hero, pastel UI accents
+Object.assign(C, { bgc: '#f5f1e8', panel: '#fbf8f2', line: '#4a4340', lineS: '#9a918a', lane: '#efe9dd', tab: '#f4cf63', lav: '#dcd6f5', cream: '#fbe7a6',
+  ke: '#d9593f', keO: '#8f3a2a', eye: '#2d2522', ph: '#e0504a', sfx: '#ffd23f', ink: '#3a2f2c' });
+const BEAT = 60 / 120.0;
+const FONT = '"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif';
+const backOut = (t, s = 1.7) => { t = clamp(t, 0, 1) - 1; return 1 + (s + 1) * t * t * t + s * t * t; };
+const elastic = (t, k = 7, w = 22) => t <= 0 ? 0 : Math.exp(-k * t) * Math.cos(w * t);
+const seg01 = (t, a, b) => clamp((t - a) / (b - a), 0, 1);
+function rr(g, x, y, w, h, r) { r = Math.max(0, Math.min(r, w / 2, h / 2)); g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+function box(g, x, y, w, h, { r = 18, fill = C.panel, line = C.line, lw = 5, dash = null } = {}) { rr(g, x, y, w, h, r); if (fill) { g.fillStyle = fill; g.fill(); } if (lw) { g.save(); if (dash) g.setLineDash(dash); g.lineWidth = lw; g.strokeStyle = line; g.lineJoin = 'round'; g.stroke(); g.restore(); } }
+function txt(g, s, x, y, { size = 32, col = C.line, align = 'left', w = 700 } = {}) { g.font = `${w} ${size}px ${FONT}`; g.textAlign = align; g.textBaseline = 'middle'; g.fillStyle = col; g.fillText(s, x, y); }
+
+// ── comic bits: speech bubble and SFX lettering (reference: 开工！ 啊！ 哐当！ 清爽！) ──
+function bubble(g, s, x, y, u) { if (u <= 0 || u >= 1) return; const k = backOut(u * 5 > 1 ? 1 : u * 5) * (u > .85 ? 1 - (u - .85) / .15 : 1); if (k <= 0) return; g.save(); g.translate(x, y); g.scale(k, k);
+  g.scale(1.5, 1.5); g.font = `800 34px ${FONT}`; const w = g.measureText(s).width + 44; box(g, -w / 2, -34, w, 64, { r: 18, fill: '#fff', lw: 4 });
+  g.beginPath(); g.moveTo(-w / 2 + 26, 28); g.lineTo(-w / 2 + 12, 52); g.lineTo(-w / 2 + 46, 28); g.fillStyle = '#fff'; g.fill(); g.stroke(); g.fillRect(-w / 2 + 24, 24, 24, 6); txt(g, s, 0, -1, { size: 34, align: 'center', w: 800 }); g.restore(); }
+function sfxTxt(g, s, x, y, u, { rot = -.12, col = C.sfx, size = 110 } = {}) { if (u <= 0 || u >= 1) return; const k = backOut(Math.min(1, u * 5), 2.4); g.save(); g.globalAlpha = u > .8 ? (1 - u) / .2 : 1; g.translate(x, y); g.rotate(rot); g.scale(k, k);
+  g.font = `900 ${size}px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round'; g.lineWidth = size * .2; g.strokeStyle = C.ink; g.strokeText(s, 0, 0); g.fillStyle = col; g.fillText(s, 0, 0); g.restore(); }
+function knife(g, x, y, ang) { g.save(); g.translate(x, y); g.rotate(ang); g.lineWidth = 4; g.strokeStyle = C.line; g.lineJoin = 'round';
+  rr(g, -9, -40, 18, 44, 7); g.fillStyle = C.tab; g.fill(); g.stroke(); g.beginPath(); g.moveTo(-10, 4); g.lineTo(12, 4); g.lineTo(6, 92); g.quadraticCurveTo(-6, 70, -10, 4); g.closePath(); g.fillStyle = '#e8ecf2'; g.fill(); g.stroke(); g.restore(); }
+function trash(g, x, y, k, lid) { if (k <= 0) return; g.save(); g.translate(x, y); g.scale(k, k); g.lineWidth = 5; g.strokeStyle = C.line; g.lineJoin = 'round';
+  g.beginPath(); g.moveTo(-62, -80); g.lineTo(62, -80); g.lineTo(50, 40); g.lineTo(-50, 40); g.closePath(); g.fillStyle = '#c9c9cf'; g.fill(); g.stroke();
+  for (const d of [-24, 0, 24]) { g.beginPath(); g.moveTo(d * 1.1, -66); g.lineTo(d, 28); g.stroke(); }
+  g.save(); g.translate(-72, -86); g.rotate(lid); rr(g, 0, -14, 144, 18, 6); g.fillStyle = '#b5b5bd'; g.fill(); g.stroke(); rr(g, 56, -28, 32, 16, 6); g.fill(); g.stroke(); g.restore(); g.restore(); }
+// ── mascot (小克 by default): flat block, tall oval eyes, stub legs; one arm becomes a long hose only when it works ──
+function hose(g, a, b, bend) { const dx = b[0] - a[0], dy = b[1] - a[1], d = Math.hypot(dx, dy) || 1, mx = (a[0] + b[0]) / 2 - dy / d * bend, my = (a[1] + b[1]) / 2 + dx / d * bend;
+  g.beginPath(); g.moveTo(a[0], a[1]); g.quadraticCurveTo(mx, my, b[0], b[1]); g.lineCap = 'round'; g.lineWidth = 30; g.strokeStyle = MASCOT.edge; g.stroke(); g.lineWidth = 20; g.strokeStyle = MASCOT.body; g.stroke(); }
+// P = { x, y (feet), s (scale / pop-in), sq (+squash/−stretch), look −1..1, eyes n|shock|happy|squint|x, blink, mouth,
+//       walk (leg phase), armL / armR ([x, y] world target or null = stub), tool 'knife' + toolAng }
+function mascotDraw(g, P) {
+  const M = MASCOT, s = P.s ?? 1; if (s <= 0) return; const sy = 1 - (P.sq || 0), sx = 1 / sy, bw = M.w * sx * s, bh = M.h * sy * s, lh = M.leg * s * (1 - (P.sq || 0) * .5), top = P.y - lh - bh;
+  g.lineJoin = 'round';
+  for (const d of [-1, 1]) { const lift = P.walk != null ? Math.max(0, Math.sin(P.walk + (d > 0 ? PI : 0))) * 14 * s : 0; rr(g, P.x + d * bw * .24 - 10 * s, P.y - lh - 4 - lift, 20 * s, lh + 4, 8 * s); g.fillStyle = M.body; g.fill(); g.lineWidth = 5; g.strokeStyle = M.edge; g.stroke(); }
+  const shL = [P.x - bw / 2 + 4, top + bh * .52], shR = [P.x + bw / 2 - 4, top + bh * .52];
+  hose(g, shL, P.armL || [shL[0] - 26 * s, shL[1] + 30 * s], -4);
+  box(g, P.x - bw / 2, top, bw, bh, { r: M.r * s, fill: M.body, line: M.edge, lw: 5 });
+  rr(g, P.x - bw / 2 + 14 * s, top + 12 * s, bw * .3, 12 * s, 6 * s); g.fillStyle = 'rgba(255,255,255,.18)'; g.fill();
+  const lx = (P.look || 0) * 10 * s, ey = top + bh * .44;
+  for (const d of [-1, 1]) { const ex = P.x + d * bw * .17 + lx; g.fillStyle = M.eye; g.strokeStyle = M.eye; g.lineWidth = 7 * s; g.lineCap = 'round';
+    if (P.eyes === 'happy') { g.beginPath(); g.arc(ex, ey + 10 * s, 14 * s, 1.15 * PI, 1.85 * PI); g.stroke(); }
+    else if (P.eyes === 'squint') { g.beginPath(); g.moveTo(ex - 14 * s, ey); g.lineTo(ex + 14 * s, ey + d * 0); g.stroke(); }
+    else if (P.eyes === 'x') { g.beginPath(); g.moveTo(ex - 12 * s, ey - 12 * s); g.lineTo(ex + 12 * s, ey + 12 * s); g.moveTo(ex + 12 * s, ey - 12 * s); g.lineTo(ex - 12 * s, ey + 12 * s); g.stroke(); }
+    else { const big = P.eyes === 'shock' ? 1.35 : 1, bl = P.blink ? .12 : 1; g.beginPath(); g.ellipse(ex, ey, 11 * s * big, 24 * s * big * bl, 0, 0, TAU); g.fill(); if (!P.blink) { g.fillStyle = '#fff'; g.beginPath(); g.arc(ex - 3 * s, ey - 11 * s * big, 4 * s, 0, TAU); g.fill(); } } }
+  if (P.mouth) { g.fillStyle = M.eye; g.beginPath(); g.ellipse(P.x + lx, top + bh * .72, 10 * s, 13 * s, 0, 0, TAU); g.fill(); }
+  const hr = P.armR || [shR[0] + 26 * s, shR[1] + 30 * s]; hose(g, shR, hr, P.armR ? 30 : 4);
+  if (P.tool === 'knife') knife(g, hr[0], hr[1], P.toolAng || 0);
+}
+
+// ── mascot config: swap per product (colour, block size, eyes). mascotDraw() reads only this ──
+const MASCOT = { body: C.ke, edge: C.keO, eye: C.eye, w: 200, h: 168, leg: 34, r: 16 };
+// ── state model: the UI is a pure function of time. EVENTS are edits in time order, each a pure
+//    (state) => newState; every view (list, preview, chart, counter) reads stateAt(t), so what the
+//    mascot does and what the product shows change on the same frame. ──
+const clone = o => JSON.parse(JSON.stringify(o));
+function stateAt(t, init, events) { let s = clone(init); for (const e of events) if (t >= e.t) s = e.apply(s); return s; }
+// piecewise keyframes for hands, cursors, cameras: ks = [[t, value], ...] (value: number or [x, y]); eased between keys
+function keys(t, ks, ease = eio) {
+  if (t <= ks[0][0]) return ks[0][1]; for (let i = 1; i < ks.length; i++) { const [t1, v1] = ks[i], [t0, v0] = ks[i - 1]; if (t < t1) { const u = ease((t - t0) / (t1 - t0)); return Array.isArray(v0) ? v0.map((a, j) => lerp(a, v1[j], u)) : lerp(v0, v1, u); } }
+  return ks[ks.length - 1][1];
+}
+// ── generic UI widgets (flat fill + one hairline colour). Every widget takes its live value as an argument. ──
+function uiButton(g, x, y, w, h, label, { fill = C.tab, press = 0, size = 30 } = {}) { const k = 1 - .08 * press; g.save(); g.translate(x + w / 2, y + h / 2); g.scale(1 + .04 * press, k); box(g, -w / 2, -h / 2, w, h, { r: h / 2, fill }); txt(g, label, 0, 1, { size, align: 'center' }); g.restore(); }
+function uiSlider(g, x, y, w, v, { col = '#6cc7b7', label = '', val = '' } = {}) { if (label) txt(g, label, x, y - 36, { size: 26, col: C.lineS }); if (val) txt(g, val, x + w, y - 36, { size: 22, col: C.lineS, align: 'right' });
+  rr(g, x, y - 7, w, 14, 7); g.fillStyle = C.lane; g.fill(); g.lineWidth = 3; g.strokeStyle = C.line; g.stroke(); rr(g, x, y - 7, w * v + 8, 14, 7); g.fillStyle = col; g.fill(); g.stroke();
+  g.beginPath(); g.arc(x + w * v, y, 17, 0, TAU); g.fillStyle = '#fff'; g.fill(); g.lineWidth = 4; g.stroke(); }
+function uiToggle(g, x, y, on, { col = '#6cc7b7' } = {}) { on = clamp(on, 0, 1); rr(g, x, y, 100, 50, 25); g.fillStyle = on > .5 ? col : C.lane; g.fill(); g.lineWidth = 4; g.strokeStyle = C.line; g.stroke(); g.beginPath(); g.arc(x + 25 + 50 * on, y + 25, 18, 0, TAU); g.fillStyle = '#fff'; g.fill(); g.stroke(); }
+function uiTabs(g, x, y, labels, active, { w = 130, h = 56 } = {}) { labels.forEach((s, i) => { box(g, x + i * (w + 20), y, w, h, { r: 14, fill: i === active ? C.tab : C.panel, lw: 4 }); txt(g, s, x + i * (w + 20) + w / 2, y + h / 2 + 1, { size: 28, align: 'center' }); }); }
+// text field; n = characters typed so far (drive it from the model), caret blinks on the half-beat
+function uiField(g, x, y, w, h, text, n, t, { ph = '', size = 34 } = {}) { box(g, x, y, w, h, { r: 16, fill: '#fff' }); const s = [...text].slice(0, Math.floor(n)).join('');
+  if (!s && ph) txt(g, ph, x + 24, y + h / 2, { size, col: C.lineS, w: 500 }); else txt(g, s, x + 24, y + h / 2, { size });
+  if ((t % .5) < .3) { g.font = `700 ${size}px ${FONT}`; const cw = s ? g.measureText(s).width : 0; g.fillStyle = C.ph; g.fillRect(x + 26 + cw, y + h * .25, 4, h * .5); } }
+function uiProgress(g, x, y, w, h, u, { col = C.tab, label = '' } = {}) { box(g, x, y, w, h, { r: h / 2, fill: C.lane }); if (u > 0) box(g, x, y, Math.max(h, w * clamp(u, 0, 1)), h, { r: h / 2, fill: col }); if (label) txt(g, label, x + w / 2, y + h / 2 + 1, { size: h * .55, align: 'center' }); }
+// device frames: draw the chrome, return the screen rect the app draws into
+function deviceFrame(g, kind, x, y, w, h, { title = '' } = {}) {
+  if (kind === 'phone') { box(g, x, y, w, h, { r: 64, fill: '#2b2727' }); return { x: x + 18, y: y + 18, w: w - 36, h: h - 36, r: 50 }; }
+  box(g, x, y, w, h, { r: 26 }); g.fillStyle = C.line; g.fillRect(x, y + 70, w, 4);
+  ['#f06b5b', C.tab, '#7cc88a'].forEach((c, i) => { g.beginPath(); g.arc(x + 40 + i * 40, y + 36, 12, 0, TAU); g.fillStyle = c; g.fill(); g.lineWidth = 3; g.strokeStyle = C.line; g.stroke(); });
+  if (kind === 'browser') { box(g, x + 180, y + 14, w - 220, 44, { r: 22, fill: C.lane, lw: 3 }); txt(g, title, x + 210, y + 37, { size: 22, col: C.lineS }); } else txt(g, title, x + w / 2, y + 37, { size: 24, col: C.lineS, align: 'center' });
+  return { x: x + 4, y: y + 74, w: w - 8, h: h - 78, r: 20 };
+}
+// click feedback: expanding ring + three spark ticks at a press point (u 0..1)
+function clickRing(g, x, y, u) { if (u <= 0 || u >= 1) return; g.save(); g.globalAlpha = 1 - u; g.lineWidth = 6; g.strokeStyle = C.ph; g.beginPath(); g.arc(x, y, 20 + eo(u) * 60, 0, TAU); g.stroke();
+  for (let i = 0; i < 3; i++) { const a = -PI / 2 + (i - 1) * .7, r0 = 50 + eo(u) * 30; g.beginPath(); g.moveTo(x + Math.cos(a) * r0, y + Math.sin(a) * r0); g.lineTo(x + Math.cos(a) * (r0 + 26), y + Math.sin(a) * (r0 + 26)); g.stroke(); } g.restore(); }
+// ═══ UI-DEMO KIT END ═══
+
+// ═══ APP: 小克剪辑 (a video editor). Replace this block to demo a different product. ═══
+// ═══ MEDIA: every clip is a function of its own source time. Timeline thumbnails and the phone preview
+//     both call renderSrc(), so what the timeline shows and what the preview plays can never disagree. ═══
+const SRC = {
+  night: { dur: 1.6, name: '夜景.mp4', col: '#2c3163' }, ramen: { dur: 2.4, name: '拉面.mp4', col: '#f0c25a' },
+  shiba: { dur: 1.6, name: '柴犬.mov', col: '#67c3b3' }, disco: { dur: 1.6, name: '小克蹦迪.mp4', col: '#8b77d6' } };
+const BLUR = [.8, 1.6]; // the out-of-focus stretch inside 拉面.mp4 (source seconds)
+const isBlur = (src, st) => src === 'ramen' && st >= BLUR[0] - 1e-6 && st < BLUR[1] - 1e-6;
+const FR = {
+  night(g, w, h, t) {
+    const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#1b1f4d'); gr.addColorStop(1, '#4a3f86'); g.fillStyle = gr; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 26; i++) { g.globalAlpha = .5 + .5 * Math.sin(t * 5 + i); g.fillStyle = '#fff'; g.beginPath(); g.arc(hash(i, 1) * w, hash(i, 2) * h * .55, (1 + hash(i, 3) * 1.6) * w / 300, 0, TAU); g.fill(); } g.globalAlpha = 1;
+    g.fillStyle = '#f6d365'; g.beginPath(); g.arc(w * .68, h * .2, w * .11, 0, TAU); g.fill(); g.fillStyle = '#21255a'; g.beginPath(); g.arc(w * .73, h * .17, w * .1, 0, TAU); g.fill();
+    const ph = (t * .9) % 1; if (ph < .3) { g.strokeStyle = '#fff'; g.lineWidth = w / 160; g.beginPath(); const x = w * (.15 + ph * 1.2), y = h * (.06 + ph * .4); g.moveTo(x, y); g.lineTo(x - w * .14, y - h * .05); g.stroke(); }
+    for (let i = 0; i < 8; i++) { const bx = i * w / 8, bw = w / 8 + 1, bh = h * (.26 + .26 * hash(i, 7)); g.fillStyle = i % 2 ? '#12163a' : '#1a1e48'; g.fillRect(bx, h - bh, bw, bh);
+      const s = w * .022; for (let wy = h - bh + s * 1.5; wy < h - s; wy += s * 2.2) for (let wx = bx + s * .8; wx < bx + bw - s; wx += s * 2) if (hash(i, wy | 0, (wx | 0) + Math.floor(t * 3) * ((i + (wy | 0)) % 5 === 0)) > .45) { g.fillStyle = '#f7d56b'; g.fillRect(wx, wy, s, s * 1.2); } }
+  },
+  ramen(g, w, h, t) {
+    g.fillStyle = '#f7e3b5'; g.fillRect(0, 0, w, h); g.fillStyle = '#e7ae62'; g.fillRect(0, h * .72, w, h * .28);
+    const cx = w / 2, cy = h * .6, R = w * .38, lw = w / 90; g.lineWidth = lw; g.strokeStyle = C.line;
+    g.beginPath(); g.ellipse(cx, cy, R, R * .85, 0, 0, PI); g.fillStyle = '#fff'; g.fill(); g.stroke();
+    g.strokeStyle = '#d9473b'; g.lineWidth = R * .07; g.beginPath(); g.ellipse(cx, cy + R * .05, R * .92, R * .55, 0, .15 * PI, .85 * PI); g.stroke();
+    g.lineWidth = lw; g.strokeStyle = C.line; g.beginPath(); g.ellipse(cx, cy, R, R * .3, 0, 0, TAU); g.fillStyle = '#e8a24e'; g.fill(); g.stroke();
+    g.strokeStyle = '#f8dc84'; g.lineWidth = w / 70; for (let i = 0; i < 5; i++) { g.beginPath(); g.ellipse(cx + (i - 2) * R * .18, cy, R * .22, R * .08, 0, 0, PI); g.stroke(); }
+    g.fillStyle = '#fff'; g.beginPath(); g.ellipse(cx - R * .45, cy - R * .03, R * .2, R * .12, 0, 0, TAU); g.fill(); g.fillStyle = '#f39a2e'; g.beginPath(); g.arc(cx - R * .45, cy - R * .03, R * .08, 0, TAU); g.fill();
+    g.fillStyle = '#2f4a38'; g.fillRect(cx + R * .35, cy - R * .5, R * .22, R * .45);
+    const lift = .5 + .5 * Math.sin(t * 4), tip = [cx + R * .05, cy - R * (.25 + .7 * lift)];
+    g.strokeStyle = '#f8dc84'; g.lineWidth = w / 80; for (let i = -1; i <= 1; i++) { g.beginPath(); g.moveTo(tip[0] + i * w * .012, tip[1]); g.quadraticCurveTo(tip[0] + i * w * .03, (tip[1] + cy) / 2, tip[0] + i * w * .02, cy); g.stroke(); }
+    g.strokeStyle = '#8a5a3c'; g.lineWidth = w / 50; g.lineCap = 'round'; for (const d of [0, w * .03]) { g.beginPath(); g.moveTo(w * .95 + d, h * .08); g.lineTo(tip[0] + d * .4, tip[1]); g.stroke(); }
+    g.strokeStyle = 'rgba(255,255,255,.75)'; g.lineWidth = w / 90; for (let i = 0; i < 3; i++) { g.beginPath(); const x = cx - R * .5 + i * R * .5, o = Math.sin(t * 3 + i) * w * .02; g.moveTo(x, cy - R * .35); g.bezierCurveTo(x + w * .04 + o, cy - R * .6, x - w * .04 - o, cy - R * .8, x + o, cy - R * 1.05); g.stroke(); }
+  },
+  shiba(g, w, h, t) {
+    g.fillStyle = '#c9ede2'; g.fillRect(0, 0, w, h); g.fillStyle = '#b3e2d4'; for (let i = 0; i < 12; i++) { g.beginPath(); g.arc(hash(i, 9) * w, hash(i, 8) * h, w * .02, 0, TAU); g.fill(); }
+    const cx = w / 2, cy = h * .55, r = w * .3, lw = w / 90; g.save(); g.translate(cx, cy); g.rotate(.08 * Math.sin(t * 3.5)); g.lineWidth = lw; g.strokeStyle = C.line; g.lineJoin = 'round';
+    for (const d of [-1, 1]) { g.beginPath(); g.moveTo(d * r * .85, -r * .3); g.lineTo(d * r * .7, -r * 1.15); g.lineTo(d * r * .15, -r * .8); g.closePath(); g.fillStyle = '#e98f47'; g.fill(); g.stroke(); }
+    g.beginPath(); g.arc(0, 0, r, 0, TAU); g.fillStyle = '#e98f47'; g.fill(); g.stroke();
+    g.beginPath(); g.ellipse(0, r * .35, r * .72, r * .55, 0, 0, TAU); g.fillStyle = '#fff7ec'; g.fill();
+    g.strokeStyle = C.line; g.lineWidth = lw * 1.4; g.lineCap = 'round'; for (const d of [-1, 1]) { g.beginPath(); g.arc(d * r * .38, -r * .05, r * .12, 1.1 * PI, 1.9 * PI); g.stroke(); }
+    g.fillStyle = '#ff9fb0'; for (const d of [-1, 1]) { g.beginPath(); g.ellipse(d * r * .55, r * .25, r * .13, r * .08, 0, 0, TAU); g.fill(); }
+    g.fillStyle = C.line; g.beginPath(); g.ellipse(0, r * .18, r * .09, r * .06, 0, 0, TAU); g.fill();
+    g.beginPath(); g.moveTo(-r * .15, r * .32); g.quadraticCurveTo(-r * .07, r * .42, 0, r * .3); g.quadraticCurveTo(r * .07, r * .42, r * .15, r * .32); g.stroke(); g.restore();
+    for (let i = 0; i < 3; i++) { const u = (t * .45 + i / 3) % 1, x = w * (.2 + .3 * i), y = h * (.85 - u * .75); g.globalAlpha = 1 - u; g.save(); g.translate(x, y); g.scale(w / 300, w / 300); g.beginPath(); g.moveTo(0, 8); g.bezierCurveTo(-14, -2, -8, -12, 0, -5); g.bezierCurveTo(8, -12, 14, -2, 0, 8); g.fillStyle = '#ff6f91'; g.fill(); g.restore(); } g.globalAlpha = 1;
+  },
+  disco(g, w, h, t) {
+    const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#2e2466'); gr.addColorStop(1, '#b0609f'); g.fillStyle = gr; g.fillRect(0, 0, w, h);
+    g.save(); g.translate(w / 2, h * .12); for (let i = 0; i < 6; i++) { g.rotate(TAU / 6); g.fillStyle = 'rgba(255,255,255,.08)'; g.beginPath(); g.moveTo(0, 0); g.lineTo(Math.cos(t) * w * .12, h); g.lineTo(Math.cos(t) * w * .12 + w * .15, h); g.fill(); } g.restore();
+    g.fillStyle = '#d9dbe8'; g.beginPath(); g.arc(w / 2, h * .12, w * .08, 0, TAU); g.fill(); g.strokeStyle = '#9ea1b8'; g.lineWidth = w / 200; g.stroke();
+    const cols = ['#4b6fd6', '#6ad0e0', '#8f6ae0', '#2d3a8a'], y0 = h * .68, beat = Math.floor(t * 4);
+    for (let j = 0; j < 3; j++) for (let i = 0; i < 6; i++) { g.fillStyle = cols[(i + j + beat) % 4]; g.fillRect(i * w / 6, y0 + j * (h - y0) / 3, w / 6 + 1, (h - y0) / 3 + 1); }
+    const b = Math.abs(Math.sin(t * PI * 2)) * h * .04, kw = w * .32, kh = w * .26, kx = w / 2 - kw / 2, ky = h * .58 - kh - b;
+    g.strokeStyle = C.keO; g.lineWidth = w / 45; g.lineCap = 'round'; for (const d of [-1, 1]) { const up = Math.sin(t * PI * 4 + (d > 0 ? PI : 0)) > 0; g.beginPath(); g.moveTo(w / 2 + d * kw / 2, ky + kh * .4); g.lineTo(w / 2 + d * kw * .8, ky - (up ? kh * .5 : -kh * .1)); g.stroke(); }
+    g.fillStyle = C.ke; g.fillRect(kx, ky, kw, kh); g.fillStyle = C.eye; for (const d of [-1, 1]) { g.beginPath(); g.ellipse(w / 2 + d * kw * .18, ky + kh * .4, kw * .04, kw * .1, 0, 0, TAU); g.fill(); }
+  },
+};
+const OFF = mk(700, 1000), OFFG = g2(OFF);
+function renderSrc(src, st, w, h) { OFFG.setTransform(1, 0, 0, 1, 0, 0); OFFG.clearRect(0, 0, w, h); OFFG.save(); FR[src](OFFG, w, h, st); OFFG.restore(); return OFF; }
+// draw one source frame into a rect; the blur stretch is soft + grey everywhere it is shown
+function putFrame(g, src, st, x, y, w, h, { focusUI = false } = {}) {
+  renderSrc(src, st, Math.ceil(w), Math.ceil(h)); const b = isBlur(src, st);
+  g.save(); if (b) g.filter = `blur(${Math.max(2, w / 28)}px) grayscale(.8) brightness(1.08)`; g.drawImage(OFF, 0, 0, Math.ceil(w), Math.ceil(h), x, y, w, h); g.restore();
+  if (b && focusUI) { g.save(); g.strokeStyle = '#fff'; g.lineWidth = 6; const m = w * .18, L = w * .12; for (const [cx, cy, dx, dy] of [[x + m, y + h * .3, 1, 1], [x + w - m, y + h * .3, -1, 1], [x + m, y + h * .7, 1, -1], [x + w - m, y + h * .7, -1, -1]]) { g.beginPath(); g.moveTo(cx, cy + dy * L); g.lineTo(cx, cy); g.lineTo(cx + dx * L, cy); g.stroke(); }
+    g.beginPath(); g.arc(x + w / 2, y + h * .42, w * .07, 0, TAU); g.stroke(); txt(g, '对焦中…', x + w / 2, y + h * .55, { size: w / 9, col: '#fff', align: 'center' }); g.restore(); }
+  return b;
+}
+const THUMBS = new Map();
+function thumb(src, st, w, h) { const k = `${src}|${st.toFixed(2)}|${w}|${h}`; let c = THUMBS.get(k); if (!c) { c = mk(w, h); putFrame(g2(c), src, st, 0, 0, w, h); THUMBS.set(k, c); } return c; }
+
+// ═══ EDITOR LAYOUT (world = frame at z 1, like the reference framing) ═══
+const TX0 = 250, PPS = 240, ROW = { y: 1050, h: 190 }, AUD = { y: 1268, h: 62 }, TW = 136;
+const PX = t => TX0 + t * PPS;
+const PHONE = { x: 1400, y: 40, w: 520, h: 750 }, SCR = { x: 1418, y: 58, w: 484, h: 714 };
+function bakePlate() {
+  const c = mk(W, H), g = g2(c); g.fillStyle = C.bgc; g.fillRect(0, 0, W, H);
+  // media bin (reference: top-left, tabs 素材/转场/文字)
+  box(g, 30, -30, 700, 830, { r: 26 });
+  [['素材', C.tab], ['转场', C.panel], ['文字', C.panel]].forEach(([s, f], i) => { box(g, 60 + i * 150, 22, 130, 56, { r: 14, fill: f, lw: 4 }); txt(g, s, 125 + i * 150, 51, { size: 28, align: 'center' }); });
+  [['night', .5], ['ramen', .3], ['shiba', .5], ['disco', .6]].forEach(([s, st], i) => { const x = 60 + (i % 2) * 330, y = 110 + ((i / 2) | 0) * 285;
+    g.drawImage(thumb(s, st, 300, 190), x, y); box(g, x, y, 300, 190, { r: 10, fill: null, lw: 5 }); box(g, x + 222, y + 150, 66, 30, { r: 8, fill: 'rgba(40,35,32,.6)', lw: 0 }); txt(g, SRC[s].dur.toFixed(1) + 's', x + 255, y + 166, { size: 20, col: '#fff', align: 'center' }); txt(g, SRC[s].name, x + 150, y + 222, { size: 24, col: C.lineS, align: 'center' }); });
+  for (const x of [60, 390]) { box(g, x, 680, 300, 100, { r: 12, fill: null, lw: 4, line: C.lineS, dash: [12, 10] }); txt(g, '+', x + 150, 718, { size: 44, col: C.lineS, align: 'center', w: 300 }); txt(g, '导入素材', x + 150, 760, { size: 20, col: C.lineS, align: 'center' }); }
+  // phone
+  box(g, PHONE.x, PHONE.y, PHONE.w, PHONE.h, { r: 64, fill: '#2b2727', lw: 5 });
+  // adjust panel (reference: 调整 ✦ with 闪光/饱和度/描纹冲击/速度), half out of frame on the right
+  box(g, 2150, 40, 520, 760, { r: 26 }); txt(g, '调整 ✦', 2190, 96, { size: 34 });
+  [['闪光', .28, '28%'], ['饱和度', .55, '100%'], ['描纹冲击', 0, '0%'], ['速度', .45, '1.0x']].forEach(([n, v, s], i) => { const y = 200 + i * 150; txt(g, n, 2190, y - 40, { size: 26, col: C.lineS }); txt(g, s, 2520, y - 40, { size: 22, col: C.lineS, align: 'right' });
+    rr(g, 2190, y - 7, 340, 14, 7); g.fillStyle = C.lane; g.fill(); g.lineWidth = 3; g.strokeStyle = C.line; g.stroke(); rr(g, 2190, y - 7, 340 * v + 8, 14, 7); g.fillStyle = '#6cc7b7'; g.fill(); g.stroke();
+    g.beginPath(); g.arc(2190 + 340 * v, y, 17, 0, TAU); g.fillStyle = '#fff'; g.fill(); g.lineWidth = 4; g.stroke(); });
+  // timeline panel, ruler, track badges, audio
+  box(g, 60, 850, 2600, 700, { r: 26 });
+  g.fillStyle = C.line; for (let i = 0; PX(i * .5) < 2560; i++) { const x = PX(i * .5), big = i % 4 === 0; g.fillRect(x - 1.5, big ? 900 : 916, 3, big ? 34 : 16); if (big) txt(g, `0:${String(i / 2).padStart(2, '0')}`, x + 12, 894, { size: 24, col: C.lineS }); }
+  g.fillRect(60, 940, 2500, 3);
+  [['T', 990, C.cream, 44], ['▶', ROW.y + ROW.h / 2, C.lav, 60], ['♪', AUD.y + AUD.h / 2, C.lav, 56]].forEach(([s, y, f, sz]) => { box(g, 92, y - sz / 2 - 6, 72, sz + 12, { r: 12, fill: f, lw: 4 }); txt(g, s, 128, y + 1, { size: sz * .55, align: 'center', w: 800 }); });
+  box(g, TX0, AUD.y, 1700, AUD.h, { r: 12, fill: '#e9e4f8', lw: 4 }); g.fillStyle = '#9b8fd6';
+  for (let x = TX0 + 150; x < TX0 + 1690; x += 7) { const a = 6 + 22 * Math.abs(Math.sin(x * .05) * Math.sin(x * .013 + 1)); g.fillRect(x, AUD.y + AUD.h / 2 - a / 2, 4, a); }
+  txt(g, '♪ bgm_小克.wav', TX0 + 14, AUD.y + 18, { size: 18, col: C.line });
+  return c;
+}
+function drawSeg(g, s, x0, y0, { scale = 1, rot = 0, lifted = 0 } = {}) { // a clip on the track: filmstrip of real source frames
+  const w = (s.out - s.in) * PPS, h = ROW.h;
+  g.save(); g.translate(x0 + w / 2, y0 + h / 2); g.rotate(rot); g.scale(scale, scale); g.translate(-w / 2, -h / 2);
+  if (lifted) { rr(g, 8, 14, w, h, 16); g.fillStyle = 'rgba(58,47,44,.18)'; g.fill(); }
+  g.save(); rr(g, 0, 0, w, h, 16); g.clip();
+  for (let x = 0; x < w; x += TW) { const tw = Math.min(TW, w - x), st = s.in + (x + tw / 2) / PPS; g.drawImage(thumb(s.src, Math.round(st * 10) / 10, TW, h), 0, 0, tw, h, x, 0, tw, h); g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(x, 0, 2, h); }
+  g.restore(); box(g, 0, 0, w, h, { r: 16, fill: null, lw: 6, line: SRC[s.src].col });
+  rr(g, 0, 0, w, h, 16); g.lineWidth = 2.5; g.strokeStyle = C.line; g.stroke();
+  if (s.in === 0) { box(g, 10, 10, SRC[s.src].name.length * 17 + 20, 34, { r: 9, fill: '#fff', lw: 3 }); txt(g, SRC[s.src].name, 20, 28, { size: 19 }); }
+  g.restore();
+}
+function drawPlayhead(g, x) { g.fillStyle = C.ph; g.fillRect(x - 3, 900, 6, 460); g.beginPath(); g.moveTo(x - 17, 876); g.lineTo(x + 17, 876); g.lineTo(x + 17, 900); g.lineTo(x, 918); g.lineTo(x - 17, 900); g.closePath(); g.fill(); g.lineWidth = 3; g.strokeStyle = C.keO; g.stroke(); }
+function drawControls(g, playing, p) {
+  const cx = PHONE.x + PHONE.w / 2, y = 822; g.fillStyle = C.line;
+  for (const d of [-1, 1]) { g.save(); g.translate(cx + d * 90, y); g.scale(d, 1); g.fillRect(-14, -12, 4, 24); g.beginPath(); g.moveTo(-8, 0); g.lineTo(10, -12); g.lineTo(10, 12); g.fill(); g.restore(); }
+  g.beginPath(); g.arc(cx, y, 22, 0, TAU); g.lineWidth = 4; g.strokeStyle = C.line; g.stroke();
+  if (playing) { g.fillRect(cx - 8, y - 9, 5, 18); g.fillRect(cx + 3, y - 9, 5, 18); } else { g.beginPath(); g.moveTo(cx - 6, y - 10); g.lineTo(cx + 10, y); g.lineTo(cx - 6, y + 10); g.fill(); }
+  txt(g, `00:0${p.toFixed(2)}`, PHONE.x + PHONE.w + 30, y, { size: 24, col: C.lineS });
+}
+// ═══ SCORE: the bgm plays only while the editor is playing — pausing the timeline pauses the music ═══
+const PLAY = [[.5, 3.0], [5.75, 8]];
+const playing = t => PLAY.some(([a, b]) => t >= a && t < b);
+const BARS = [[0, 'C'], [2, 'Am'], [4, 'F'], [6, 'G']];
+const CHORD = { C: ['C4', 'E4', 'G4'], Am: ['A3', 'C4', 'E4'], F: ['F3', 'A3', 'C4'], G: ['G3', 'B3', 'D4'] }, ROOT = { C: 65.41, Am: 55, F: 87.31, G: 98 };
+const LEAD = ['E5', 'G5', 'C6', 'G5', 'A5', 'E5', 'G5', 'C6', 'A5', 'G5', 'E5', 'G5', 'C6', 'D6', 'E6', 'C6'];
+const MELODY = [];
+function baseScore() {
+  const ev = [];
+  for (let b = 0; b < 16; b++) { const t = b * BEAT, bar = BARS[Math.floor(t / 2)][1]; if (!playing(t)) continue;
+    ev.push({ t, k: 'mb', n: LEAD[b], v: .55, pan: Math.sin(b * 1.7) * .25 }, { t, k: 'pluck', f: ROOT[bar] * (b % 4 === 2 ? 1.5 : 1), dur: .45, v: .7 });
+    if (b % 2 === 0) ev.push({ t, k: 'thump', v: .35 });
+    if (b % 4 === 0 || PLAY.some(([a]) => Math.abs(a - t) < .01) || t === 6) ev.push({ t, k: 'chord', ns: CHORD[bar], v: .28, strum: .02 });
+    for (const h of [0, BEAT / 2]) ev.push({ t: t + h, k: 'tick', v: h ? .5 : .28, pan: .2 }); }
+  return ev;
+}
+const SHOTS = [];
+// ═══ SHOT 1 · CUT (0–8 s) — play → the preview goes soft → stop → two cuts at the playhead → bin it → ripple closes → preview is clean ═══
+// Every edit below changes ONE model (layout(t)); timeline strip, preview frame and playhead all read from it.
+const K = { STOP: 3.0, KNIFE: 3.2, CUT1: 3.5, CUT2: 4.25, GRAB: 4.7, REL: 5.0, HIT: 5.2, CLOSE: 5.2, CLEAN: 5.55, RESUME: 5.75 };
+// the edit list: pure state transitions at the moment each action lands
+const EDIT0 = { segs: [['night', 0, 1.6], ['ramen', 0, 2.4], ['shiba', 0, 1.6], ['disco', 0, 1.6]], gone: -1 };
+const EDITS = [
+  { t: K.CUT1, apply: s => ({ ...s, segs: [s.segs[0], ['ramen', 0, .8], ['ramen', .8, 2.4], ...s.segs.slice(2)] }) },
+  { t: K.CUT2, apply: s => ({ ...s, segs: [...s.segs.slice(0, 2), ['ramen', .8, 1.6], ['ramen', 1.6, 2.4], ...s.segs.slice(3)] }) },
+  { t: K.GRAB, apply: s => ({ ...s, gone: 2 }) }];
+function layout(t) { // derived view: program start of every segment, with the ripple animating the closed gap
+  const st = stateAt(t, EDIT0, EDITS), kc = t < K.CLOSE ? 0 : backOut(seg01(t, K.CLOSE, K.CLOSE + .35), 1.1), out = []; let p = 0;
+  st.segs.forEach(([src, a, b], i) => { const d = b - a; if (i === st.gone) { p += d * (1 - kc); return; } out.push({ src, in: a, out: b, start: p }); p += d; });
+  return out;
+}
+const frameAt = (lay, p) => { for (const s of lay) if (p >= s.start - 1e-6 && p < s.start + s.out - s.in - 1e-6) return { s, st: s.in + p - s.start }; return null; };
+function playT(t) { // program time under the playhead; 小克 drags it while the film is paused
+  if (t < .5) return 0; if (t < K.STOP) return t - .5;
+  if (t < 3.3) return lerp(2.5, 2.4, eio(seg01(t, 3.0, 3.3))); if (t < 3.65) return 2.4;
+  if (t < 4.4) return lerp(2.4, 3.2, eio(seg01(t, 3.65, 4.05))); if (t < K.RESUME) return lerp(3.2, 2.8, eio(seg01(t, 4.4, 4.6)));
+  return 2.8 + (t - K.RESUME);
+}
+const TRASH = [1260, 1330];
+const S1 = {
+  name: 'Cut', t0: 0, t1: 8,
+  cam(st) {
+    const a = eio(seg01(st, 3.0, 3.35)), b = eio(seg01(st, 5.5, 6.1));
+    return { x: lerp(lerp(W / 2, 1180, a), 1300, b), y: lerp(lerp(H / 2, 820, a), 760, b), z: lerp(lerp(1, 1.25, a), 1.08, b) };
+  },
+  build() { this.plate = bakePlate(); },
+  reset() { this.snap(); }, step() { }, snap() { }, poke() { return false; },
+  held(t) { // the bad clip's centre + turn while 小克 holds / throws it
+    const w = .8 * PPS, x0 = PX(2.4) + w / 2, y0 = ROW.y + ROW.h / 2;
+    if (t < 4.9) { const u = eio(seg01(t, K.GRAB, 4.9)); return { x: lerp(x0, 930, u), y: lerp(y0, 760, u), r: -.15 * u, sc: lerp(1, .85, u) }; }
+    if (t < K.REL) { const u = eio(seg01(t, 4.9, K.REL)); return { x: lerp(930, 1110, u), y: lerp(760, 720, u), r: lerp(-.15, .3, u), sc: .85 }; }
+    const u = seg01(t, K.REL, K.HIT); return { x: lerp(1110, TRASH[0], u), y: lerp(720, TRASH[1] - 90, u) - Math.sin(PI * u) * 160, r: .3 + u * 5, sc: lerp(.85, .35, u) };
+  },
+  pose(t, p) {
+    const work = eio(seg01(t, 3.0, 3.25)) * (1 - eio(seg01(t, 5.45, 5.75))), x = PX(p) - 150 * work, y = ROW.y - 2;
+    const P = { x, y, s: backOut(seg01(t, 0, .35), 2), look: .6, walk: null, eyes: 'n' };
+    if (Math.abs(x - PX(playT(t - 1 / 30)) + 150 * work) > .5 && !playing(t)) P.walk = x * .07;
+    if (playing(t)) { const ph = ((t + 1e3) % BEAT) / BEAT; P.y -= Math.sin(PI * ph) * 22; P.sq = -.06 * Math.sin(PI * ph); P.walk = t * 4 * PI; }
+    const top = P.y - 34 - 168;
+    if (t > .25 && t < 1.2) P.armR = [x + 150, top - 50 + Math.sin(t * 20) * 14];
+    if (t > 1.8 && t < 1.88 || t > 7.2 && t < 7.28) P.blink = 1;
+    if (t >= 2.9 && t < K.STOP) P.look = 1;
+    if (t >= K.STOP && t < 3.5) { P.eyes = 'shock'; P.mouth = 1; P.sq = .18 * elastic(t - K.STOP, 6, 20) - (t < 3.15 ? .12 : 0); P.y -= t < 3.2 ? Math.sin(PI * seg01(t, 3.0, 3.2)) * 50 : 0; }
+    if (t >= K.KNIFE && t < 4.45) { // knife hand: raised, chops down at the playhead on each cut
+      P.tool = 'knife'; P.eyes = t < 3.4 ? 'shock' : 'squint'; P.look = 1;
+      const up = [x + 170, top + 10]; let hand = up, ang = -.7;
+      for (const c of [K.CUT1, K.CUT2]) { const d = seg01(t, c - .12, c), r = seg01(t, c + .08, c + .3); if (t > c - .12 && t < c + .3) { const k = eio(d) * (1 - eio(r)); hand = [lerp(up[0], PX(p) - 4, k), lerp(up[1], ROW.y + 40, k)]; ang = lerp(-.7, 0, k); } }
+      P.armR = hand; P.toolAng = ang;
+    }
+    if (t >= 4.55 && t < K.REL + .1) { const h = this.held(t); P.armR = t < K.GRAB ? [lerp(x + 120, PX(2.8), eio(seg01(t, 4.55, K.GRAB))), lerp(top + 80, ROW.y + 70, eio(seg01(t, 4.55, K.GRAB)))] : t < K.REL ? [h.x - 20, h.y + 30] : [lerp(1110, x + 150, seg01(t, K.REL, K.REL + .1)), 740]; P.look = 1; P.eyes = t < K.REL ? 'squint' : 'n'; }
+    if (t >= K.HIT && t < K.CLEAN) P.look = 1;
+    if (t >= K.CLEAN && t < 6.6) { P.eyes = 'happy'; P.armR = [x + 140, top - 40]; P.armL = [x - 140, top - 40]; }
+    if (t >= K.CLEAN && t < 5.75) { P.sq = -.1 * Math.sin(PI * seg01(t, K.CLEAN, 5.75)); P.y -= Math.sin(PI * seg01(t, K.CLEAN, 5.75)) * 40; }
+    return P;
+  },
+  draw(ctx, st, sq, e, cam) {
+    const t = sq, lay = layout(t), p = playT(t), pl = playing(t);
+    setCam(ctx, cam, 1); ctx.drawImage(this.plate, 0, 0);
+    // preview: exactly the frame of the clip under the playhead
+    ctx.save(); rr(ctx, SCR.x, SCR.y, SCR.w, SCR.h, 50); ctx.clip(); const fa = frameAt(lay, p);
+    if (fa) putFrame(ctx, fa.s.src, fa.st, SCR.x, SCR.y, SCR.w, SCR.h, { focusUI: true }); else { ctx.fillStyle = '#141212'; ctx.fillRect(SCR.x, SCR.y, SCR.w, SCR.h); txt(ctx, '— 空 —', SCR.x + SCR.w / 2, SCR.y + SCR.h / 2, { size: 30, col: '#6a6360', align: 'center' }); }
+    ctx.restore(); rr(ctx, PHONE.x + PHONE.w / 2 - 60, PHONE.y + 26, 120, 30, 15); ctx.fillStyle = '#2b2727'; ctx.fill();
+    drawControls(ctx, pl, p);
+    for (const s of lay) drawSeg(ctx, s, PX(s.start), ROW.y);
+    for (const c of [K.CUT1, K.CUT2]) { const u = seg01(t, c, c + .45); if (u > 0 && u < 1) { const cx = PX(c === K.CUT1 ? 2.4 : 3.2); ctx.fillStyle = `rgba(255,255,255,${1 - u})`; ctx.fillRect(cx - 5, ROW.y - 20, 10, ROW.h + 40);
+      for (let i = 0; i < 6; i++) { const a = i / 6 * TAU + .3, r = 30 + eo(u) * 90; ctx.fillStyle = [C.sfx, '#fff', C.ph][i % 3]; ctx.globalAlpha = 1 - u; ctx.beginPath(); ctx.arc(cx + Math.cos(a) * r, ROW.y + ROW.h / 2 + Math.sin(a) * r, 9, 0, TAU); ctx.fill(); } ctx.globalAlpha = 1;
+      sfxTxt(ctx, '咔！', cx + 40, ROW.y - 40, u * .9 + .02, { size: 70, rot: .15, col: '#fff' }); } }
+    const tk = t < 4.45 ? 0 : t < 6.2 ? backOut(seg01(t, 4.45, 4.7), 2) : 1 - eio(seg01(t, 6.2, 6.5));
+    trash(ctx, TRASH[0], TRASH[1], tk, -.9 * elastic(t - K.HIT, 5, 18) * (t >= K.HIT));
+    if (t >= K.GRAB && t < K.HIT) { const h = this.held(t), w = .8 * PPS; drawSeg(ctx, { src: 'ramen', in: .8, out: 1.6 }, h.x - w / 2, h.y - ROW.h / 2, { scale: h.sc, rot: h.r, lifted: 1 }); }
+    drawPlayhead(ctx, PX(p));
+    mascotDraw(ctx, this.pose(t, p));
+    const P = this.pose(t, p), head = P.y - 34 - 168;
+    bubble(ctx, '开工！', P.x + 60, head - 90, seg01(t, .3, 1.4));
+    sfxTxt(ctx, '啊！', P.x + 190, head - 40, seg01(t, K.STOP, 3.8), { rot: .18 });
+    sfxTxt(ctx, '哐当！', TRASH[0] + 190, TRASH[1] - 150, seg01(t, K.HIT, 6.0), { rot: -.1 });
+    bubble(ctx, '清爽！', P.x + 60, head - 110, seg01(t, K.CLEAN, 6.7));
+  },
+  score() {
+    return [{ t: .05, k: 'chip', f: 400, f2: 900, wave: 'sine', dur: .25, v: 1 }, { t: .5, k: 'clink', v: .5 },
+      { t: 2.9, k: 'chip', f: 300, f2: 200, wave: 'triangle', dur: .3, v: .8, vib: .02 },
+      { t: K.STOP, k: 'chip', f: 880, f2: 330, wave: 'square', dur: .25, v: 1.2 }, { t: K.STOP, k: 'thump', v: .5 },
+      { t: K.KNIFE, k: 'clink', v: .4, pan: .3 },
+      ...[K.CUT1, K.CUT2].flatMap(c => [{ t: c - .12, k: 'whoosh', dur: .14, p0: .2, p1: 0, f0: 1800, f1: 600, v: .5 }, { t: c, k: 'clink', v: 1 }, { t: c, k: 'tick', v: 1.4 }]),
+      { t: K.GRAB, k: 'chip', f: 500, f2: 900, wave: 'sine', dur: .15, v: .8 }, { t: 4.9, k: 'whoosh', dur: .3, p0: -.1, p1: .3, f0: 500, f1: 1600, v: .6 },
+      { t: K.HIT, k: 'thump', v: 1 }, { t: K.HIT, k: 'clink', v: .9, pan: .2 }, { t: K.HIT + .09, k: 'clink', v: .6, pan: .25 },
+      { t: K.CLOSE + .05, k: 'chip', f: 400, f2: 820, wave: 'sine', dur: .3, v: .7 },
+      { t: K.CLEAN, k: 'bloom', v: .8 }, { t: K.CLEAN, k: 'chip', n: 'E6', wave: 'sine', dur: .3, v: .7 },
+      { t: K.RESUME, k: 'clink', v: .5 }, { t: K.RESUME, k: 'chord', ns: CHORD.F, v: .28, strum: .02 }];
+  },
+};
+SHOTS.push(S1);
+
+document.getElementById('track').style.gridTemplateColumns = SHOTS.map(s => (s.t1 - s.t0) + 'fr').join(' ');
+// ═══ ENGINE · clock, stop-motion stepping, camera, post, sound schedule, interaction ═══════════════
+const Q = new URLSearchParams(location.search);
+const cv = document.getElementById('film'), ctx = cv.getContext('2d', { alpha: false });
+const film = { f: -1, shotIdx: -1, shot: null, playing: false, smooth: Q.get('smooth') === '1', clock: 0, audio: false, muted: false, seeking: false, ready: false, started: false };
+
+// motion-control camera with depth: p=1 is the puppet plane, p<1 sits further back
+function setCam(c, cam, p = 1) {
+  const z = 1 + (cam.z - 1) * p, cx = W / 2 + (cam.x - W / 2) * p, cy = H / 2 + (cam.y - H / 2) * p;
+  c.setTransform(z, 0, 0, z, W / 2 - cx * z, H / 2 - cy * z);
+}
+const toWorld = (sx, sy) => { const c = film.cam || { x: W / 2, y: H / 2, z: 1 }; if (PIX) return [sx / PIX - LW / 2 + c.x, sy / PIX - LH / 2 + c.y]; return [(sx - W / 2) / c.z + c.x, (sy - H / 2) / c.z + c.y]; };
+
+// the viewer's breath: transient wind blobs that every simulation samples
+let GUSTS = [];
+function gustAt(x, y) {
+  let vx = 0, vy = 0;
+  for (const g of GUSTS) { const dx = x - g.x, dy = y - g.y, d2 = dx * dx + dy * dy, r2 = g.r * g.r; if (d2 > r2 * 6) continue; const f = Math.exp(-d2 / r2) * g.s, d = Math.sqrt(d2) || 1; vx += (g.vx + dx / d * g.push) * f; vy += (g.vy + dy / d * g.push) * f; }
+  return [vx, vy];
+}
+const stepGusts = () => { for (const g of GUSTS) g.s *= .9; GUSTS = GUSTS.filter(g => g.s > .02); };
+
+// physics-born sounds (landings, petals): baked for the offline mix, played live otherwise
+let BAKING = false, EMITTED = [];
+function emit(e) { const t = film.f / FPS; if (BAKING) { EMITTED.push({ ...e, t }); return; } if (film.audio && film.playing && !film.seeking) liveSfx(e); }
+function sfx(e) { if (film.audio) liveSfx(e); }
+
+// ── simulation: each shot resets to its own frame 0, then steps at a fixed 60 Hz ──
+const shotAt = f => { let i = 0; for (let k = 0; k < SHOTS.length; k++) if (f >= Math.round(SHOTS[k].t0 * FPS)) i = k; return i; };
+function simTo(f) {
+  const i = shotAt(f), s = SHOTS[i], f0 = Math.round(s.t0 * FPS);
+  if (i !== film.shotIdx || f < film.f) { film.shotIdx = i; film.shot = s; s.reset(); film.f = f0; GUSTS = []; }
+  while (film.f < f) { film.f++; const sf = film.f - f0; s.step(1 / FPS, sf / FPS, sf); stepGusts(); if (film.smooth || sf % EXPO === 0) s.snap(); }
+}
+// post: exposure flicker (each stop-motion frame is its own photograph), grain, lens falloff
+const VIGN = (() => { const c = mk(W, H), g = g2(c); g.save(); g.translate(W / 2, H / 2); g.scale(1, H / W); const rg = g.createRadialGradient(0, 0, W * .22, 0, 0, W * .72); rg.addColorStop(0, 'rgba(4,14,16,0)'); rg.addColorStop(.7, 'rgba(4,14,16,.18)'); rg.addColorStop(1, 'rgba(4,14,16,.55)'); g.fillStyle = rg; g.fillRect(-W, -W, W * 2, W * 2); g.restore(); return c; })();
+function render() {
+  const f = film.f, s = film.shot, f0 = Math.round(s.t0 * FPS), sf = f - f0, st = sf / FPS;
+  const e = film.smooth ? 0 : Math.floor(f / EXPO), sq = film.smooth ? st : Math.floor(sf / EXPO) * EXPO / FPS;
+  const cam = film.cam = s.cam(st); s._sq = sq;
+  if (PIX) { // pixel mode: draw small, scale up hard-edged; no grain, flicker or vignette (they would blur the pixels)
+    LOG.setTransform(1, 0, 0, 1, 0, 0); LOG.globalAlpha = 1; LOG.globalCompositeOperation = 'source-over'; LOG.imageSmoothingEnabled = false; LOG.fillStyle = '#000'; LOG.fillRect(0, 0, LW, LH);
+    s.draw(LOG, st, sq, e, cam);
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.imageSmoothingEnabled = false; ctx.drawImage(LO, 0, 0, W, H);
+    return;
+  }
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = FLAT ? '#f5f1e8' : '#0c1719'; ctx.fillRect(0, 0, W, H);
+  s.draw(ctx, st, sq, e, cam);
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.shadowColor = 'transparent';
+  if (FLAT) return;
+  if (!film.smooth) { const fl = (hash(e, 77) - .5) * .05; ctx.fillStyle = fl > 0 ? `rgba(255,244,226,${fl * .55})` : `rgba(4,14,16,${-fl * .7})`; ctx.fillRect(0, 0, W, H); }
+  const ox = (hash(e + 1, 5) * 384) | 0, oy = (hash(e + 1, 6) * 384) | 0;
+  ctx.save(); ctx.translate(-ox, -oy); ctx.globalAlpha = .6; ctx.fillStyle = PAT.grain; ctx.fillRect(ox, oy, W, H); ctx.restore();
+  ctx.drawImage(VIGN, 0, 0);
+}
+
+// ── sound schedule on the audio clock (the picture follows the sound when it's on) ──
+let AC = null, SND = null, audioT0 = 0, cursor = 0, SCORE = [];
+voReady();   // start decoding narration at boot so live playback has it
+const buildScore = () => { SCORE = baseScore().concat(...SHOTS.map(s => s.score())).sort((a, b) => a.t - b.t); };
+function liveSfx(e) { if (!SND || film.muted) return; SND.play({ ...e, t: film.f / FPS }, AC.currentTime + .01); }
+function cutSession() { if (!SND || !SND.sess) return; const s = SND.sess; s.dry.gain.setTargetAtTime(0, AC.currentTime, .02); s.wet.gain.setTargetAtTime(0, AC.currentTime, .02); setTimeout(() => { s.dry.disconnect(); s.wet.disconnect(); }, 500); SND.sess = null; }
+function audioFrom(tf) {
+  if (!AC) { AC = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'interactive' }); SND = new Sound(AC); }
+  if (AC.state !== 'running') AC.resume();
+  cutSession();
+  const dry = AC.createGain(), wet = AC.createGain(); dry.connect(SND.master); wet.connect(SND.verb); SND.sess = { dry, wet }; SND.bus = dry; SND.vbus = wet;
+  SND.master.gain.value = film.muted ? 0 : .92;
+  audioT0 = AC.currentTime + .06 - tf;
+  cursor = 0; while (cursor < SCORE.length && SCORE[cursor].t < tf - 1e-6) cursor++;
+  for (const e of SCORE) if ((e.k === 'bed' || e.k === 'vo') && e.t < tf && e.t + e.dur > tf + .05) SND.play(e, AC.currentTime + .06, tf - e.t);
+}
+function audioPump() {
+  if (!film.audio || !film.playing || !AC) return;
+  const horizon = AC.currentTime + .25;
+  while (cursor < SCORE.length && SCORE[cursor].t + audioT0 < horizon) { const e = SCORE[cursor++]; if (!film.muted) SND.play(e, Math.max(AC.currentTime, e.t + audioT0)); }
+}
+async function renderWav() { // offline mix of exactly what the film does (for the video file)
+  await voReady();
+  BAKING = true; EMITTED = []; film.shotIdx = -1; for (let f = 0; f < NF; f++) simTo(f); BAKING = false; film.shotIdx = -1;
+  const sr = 48000, O = new OfflineAudioContext(2, sr * DUR, sr), S = new Sound(O);
+  for (const e of SCORE.concat(EMITTED).sort((a, b) => a.t - b.t)) S.play(e, e.t);
+  S.master.gain.setValueAtTime(.92, DUR - .45); S.master.gain.linearRampToValueAtTime(0, DUR - .005);
+  const buf = await O.startRendering(), L = buf.getChannelData(0), Rr = buf.getChannelData(1), n = L.length, ab = new ArrayBuffer(44 + n * 4), dv = new DataView(ab);
+  const ws = (o, s) => { for (let i = 0; i < s.length; i++) dv.setUint8(o + i, s.charCodeAt(i)); };
+  ws(0, 'RIFF'); dv.setUint32(4, 36 + n * 4, true); ws(8, 'WAVE'); ws(12, 'fmt '); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 2, true); dv.setUint32(24, sr, true); dv.setUint32(28, sr * 4, true); dv.setUint16(32, 4, true); dv.setUint16(34, 16, true); ws(36, 'data'); dv.setUint32(40, n * 4, true);
+  for (let i = 0; i < n; i++) { dv.setInt16(44 + i * 4, clamp(L[i], -1, 1) * 32767, true); dv.setInt16(46 + i * 4, clamp(Rr[i], -1, 1) * 32767, true); }
+  const u8 = new Uint8Array(ab); let s = ''; for (let i = 0; i < u8.length; i += 32768) s += String.fromCharCode.apply(null, u8.subarray(i, i + 32768));
+  return btoa(s);
+}
+
+// ── transport ──
+function seek(f, keepPlaying = film.playing) {
+  f = clamp(Math.round(f), 0, NF - 1); film.seeking = true; simTo(f); film.seeking = false; render();
+  film.clock = f / FPS; if (film.audio && keepPlaying) audioFrom(film.clock);
+  ui();
+}
+function play(on = !film.playing) {
+  film.playing = on;
+  if (on) { if (film.f >= NF - 1) seek(0, false); film.clock = film.f / FPS; if (film.audio) audioFrom(film.clock); }
+  else if (film.audio) cutSession();
+  ui();
+}
+let lastNow = 0;
+function tick(now) {
+  requestAnimationFrame(tick);
+  const dt = Math.min(.1, (now - lastNow) / 1000); lastNow = now;
+  if (!film.ready || !film.playing) return;
+  let t = film.audio && AC && AC.state === 'running' ? AC.currentTime - audioT0 : film.clock + dt;
+  if (t >= DUR) { t -= DUR; if (film.audio) { audioT0 += DUR; cursor = 0; } }
+  film.clock = t;
+  // frame pacing with hysteresis: one film frame per 60 Hz refresh, every other one at 120 Hz; a clock that sits on a
+  // frame boundary can no longer make frames stutter (repeat, then skip). Big jumps (loop, seek) resync outright.
+  const want = t * FPS, d = want - film.f;
+  let f = d < -1 || d > 6 ? Math.floor(want) : d >= .6 ? film.f + Math.max(1, Math.floor(d + .4)) : film.f;
+  f = clamp(f, 0, NF - 1);
+  if (f !== film.f) { if (f < film.f) { film.seeking = true; simTo(f); film.seeking = false; } else simTo(f); render(); }
+  audioPump(); ui();
+}
+
+// ── UI ──
+const $ = id => document.getElementById(id);
+const tcFmt = t => `00:${String(Math.floor(t)).padStart(2, '0')}.${String(Math.floor((t % 1) * 100)).padStart(2, '0')}`;
+function ui() {
+  const t = Math.max(0, film.f) / FPS;
+  $('tc').textContent = `${tcFmt(t)} / ${tcFmt(DUR)}`; $('head').style.left = `${(t / DUR) * 100}%`;
+  $('pp').textContent = film.playing ? 'Pause' : 'Play'; $('pp').setAttribute('aria-pressed', film.playing);
+  $('sm').textContent = film.smooth ? 'Smooth · 60 poses/s' : 'Poses · 30/s';
+  $('snd').textContent = !film.audio ? 'Sound off' : film.muted ? 'Muted' : 'Sound on';
+  document.querySelectorAll('#track .seg').forEach((el, i) => el.classList.toggle('on', i === film.shotIdx));
+}
+function startFilm() { $('start').hidden = true; film.audio = true; film.started = true; seek(0, false); play(true); }
+$('start').addEventListener('click', e => { e.stopPropagation(); startFilm(); });
+$('pp').addEventListener('click', () => { if (!film.started) return startFilm(); play(); });
+$('rs').addEventListener('click', () => { if (!film.started) return startFilm(); seek(0); if (!film.playing) play(true); });
+$('sm').addEventListener('click', () => { film.smooth = !film.smooth; seek(film.f); });
+$('snd').addEventListener('click', () => { if (!film.audio) { film.audio = true; film.muted = false; if (film.playing) audioFrom(film.clock); } else { film.muted = !film.muted; if (SND) SND.master.gain.setTargetAtTime(film.muted ? 0 : .92, AC.currentTime, .03); } ui(); });
+$('fs').addEventListener('click', () => { const el = $('frame'); (document.fullscreenElement ? document.exitFullscreen() : el.requestFullscreen?.())?.catch?.(() => {}); });
+// scrubber (drag to scrub; paused scrubbing lands on exposures, like an animator's frame flip)
+(() => {
+  const tr = $('track'); let drag = false, was = false;
+  const at = ev => { const r = tr.getBoundingClientRect(); return clamp((ev.clientX - r.left) / r.width, 0, 1) * (NF - 1); };
+  tr.addEventListener('pointerdown', ev => { if (!film.started) { $('start').hidden = true; film.started = true; } drag = true; was = film.playing; film.playing = false; if (film.audio) cutSession(); tr.setPointerCapture(ev.pointerId); seek(at(ev), false); });
+  tr.addEventListener('pointermove', ev => { if (drag) seek(at(ev), false); });
+  tr.addEventListener('pointerup', () => { if (!drag) return; drag = false; if (was) play(true); });
+})();
+// poking the world
+(() => {
+  let down = false, lx = 0, ly = 0, lt = 0;
+  const pos = ev => { const r = cv.getBoundingClientRect(); return [(ev.clientX - r.left) / r.width * W, (ev.clientY - r.top) / r.height * H]; };
+  cv.addEventListener('pointerdown', ev => {
+    if (!film.started) return startFilm();
+    const [sx, sy] = pos(ev), [x, y] = toWorld(sx, sy); down = true; lx = x; ly = y; lt = performance.now(); cv.setPointerCapture(ev.pointerId);
+    const hit = film.shot && film.shot.poke(x, y);
+    GUSTS.push({ x, y, vx: 0, vy: -60, r: hit ? 170 : 260, s: 1, push: hit ? 380 : 720 });
+    if (!hit) sfx({ k: 'whoosh', dur: .45, p0: (sx / W - .5) * 1.4, p1: (sx / W - .5) * 1.6, f0: 380, f1: 1600, v: .55 });
+    if (!film.playing && film.started) play(true);
+  });
+  cv.addEventListener('pointermove', ev => {
+    const [sx, sy] = pos(ev), [x, y] = toWorld(sx, sy), now = performance.now(), dt = Math.max(8, now - lt) / 1000;
+    const vx = clamp((x - lx) / dt, -2600, 2600), vy = clamp((y - ly) / dt, -2600, 2600), sp = Math.hypot(vx, vy);
+    if (film.playing && (down || sp > 900)) GUSTS.push({ x, y, vx: vx * (down ? .9 : .35), vy: vy * (down ? .9 : .35), r: down ? 230 : 160, s: down ? 1 : .5, push: 0 });
+    if (down && sp > 1400 && now - (cv._w || 0) > 260) { cv._w = now; sfx({ k: 'whoosh', dur: .5, p0: (sx / W - .5) * 1.4 - .3 * Math.sign(vx), p1: (sx / W - .5) * 1.4 + .3 * Math.sign(vx), f0: 300, f1: 1300, v: .5 }); }
+    lx = x; ly = y; lt = now;
+  });
+  const up = () => { down = false; }; cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+})();
+addEventListener('keydown', ev => {
+  if (ev.target.closest && ev.target.closest('button') && (ev.key === ' ' || ev.key === 'Enter')) return;
+  const k = ev.key;
+  if (k === ' ') { ev.preventDefault(); if (!film.started) return startFilm(); play(); }
+  else if (k === 'ArrowRight' || k === 'ArrowLeft') { ev.preventDefault(); if (!film.started) { $('start').hidden = true; film.started = true; } play(false); const step = ev.shiftKey ? 1 : film.smooth ? 1 : EXPO, base = film.smooth || ev.shiftKey ? film.f : Math.round(film.f / EXPO) * EXPO; seek(base + (k === 'ArrowRight' ? step : -step), false); }
+  else if (k === 'r' || k === 'R' || k === 'Home') { if (!film.started) return startFilm(); seek(0); if (!film.playing) play(true); }
+  else if (k === 's' || k === 'S') $('sm').click();
+  else if (k === 'm' || k === 'M') $('snd').click();
+  else if (k === 'f' || k === 'F') $('fs').click();
+  else if (k >= '1' && k <= String(SHOTS.length)) { if (!film.started) { $('start').hidden = true; film.started = true; film.audio = true; } seek(Math.round(SHOTS[+k - 1].t0 * FPS)); if (!film.playing) play(true); }
+});
+
+// ── boot ──
+(async () => {
+  for (const s of SHOTS) s.build();
+  buildScore();
+  const t = Q.get('t'), fr = Q.get('frame');
+  if (Q.get('ui') === '0') document.documentElement.classList.add('bare');
+  seek(fr != null ? +fr : t != null ? +t * FPS : 0, false);
+  film.ready = true; window.__READY = true;
+  if (t != null || fr != null || Q.get('ui') === '0') { $('start').hidden = true; film.started = true; }
+  requestAnimationFrame(tick);
+})();
+// test hooks (headless capture + review)
+window.__film = {
+  seek: f => { film.seeking = true; simTo(f); film.seeking = false; render(); return film.f; },
+  time: () => { const t0 = performance.now(); render(); return performance.now() - t0; },
+  wav: () => renderWav(), score: () => SCORE, info: () => ({ f: film.f, shot: film.shot && film.shot.name, smooth: film.smooth }),
+};
+</script>
+</body>
+</html>
