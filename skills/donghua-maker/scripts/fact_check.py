@@ -50,6 +50,8 @@ def on_screen(html: str) -> list:
         body = re.sub(r"\bname: '[^']*'", "", body)
     for m in LIT.finditer(body):
         s = next(g for g in m.groups() if g is not None)
+        if re.search(r"(?:\d|\})\s*px\b", s):   # a canvas font string (`900 ${size}px …`), not text on screen
+            continue
         for part in re.split(r"\$\{[^}]*\}", s):
             part = part.strip()
             if part and (CJK.search(part) or DATE.fullmatch(part)) and part not in seen:
