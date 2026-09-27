@@ -16,7 +16,7 @@ A Claude Code skill + agent that turns a one-line idea into a self-contained HTM
   - 场型有三种：普通风、绕障碍、旋涡；配色有暖纸和夜色两套。
   - 粗色带踩着旋律音符入场。
   - 示例：风的形状。
-- **八种新风格**（`scaffold.py --look <名字>`），每种都有 12 秒示例和一份风格说明书：
+- **十三种新风格**（`scaffold.py --look <名字>`），每种都有 12 秒示例和一份风格说明书：
   - 数据极简 `datamin`（光速）；
   - 谐波运动 `harmonic`（圆与波）；
   - 简笔漫画 `brushsketch`（放风筝）；
@@ -24,7 +24,12 @@ A Claude Code skill + agent that turns a one-line idea into a self-contained HTM
   - 博物版画 `naturalplate`（海里的几何）；
   - 梵高厚涂 `vangogh`（麦浪与星夜）；
   - 修拉点彩 `seurat`（河岸的午后）；
-  - 青绿长卷 `qinglu`（江山市井图，清明上河图 × 千里江山图）。
+  - 青绿长卷 `qinglu`（江山市井图，清明上河图 × 千里江山图）；
+  - 写意水墨 `inkwash`（清水游虾）；
+  - 敦煌壁画 `dunhuang`（飞天）；
+  - 格子构成 `mondrian`（格子里的节奏）；
+  - 康定斯基构成 `kandinsky`（点线面）；
+  - 剪纸拼贴 `cutout`（海藻与星）。
 - **3D 积木拼装风**（`scaffold.py --three`）：three.js r158 直接内嵌进片子，仍是离线可播的单文件。用 ASCII 分层图写模型，自动拆成标准积木；积木旋转落下拼装，带运动模糊；最后是说明书翻页，页面上的步骤图由实时渲染生成。
 - **定格质感引擎**：每秒 12 次摆位、镜头平滑运动、纸纹、胶片颗粒、曝光闪烁；跳转任意帧结果都一样，可复现。
 - **一句话出片 Agent（`donghua-director`）**：自己选风格、画幅、时长和分镜，然后写镜头，过三道关卡后交付网页版，中间不问人。
@@ -140,7 +145,7 @@ skills/donghua-maker/        底座
   assets/toolkit-brick3d.js  3D 积木工具（--three 时注入）
   assets/toolkit-goldscroll.js 金屏说史模块库（--goldscroll 时注入）
   assets/toolkit-flowribbon.js 流场色带模块库（--flowribbon 时注入）
-  assets/toolkit-<look>.js    其他风格的模块库（--look <look> 时注入：datamin / harmonic / brushsketch / ukiyoe / naturalplate / vangogh / seurat / qinglu）
+  assets/toolkit-<look>.js    其他风格的模块库（--look <look> 时注入：datamin / harmonic / brushsketch / ukiyoe / naturalplate / vangogh / seurat / qinglu / inkwash / dunhuang / mondrian / kandinsky / cutout）
   assets/lib/                three.js r158（MIT，附 LICENSE 与 sources.json）
   references/                镜头接口、各风格工具箱（looks/）、配色与节奏、音频、事实核对规范
   scripts/                   scaffold / stills / fact_check / audio_director / music_render /
