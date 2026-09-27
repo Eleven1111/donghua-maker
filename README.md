@@ -6,7 +6,8 @@ A Claude Code skill + agent that turns a one-line idea into a self-contained HTM
 
 ## 功能
 
-- **12 种画面风格**，每种都有验证过的示例片：纸艺定格（默认）、撕纸拼贴绘本、皮影戏、黏土、水彩、美漫分镜、手绘科普笔记、像素农场、像素技术图解、商务财经图解、可爱软件产品演示等。
+- **13 种画面风格**，每种都有验证过的示例片：纸艺定格（默认）、撕纸拼贴绘本、皮影戏、黏土、水彩、美漫分镜、手绘科普笔记、像素农场、像素技术图解、商务财经图解、可爱软件产品演示等。
+- **3D 积木拼装风**（`scaffold.py --three`）：three.js r158 直接内嵌进片子，仍是离线可播的单文件。用 ASCII 分层图写模型，自动拆成标准积木；积木旋转落下拼装，带运动模糊；最后是说明书翻页，页面上的步骤图由实时渲染生成。
 - **定格质感引擎**：每秒 12 次摆位、镜头平滑运动、纸纹、胶片颗粒、曝光闪烁；跳转任意帧结果都一样，可复现。
 - **一句话出片 Agent（`donghua-director`）**：自己选风格、画幅、时长和分镜，然后写镜头，过三道关卡后交付网页版，中间不问人。
 - **事实核对关卡**（`fact_check.py`）：片中每一句屏幕文字都必须登记为三种状态之一：已核实（附来源网址）、有争议（写明另一种说法）、非事实（注明原因）。地图方位这类画面事实也要登记。片子改过字，旧的核对记录自动失效。
@@ -118,6 +119,8 @@ skills/donghua-maker/        底座
   SKILL.md                   完整工作流：分镜 → 骨架 → 镜头 → 音频 → 事实核对 → 验证 → 交付 → 导出
   assets/engine.html         引擎模板
   assets/example-*.html      每种风格验证过的示例片
+  assets/toolkit-brick3d.js  3D 积木工具（--three 时注入）
+  assets/lib/                three.js r158（MIT，附 LICENSE 与 sources.json）
   references/                镜头接口、各风格工具箱（looks/）、配色与节奏、音频、事实核对规范
   scripts/                   scaffold / stills / fact_check / audio_director / music_render /
                              sfx_search / sfx_import / export / voice / narrate / font_embed
@@ -136,5 +139,6 @@ skills/donghua-maker/        底座
 
 - 代码和文档采用 MIT 许可，见 `LICENSE`。
 - 示例片不含任何解说音频。需要解说时，用 `voice.py` 和你自己的 MiniMax key 生成。
+- `assets/lib/three-r158.min.js` 是 three.js（MIT 许可，© three.js authors），原样分发，只删掉了首行的弃用提示。
 - 找到的录音素材由用户在自己的项目里下载，来源和授权逐条记在各自的 `sources.json`，不随本仓库分发。
 - 音频模块的角色母线、自动让位和"录音优先"这几个思路受 [op7418/guizang-product-video-skill](https://github.com/op7418/guizang-product-video-skill) 启发，代码全部是独立实现。

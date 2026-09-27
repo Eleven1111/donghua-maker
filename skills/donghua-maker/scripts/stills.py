@@ -43,7 +43,11 @@ async def grab(url: str, times, shots: bool, out: Path, width: int) -> list:
         errs = []
         pg.on("pageerror", lambda e: errs.append(str(e)))
         await pg.goto(url)
-        await pg.wait_for_function("window.__READY === true")
+        try:
+            await pg.wait_for_function("window.__READY === true", timeout=30000)
+        except Exception:
+            await b.close()
+            return errs or ["film never became ready (boot threw or hung)"]
         await pg.wait_for_timeout(600)
         if shots:
             spans = await pg.evaluate("SHOTS.map(s => [s.t0, s.t1])")
@@ -82,7 +86,8 @@ def main() -> int:
         srv.shutdown()
     files = sorted(out.glob("s_*.jpg"))
     cols = 3
-    subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-pattern_type", "glob", "-i", str(out / "s_*.jpg"),
+    if files:
+        subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-pattern_type", "glob", "-i", str(out / "s_*.jpg"),
                     "-vf", f"scale=640:-2,tile={cols}x{-(-len(files) // cols)}", "-frames:v", "1", str(out / "sheet.jpg")], check=False)
     print(f"{len(files)} stills → {out} (sheet.jpg)")
     print("page errors:", errs or "none")

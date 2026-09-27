@@ -95,6 +95,7 @@ def main() -> int:
     ap.add_argument("--durs", default="", help="per-shot seconds, e.g. '2,3.5,2.5,2' (overrides --dur; total = sum)")
     ap.add_argument("--bpm", type=float, default=96)
     ap.add_argument("--bed", default="room", help="default ambience bed: room|street|field|stage")
+    ap.add_argument("--three", action="store_true", help="3D look: inline three.js (assets/lib) and the brick3d toolkit (references/looks/brick3d.md)")
     ap.add_argument("--narrated", action="store_true", help="the film will have a voice track: no ambience beds (they hiss under speech)")
     ap.add_argument("--aria", default="", help="one-sentence description for screen readers")
     ap.add_argument("--pixel", type=int, default=0, help="pixel-art mode: draw at (W/N)x(H/N) and scale up xN nearest-neighbour, e.g. 8 -> 320x180")
@@ -137,6 +138,9 @@ def main() -> int:
     beds = "" if a.narrated else ", ".join(f"{{ t: {t0:g}, k: 'bed', kind: '{a.bed}', dur: {t1 - t0 + (.12 if i == len(names) - 1 else 0):g} }}"
                      for i, (t0, t1) in enumerate(bounds))
     story = STORY_HEAD.format(title=a.title, bpm=a.bpm, beds=beds)
+    assets = Path(__file__).resolve().parent.parent / "assets"
+    if a.three:
+        story += (assets / "toolkit-brick3d.js").read_text(encoding="utf-8") + "\n"
     for i, (name, (t0, t1)) in enumerate(zip(names, bounds), 1):
         story += (PIXEL_STUB if a.pixel else SHOT_STUB).format(n=i, name=name, name_up=name.upper(), t0=t0, t1=t1, dur=t1 - t0, seed=i * 10 + 1)
 
@@ -152,6 +156,10 @@ def main() -> int:
     leftover = [k for k in ("{{", "__STORY__") if k in src]
     if leftover:
         sys.exit(f"template placeholders left unfilled: {leftover}")
+    if a.three:   # after the placeholder pass: the minified library must not be scanned for {{…}}
+        lib = (assets / "lib" / "three-r158.min.js").read_text(encoding="utf-8")
+        i = src.index("<script>")
+        src = src[:i] + "<script>/* three.js r158 · MIT · see assets/lib/three-LICENSE.txt */\n" + lib + "\n</script>\n" + src[i:]
     a.out.write_text(src, encoding="utf-8")
     print(f"wrote {a.out}  {w}x{h}  {a.dur:g}s  shots: " + ", ".join(f"{n} {t0:g}-{t1:g}s" for n, (t0, t1) in zip(names, bounds)))
     return 0
