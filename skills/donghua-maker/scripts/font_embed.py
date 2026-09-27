@@ -2,7 +2,7 @@
 """Embed commercially usable (SIL OFL) fonts into a film, subset to the characters it uses.
 
     python3 font_embed.py <film>.html                       # default: wenkai (hand/kai look) for FONT + notosans for subtitles
-    python3 font_embed.py <film>.html --fonts wenkai        # any of: wenkai, notosans
+    python3 font_embed.py <film>.html --fonts wenkai        # any of: wenkai, notosans, notoserif
     python3 font_embed.py <film>.html --check               # only verify: every drawn CJK char is covered, licence files present
 
 Why: system fonts such as Xingkai SC / STKaiti ship with macOS under Apple's licence — not cleared for commercial video, and
@@ -32,6 +32,10 @@ CATALOG = {
                  "url": "https://github.com/google/fonts/raw/main/ofl/notosanssc/NotoSansSC%5Bwght%5D.ttf",
                  "home": "https://github.com/google/fonts/tree/main/ofl/notosanssc", "license": "SIL Open Font License 1.1",
                  "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosanssc/OFL.txt"},
+    "notoserif": {"family": "Noto Serif SC", "file": "NotoSerifSC-wght.ttf", "weights": "200 900",
+                  "url": "https://github.com/google/fonts/raw/main/ofl/notoserifsc/NotoSerifSC%5Bwght%5D.ttf",
+                  "home": "https://github.com/google/fonts/tree/main/ofl/notoserifsc", "license": "SIL Open Font License 1.1",
+                  "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/notoserifsc/OFL.txt"},
 }
 CACHE = Path.home() / ".cache" / "donghua-fonts"
 STYLE = re.compile(r'<style id="embedfonts"[^>]*>.*?</style>\n?', re.S)
@@ -123,12 +127,13 @@ def main() -> int:
         lic = fetch(c["license_url"], CACHE / f"{k}-OFL.txt")
         (out / f"LICENSE-{k}.txt").write_text(lic.read_text())
         data = subset(ttf, chars)
-        faces.append((c["family"], base64.b64encode(data).decode()))
+        faces.append((c["family"], base64.b64encode(data).decode(), c.get("weights")))
         ledger.append({"family": c["family"], "file": c["file"], "source": c["url"], "home": c["home"], "license": c["license"],
                        "license_file": f"LICENSE-{k}.txt", "commercial_use": True, "subset_chars": len(chars), "bytes": len(data)})
         print(f"  {c['family']}: {len(chars)} chars → {len(data) // 1024} KB")
-    style = (f'<style id="embedfonts" data-families="{",".join(f for f, _ in faces)}">'
-             + "".join(f'@font-face{{font-family:"{f}";src:url(data:font/woff;base64,{b})}}' for f, b in faces) + "</style>\n")
+    # variable fonts declare their weight range, or canvas `bold` falls back to a synthetic bold
+    style = (f'<style id="embedfonts" data-families="{",".join(f for f, _, _ in faces)}">'
+             + "".join(f'@font-face{{font-family:"{f}";src:url(data:font/woff;base64,{b})' + (f';font-weight:{w}' if w else '') + '}' for f, b, w in faces) + "</style>\n")
     html = STYLE.sub("", html)
     html = html.replace("</head>", style + "</head>", 1) if "</head>" in html else html.replace("<script>", style + "<script>", 1)
     first = faces[0][0]

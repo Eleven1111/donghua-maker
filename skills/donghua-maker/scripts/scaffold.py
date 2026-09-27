@@ -95,6 +95,7 @@ def main() -> int:
     ap.add_argument("--durs", default="", help="per-shot seconds, e.g. '2,3.5,2.5,2' (overrides --dur; total = sum)")
     ap.add_argument("--bpm", type=float, default=96)
     ap.add_argument("--bed", default="room", help="default ambience bed: room|street|field|stage")
+    ap.add_argument("--goldscroll", action="store_true", help="金屏说史 look: paste the gold-scroll toolkit (references/looks/gold-scroll.md)")
     ap.add_argument("--three", action="store_true", help="3D look: inline three.js (assets/lib) and the brick3d toolkit (references/looks/brick3d.md)")
     ap.add_argument("--narrated", action="store_true", help="the film will have a voice track: no ambience beds (they hiss under speech)")
     ap.add_argument("--aria", default="", help="one-sentence description for screen readers")
@@ -102,8 +103,8 @@ def main() -> int:
     a = ap.parse_args()
 
     names = [s.strip() for s in a.shots.split(",") if s.strip()]
-    if not 1 <= len(names) <= 9:
-        sys.exit("need 1–9 shots (number keys 1–9 jump to shots)")
+    if not 1 <= len(names) <= 16:
+        sys.exit("need 1–16 shots (number keys 1–9 jump to the first nine)")
     if a.durs:
         try:
             lens = [float(x) for x in a.durs.split(",") if x.strip()]
@@ -139,6 +140,8 @@ def main() -> int:
                      for i, (t0, t1) in enumerate(bounds))
     story = STORY_HEAD.format(title=a.title, bpm=a.bpm, beds=beds)
     assets = Path(__file__).resolve().parent.parent / "assets"
+    if a.goldscroll:
+        story += (assets / "toolkit-goldscroll.js").read_text(encoding="utf-8") + "\n"
     if a.three:
         story += (assets / "toolkit-brick3d.js").read_text(encoding="utf-8") + "\n"
     for i, (name, (t0, t1)) in enumerate(zip(names, bounds), 1):
@@ -148,7 +151,7 @@ def main() -> int:
     rep = {
         "{{W}}": str(w), "{{H}}": str(h), "{{DUR}}": f"{a.dur:g}", "{{DURTC}}": tc(a.dur),
         "{{TITLE}}": esc(a.title), "{{ARIA}}": esc(a.aria or f"{a.title}, a stop-motion paper film."),
-        "{{NSHOTS}}": str(len(names)), "{{PIX}}": str(a.pixel), "{{UIH}}": "128" if w > h else "290", "{{SEGS}}": "".join(f'<span class="seg">{esc(n)}</span>' for n in names),
+        "{{NSHOTS}}": str(min(9, len(names))), "{{PIX}}": str(a.pixel), "{{UIH}}": "128" if w > h else "290", "{{SEGS}}": "".join(f'<span class="seg">{esc(n)}</span>' for n in names),
         "/*__STORY__*/": story,
     }
     for k, v in rep.items():

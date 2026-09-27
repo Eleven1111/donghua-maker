@@ -1022,7 +1022,8 @@ addEventListener('keydown', ev => {
   else if (k === 'm' || k === 'M') $('snd').click();
   else if (k === 'f' || k === 'F') $('fs').click();
   else if (k === 'c' || k === 'C') { film.subs = !film.subs; if (!film.playing) render(); }
-  else if (k >= '1' && k <= String(SHOTS.length)) { if (!film.started) { $('start').hidden = true; film.started = true; film.audio = true; } seek(Math.round(SHOTS[+k - 1].t0 * FPS)); if (!film.playing) play(true); }
+  else if (/^[1-9]$/.test(k) && +k <= SHOTS.length) {   // keys 1–9 jump to the first nine shots
+    if (!film.started) { $('start').hidden = true; film.started = true; film.audio = true; } seek(Math.round(SHOTS[+k - 1].t0 * FPS)); if (!film.playing) play(true); }
 });
 
 // ── boot ──
