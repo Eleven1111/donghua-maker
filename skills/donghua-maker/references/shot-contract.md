@@ -129,6 +129,9 @@ Look-specific helpers and rules each have a file in `references/looks/`. Read th
 | 简笔漫画 / brush-sketch manhua (`--look brushsketch`) | `looks/brushsketch.md` | `assets/example-brushsketch.html` |
 | 浮世绘 / ukiyo-e woodblock (`--look ukiyoe`) | `looks/ukiyoe.md` | `assets/example-ukiyoe.html` |
 | 博物版画 / natural-history plate (`--look naturalplate`) | `looks/naturalplate.md` | `assets/example-naturalplate.html` |
+| 梵高 / Van Gogh impasto (`--look vangogh`) | `looks/vangogh.md` | `assets/example-vangogh.html` |
+| 修拉 · 点彩 / pointillism (`--look seurat`) | `looks/seurat.md` | `assets/example-seurat.html` |
+| 青绿长卷 / blue-green handscroll (`--look qinglu`) | `looks/qinglu.md` | `assets/example-qinglu.html` |
 
 Paper cut-out (the default look) uses only the core library above; see `assets/example-red-kite.html`. When a new look is verified in a real film, add a file here rather than growing this one.
 
