@@ -1,0 +1,653 @@
+{
+ "topic": "金屏说史 第一回 赤壁之战",
+ "claims": [
+  {
+   "text": "位置·路线为示意",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "map disclaimer"
+  },
+  {
+   "text": "金屏说史 · 中国史",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "series name"
+  },
+  {
+   "text": "第一回　赤壁之战",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "episode title"
+  },
+  {
+   "text": "金屏说史",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "series name"
+  },
+  {
+   "text": "赤壁之战",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "battle name, title"
+  },
+  {
+   "text": "第一回",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "episode number seal"
+  },
+  {
+   "text": "三国鼎立之势，从这场大火后初现。",
+   "claim": "After Chibi the tripartite balance first appeared",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikipedia.org/wiki/赤壁之战"
+   ],
+   "note": "W1「后曹孫劉三分荊州，三國鼎立之勢初现。」"
+  },
+  {
+   "text": "官渡之战",
+   "claim": "Battle of Guandu, 200",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikisource.org/wiki/三國志/卷01"
+   ],
+   "note": "武帝纪 建安五年 官渡"
+  },
+  {
+   "text": "200",
+   "claim": "Guandu = 建安五年 = 200",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikisource.org/wiki/三國志/卷01"
+   ],
+   "note": "武帝纪 建安五年"
+  },
+  {
+   "text": "北征乌桓",
+   "claim": "Cao Cao campaigned north against the Wuhuan, 207",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikisource.org/wiki/三國志/卷01"
+   ],
+   "note": "武帝纪 建安十二年 北征烏丸"
+  },
+  {
+   "text": "207",
+   "claim": "建安十二年 = 207",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikisource.org/wiki/三國志/卷01"
+   ],
+   "note": "武帝纪 建安十二年"
+  },
+  {
+   "text": "南征荆州",
+   "claim": "Southern campaign against Jingzhou, 208",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikipedia.org/wiki/赤壁之战",
+    "https://zh.wikisource.org/wiki/三國志/卷01"
+   ],
+   "note": "W1「七月，曹操于许县集合军队」"
+  },
+  {
+   "text": "208 年秋",
+   "claim": "campaign began in the 7th month (autumn) of 208",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikipedia.org/wiki/赤壁之战"
+   ],
+   "note": "W1「七月，曹操于许县集合军队...八月，刘表病逝」"
+  },
+  {
+   "text": "208 年冬",
+   "claim": "battle in the 12th month (winter) of 208",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikipedia.org/wiki/赤壁之战"
+   ],
+   "note": "W1「十二月，曹操率軍从江陵東征」"
+  },
+  {
+   "text": "年",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "unit label"
+  },
+  {
+   "text": "官渡之战后，曹操平定河北，又北征乌桓。",
+   "claim": "After Guandu Cao took Hebei, then campaigned against the Wuhuan (207)",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikisource.org/wiki/三國志/卷01"
+   ],
+   "note": "武帝纪: 建安五年官渡; 建安十二年北征烏丸 (quoted via WebFetch summary)"
+  },
+  {
+   "text": "许",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "place label; position checked in visual"
+  },
+  {
+   "text": "襄阳",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "place label; position in visual"
+  },
+  {
+   "text": "江陵",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "place label; position in visual"
+  },
+  {
+   "text": "夏口",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "place label; position in visual"
+  },
+  {
+   "text": "柴桑",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "place label; position in visual"
+  },
+  {
+   "text": "曹操",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "name"
+  },
+  {
+   "text": "率军南下",
+   "claim": "Cao led the army south",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikipedia.org/wiki/赤壁之战"
+   ],
+   "note": "W1「七月，曹操于许县集合军队」"
+  },
+  {
+   "text": "刘备",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "name"
+  },
+  {
+   "text": "退守夏口",
+   "claim": "Liu Bei fell back to Xiakou",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikipedia.org/wiki/赤壁之战"
+   ],
+   "note": "W1「與劉備合兵退守夏口」"
+  },
+  {
+   "text": "孙权",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "name"
+  },
+  {
+   "text": "据守江东",
+   "claim": "Sun Quan held Jiangdong (Chaisang at the time)",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikipedia.org/wiki/赤壁之战"
+   ],
+   "note": "W1 孫劉联盟: 諸葛亮隨魯肅去见孫權 (Sun Quan at 柴桑)"
+  },
+  {
+   "text": "孙",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "seal character for 孙权"
+  },
+  {
+   "text": "208年秋，曹操南征荆州，刘琮举州投降。",
+   "claim": "Autumn 208 Cao marched on Jingzhou; Liu Cong surrendered",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikipedia.org/wiki/赤壁之战",
+    "https://zh.wikisource.org/wiki/三國志/卷01"
+   ],
+   "note": "W1「七月，曹操于许县集合军队...八月，刘表病逝，刘琮在襄陽即其位」; 武帝纪: 琮...降"
+  },
+  {
+   "text": "刘备退守夏口，派诸葛亮去见孙权。",
+   "claim": "Liu Bei held Xiakou and sent Zhuge Liang to Sun Quan",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikipedia.org/wiki/赤壁之战"
+   ],
+   "note": "W1「與劉備合兵退守夏口。魯肅勸說劉備與孫權連合抗曹，劉備便遣諸葛亮隨魯肅去见孫權」"
+  },
+  {
+   "text": "降",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "seal marking 刘琮's surrender (claim checked in its subtitle)"
+  },
+  {
+   "text": "八十万",
+   "claim": "Cao claimed 800,000 marines",
+   "status": "disputed",
+   "sources": [
+    "https://zh.wikisource.org/wiki/三國志/卷47",
+    "https://zh.wikipedia.org/wiki/赤壁之战"
+   ],
+   "note": "江表傳「今治水軍八十萬眾」; W1: 学界基本以为是夸大 — shown as a claim ('号称')"
+  },
+  {
+   "text": "约五万",
+   "claim": "allied force about 50,000",
+   "status": "disputed",
+   "sources": [
+    "https://zh.wikipedia.org/wiki/赤壁之战",
+    "https://zh.wikisource.org/wiki/三國志/卷54"
+   ],
+   "note": "周瑜三万 + 刘备约两万; W1: 张磊夫、张靖龙、宋杰皆以三万为是 (for Zhou Yu); totals are estimates"
+  },
+  {
+   "text": "曹操 · 号称",
+   "claim": "the 800,000 was Cao's own claim",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikisource.org/wiki/三國志/卷47"
+   ],
+   "note": "江表傳 曹公與權書「今治水軍八十萬眾，方與將軍會獵於吳」"
+  },
+  {
+   "text": "孙刘联军",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "name of the alliance"
+  },
+  {
+   "text": "周瑜估算：北方兵不过十五六万",
+   "claim": "Zhou Yu: northern troops no more than 150-160k",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikisource.org/wiki/三國志/卷54"
+   ],
+   "note": "周瑜傳「彼所將中國人，不過十五六萬，且軍已久疲」"
+  },
+  {
+   "text": "荆州降卒亦不过七八万",
+   "claim": "Zhou Yu: surrendered Jingzhou troops at most 70-80k",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikisource.org/wiki/三國志/卷54"
+   ],
+   "note": "周瑜傳「所得表眾，亦極七八萬耳」"
+  },
+  {
+   "text": "周瑜三万 · 刘备约两万",
+   "claim": "Zhou Yu 30,000; Liu Bei about 20,000",
+   "status": "disputed",
+   "sources": [
+    "https://zh.wikisource.org/wiki/三國志/卷54",
+    "https://zh.wikipedia.org/wiki/赤壁之战"
+   ],
+   "note": "周瑜傳「瑜請得精兵三萬人」(later 五萬 requested); W1: Liu Bei around 20,000 — estimates differ"
+  },
+  {
+   "text": "曹操致书孙权，号称水军八十万。",
+   "claim": "Cao wrote to Sun Quan claiming 800,000 marines",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikisource.org/wiki/三國志/卷47"
+   ],
+   "note": "江表傳「今治水軍八十萬眾，方與將軍會獵於吳」"
+  },
+  {
+   "text": "周瑜估算其实际兵力约二十余万。",
+   "claim": "15-16万 + 7-8万 = 22-24万, i.e. over 200,000",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikisource.org/wiki/三國志/卷54"
+   ],
+   "note": "周瑜傳「不過十五六萬…所得表眾，亦極七八萬耳」— sum is our arithmetic"
+  },
+  {
+   "text": "赤壁",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "place label; location dispute in the end-card claim"
+  },
+  {
+   "text": "乌林",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "place label; north bank in visual"
+  },
+  {
+   "text": "曹军",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "name"
+  },
+  {
+   "text": "退驻北岸乌林",
+   "claim": "Cao withdrew to Wulin on the north bank",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikipedia.org/wiki/赤壁之战",
+    "https://zh.wikisource.org/wiki/三國志/卷54"
+   ],
+   "note": "W1「曹操遂將军队引次江北乌林」; 周瑜傳「初一交戰，公軍敗退，引次江北」"
+  },
+  {
+   "text": "曹",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "seal/banner character for 曹"
+  },
+  {
+   "text": "周瑜",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "name"
+  },
+  {
+   "text": "孙刘联军 · 南岸",
+   "claim": "allies camped on the south bank",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikipedia.org/wiki/赤壁之战"
+   ],
+   "note": "W1「周瑜率军驻营南岸」"
+  },
+  {
+   "text": "十二月，两军初战于赤壁，曹军失利，退驻北岸乌林。",
+   "claim": "12th month; first clash lost; Cao withdrew to Wulin",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikipedia.org/wiki/赤壁之战",
+    "https://zh.wikisource.org/wiki/三國志/卷54"
+   ],
+   "note": "W1「十二月，曹操率軍从江陵東征」; 周瑜傳「初一交戰，公軍敗退，引次江北」"
+  },
+  {
+   "text": "首尾相接，可烧而走也",
+   "claim": "Huang Gai's words",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikisource.org/wiki/三國志/卷54"
+   ],
+   "note": "周瑜傳「然觀操軍船艦，首尾相接，可燒而走也」"
+  },
+  {
+   "text": "《三国志·周瑜传》",
+   "claim": "source of that quote",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikisource.org/wiki/三國志/卷54"
+   ],
+   "note": "三國志 卷54 周瑜傳"
+  },
+  {
+   "text": "曹军战船首尾相连，黄盖提出火攻。",
+   "claim": "ships chained bow to stern; Huang Gai proposed fire",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikisource.org/wiki/三國志/卷54",
+    "https://zh.wikipedia.org/wiki/赤壁之战"
+   ],
+   "note": "周瑜傳 黃蓋曰「觀操軍船艦，首尾相接，可燒而走也」"
+  },
+  {
+   "text": "时东南风急",
+   "claim": "the south-east wind was strong",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikisource.org/wiki/三國志/卷54"
+   ],
+   "note": "裴注引江表傳「時東南風急，因以十艦最著前」"
+  },
+  {
+   "text": "《江表传》",
+   "claim": "source of that quote",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikisource.org/wiki/三國志/卷54"
+   ],
+   "note": "裴松之注引《江表傳》in 三國志 卷54"
+  },
+  {
+   "text": "黄盖诈降，趁东南风急，率船冲向曹营。",
+   "claim": "feigned surrender, SE wind, fire ships",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikisource.org/wiki/三國志/卷54",
+    "https://zh.wikipedia.org/wiki/赤壁之战"
+   ],
+   "note": "江表傳「時東南風急…使眾兵齊聲大叫曰：『降焉！』」; W1「黄蓋率所备之船…順風而行」"
+  },
+  {
+   "text": "“烟炎张天，人马烧溺死者甚众。”",
+   "claim": "quote from 周瑜傳",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikisource.org/wiki/三國志/卷54"
+   ],
+   "note": "周瑜傳「煙炎張天，人馬燒溺死者甚眾，軍遂敗退」"
+  },
+  {
+   "text": "华容道",
+   "claim": "Cao retreated via the Huarong road",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikipedia.org/wiki/赤壁之战"
+   ],
+   "note": "W1「曹操选择沿華容道穿過雲夢澤，向江陵退却」"
+  },
+  {
+   "text": "疫病流行 · 引军北还",
+   "claim": "epidemic; Cao led the army back north",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikisource.org/wiki/三國志/卷01",
+    "https://zh.wikisource.org/wiki/三國志/卷47"
+   ],
+   "note": "武帝紀「於是大疫，吏士多死者，乃引軍還」; 吳主傳「曹公遂北還」"
+  },
+  {
+   "text": "曹军又逢大疫，曹操经华容道退回江陵，引军北还。",
+   "claim": "epidemic, Huarong road to Jiangling, then north",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikisource.org/wiki/三國志/卷01",
+    "https://zh.wikipedia.org/wiki/赤壁之战"
+   ],
+   "note": "武帝紀「於是大疫…乃引軍還」; W1「曹操选择沿華容道穿過雲夢澤，向江陵退却」"
+  },
+  {
+   "text": "草船借箭",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "name of the novel's episode; the claim about it is in the subtitles"
+  },
+  {
+   "text": "小说",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "stamp; claim checked in the 辨误 subtitle"
+  },
+  {
+   "text": "原型或为：213年 濡须之战",
+   "claim": "the prototype is held to be Sun Quan at Ruxu, 213",
+   "status": "disputed",
+   "sources": [
+    "https://zh.wikipedia.org/wiki/草船借箭"
+   ],
+   "note": "「此事被视为《三国演义》诸葛亮'草船借箭'的原型」「此事發生在建安十八年（213年）」— 'held to be', so worded 或为"
+  },
+  {
+   "text": "孙权乘大船观察曹军，箭矢射满船身",
+   "claim": "Weilue: Sun Quan's big ship came to watch; arrows struck it",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikipedia.org/wiki/草船借箭"
+   ],
+   "note": "「據《魏略》，孫權乘大船來觀軍，公使弓弩亂發，箭著其船」"
+  },
+  {
+   "text": "——《魏略》（裴松之注引）",
+   "claim": "the story is in Weilue, quoted by Pei Songzhi",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikipedia.org/wiki/草船借箭"
+   ],
+   "note": "「據《魏略》…」"
+  },
+  {
+   "text": "“草船借箭”家喻户晓。",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "framing line: the novel's episode is widely known (not a historical claim)"
+  },
+  {
+   "text": "但它出自小说《三国演义》，并非赤壁之战的史实。",
+   "claim": "straw-boat arrows is the novel's invention for Zhuge Liang",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikipedia.org/wiki/草船借箭",
+    "https://zh.wikipedia.org/wiki/赤壁之战"
+   ],
+   "note": "CC「此事被视为《三国演义》诸葛亮'草船借箭'的原型」; W1 battle account has no such episode"
+  },
+  {
+   "text": "其原型可能是213年孙权在濡须的船中箭一事。",
+   "claim": "prototype: Sun Quan at Ruxu 213",
+   "status": "disputed",
+   "sources": [
+    "https://zh.wikipedia.org/wiki/草船借箭"
+   ],
+   "note": "「被视为…原型」「建安十八年（213年）」— hedged 可能"
+  },
+  {
+   "text": "三分之势",
+   "claim": "tripartite balance began to form",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikipedia.org/wiki/赤壁之战"
+   ],
+   "note": "W1「三國鼎立之勢初现」"
+  },
+  {
+   "text": "孙权 · 刘备",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "names"
+  },
+  {
+   "text": "此后曹孙刘三分荆州，三国鼎立之势初现。",
+   "claim": "Jingzhou split three ways; tripartite balance appeared",
+   "status": "verified",
+   "sources": [
+    "https://zh.wikipedia.org/wiki/赤壁之战"
+   ],
+   "note": "W1「后曹孫劉三分荊州，三國鼎立之勢初现。」"
+  },
+  {
+   "text": "赤壁，究竟在哪里？",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "open question; answer in the next claim"
+  },
+  {
+   "text": "完",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "end seal"
+  },
+  {
+   "text": "主流认为在今湖北赤壁市，但至今仍有争议。",
+   "claim": "mainstream: modern Chibi City (formerly Puqi); still disputed",
+   "status": "disputed",
+   "sources": [
+    "https://zh.wikipedia.org/wiki/赤壁之战"
+   ],
+   "note": "W1「今主流意见是赤壁在今蒲圻市（赤壁市），但仍有异议」"
+  }
+ ],
+ "visual": [
+  {
+   "what": "Chibi on the south bank of the Yangtze, Wulin opposite on the north bank",
+   "shot": 5,
+   "t": 23.5,
+   "status": "verified",
+   "sources": [
+    "https://zh.wikipedia.org/wiki/赤壁之战"
+   ],
+   "still": "s_023.50.jpg (scratch ep2)",
+   "note": "W1「周瑜率军驻营南岸…曹操遂將军队引次江北乌林」; map positions schematic"
+  },
+  {
+   "what": "Cities in the right relative places: 许 north, 襄阳 → 江陵 south on the Han/Yangtze, 夏口 at the Han–Yangtze confluence, 柴桑 downstream east",
+   "shot": 3,
+   "t": 12.5,
+   "status": "verified",
+   "sources": [
+    "https://www.naturalearthdata.com/"
+   ],
+   "still": "s_012.50.jpg",
+   "note": "placed at modern coordinates of the sites on Natural Earth rivers; Han-era lakes (云梦泽) differ, flagged on screen 位置·路线为示意"
+  },
+  {
+   "what": "Retreat route runs west from Wulin via Huarong to Jiangling, then north",
+   "shot": 8,
+   "t": 38,
+   "status": "verified",
+   "sources": [
+    "https://zh.wikipedia.org/wiki/赤壁之战"
+   ],
+   "still": "s_038.00.jpg",
+   "note": "W1「曹操选择沿華容道穿過雲夢澤，向江陵退却」"
+  },
+  {
+   "what": "Fire ships come in with the wind from the south-east side; fleet chained bow to stern",
+   "shot": 7,
+   "t": 32,
+   "status": "verified",
+   "sources": [
+    "https://zh.wikisource.org/wiki/三國志/卷54"
+   ],
+   "still": "s_032.00.jpg",
+   "note": "江表傳「時東南風急」; 周瑜傳「首尾相接」— side view, direction schematic"
+  }
+ ]
+}
