@@ -137,6 +137,13 @@ Look-specific helpers and rules each have a file in `references/looks/`. Read th
 | 格子构成 / Mondrian grid (`--look mondrian`) | `looks/mondrian.md` | `assets/example-mondrian.html` |
 | 康定斯基 · 构成 / Kandinsky composition (`--look kandinsky`) | `looks/kandinsky.md` | `assets/example-kandinsky.html` |
 | 剪纸拼贴 / gouache cut-outs (`--look cutout`) | `looks/cutout.md` | `assets/example-cutout.html` |
+| 规则粒子 / process particles (`--look process`) | `looks/process.md` | `assets/example-process.html` |
+| 弹性线条 / elastic lines (`--look elastic`) | `looks/elastic.md` | `assets/example-elastic.html` |
+| 差分生长 / differential growth (`--look growth`) | `looks/growth.md` | `assets/example-growth.html` |
+| 等距几何 / isometric blocks (`--look isometric`) | `looks/isometric.md` | `assets/example-isometric.html` |
+| 粒子流体 / data fluid (`--look datafluid`) | `looks/datafluid.md` | `assets/example-datafluid.html` |
+| 发光花 / luminous flowers (`--look bloom`) | `looks/bloom.md` | `assets/example-bloom.html` |
+| 欧普艺术 / Op Art (`--look opart`) | `looks/opart.md` | `assets/example-opart.html` |
 
 Paper cut-out (the default look) uses only the core library above; see `assets/example-red-kite.html`. When a new look is verified in a real film, add a file here rather than growing this one.
 
