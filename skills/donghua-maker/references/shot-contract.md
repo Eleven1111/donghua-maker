@@ -132,6 +132,11 @@ Look-specific helpers and rules each have a file in `references/looks/`. Read th
 | 梵高 / Van Gogh impasto (`--look vangogh`) | `looks/vangogh.md` | `assets/example-vangogh.html` |
 | 修拉 · 点彩 / pointillism (`--look seurat`) | `looks/seurat.md` | `assets/example-seurat.html` |
 | 青绿长卷 / blue-green handscroll (`--look qinglu`) | `looks/qinglu.md` | `assets/example-qinglu.html` |
+| 写意水墨 / ink wash (Qi Baishi study) (`--look inkwash`) | `looks/inkwash.md` | `assets/example-inkwash.html` |
+| 敦煌壁画 / Dunhuang mural (`--look dunhuang`) | `looks/dunhuang.md` | `assets/example-dunhuang.html` |
+| 格子构成 / Mondrian grid (`--look mondrian`) | `looks/mondrian.md` | `assets/example-mondrian.html` |
+| 康定斯基 · 构成 / Kandinsky composition (`--look kandinsky`) | `looks/kandinsky.md` | `assets/example-kandinsky.html` |
+| 剪纸拼贴 / gouache cut-outs (`--look cutout`) | `looks/cutout.md` | `assets/example-cutout.html` |
 
 Paper cut-out (the default look) uses only the core library above; see `assets/example-red-kite.html`. When a new look is verified in a real film, add a file here rather than growing this one.
 
