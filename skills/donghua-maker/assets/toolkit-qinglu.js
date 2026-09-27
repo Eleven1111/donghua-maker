@@ -1,7 +1,7 @@
 // ═══ QINGLU handscroll toolkit (青绿长卷): a long silk handscroll mixing blue-green mountains (azurite → malachite → ochre foot,
 // ink contours, texture strokes, tree dots, mist bands) with a busy riverside town (ruled architecture, a rainbow bridge, boats,
 // crowds of tiny figures). Studied from public-domain Song scrolls (千里江山图, 清明上河图); every element here is our own drawing.
-// The world is one wide canvas baked at build(); people and boats are drawn live on top. Read right → left: pan the camera leftward.
+// The world is one wide canvas baked at build(); people and boats are drawn live on top. Open from the left end and pan rightward (user's choice).
 // references/looks/qinglu.md
 const SMOOTH_DEFAULT = true, POST_GRAIN = .18, VIGN_TONE = ['60,40,10', .05, .2];
 const QL = { silk: '#c9a86a', silk2: '#b8955a', ink: '#3a2a18', inkL: 'rgba(58,42,24,.55)', azur: '#2a6fa8', mala: '#3f9a7a', malaL: '#7fb89a', ochre: '#b88a4a', wood: '#8a6238', woodL: '#b58a58', roof: '#5a6a6a', roofG: '#3f7a7a', white: '#efe6d0', red: '#b8412e', brocade: '#2f4a4a' };
