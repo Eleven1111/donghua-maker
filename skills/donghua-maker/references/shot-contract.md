@@ -124,6 +124,11 @@ Look-specific helpers and rules each have a file in `references/looks/`. Read th
 | 3D brick build / 3D 积木拼装 (three.js, `--three`) | `looks/brick3d.md` | `assets/example-brick-robot.html` |
 | 金屏说史 gold-scroll history series (`--goldscroll`) | `looks/gold-scroll.md` | `assets/example-gold-scroll-chibi.html` |
 | flow-ribbon / 流场色带 (`--flowribbon`) | `looks/flow-ribbon.md` | `assets/example-flow-ribbon.html` |
+| 数据极简 / data-minimal (`--look datamin`) | `looks/datamin.md` | `assets/example-datamin.html` |
+| 谐波运动 / harmonic motion (`--look harmonic`) | `looks/harmonic.md` | `assets/example-harmonic.html` |
+| 简笔漫画 / brush-sketch manhua (`--look brushsketch`) | `looks/brushsketch.md` | `assets/example-brushsketch.html` |
+| 浮世绘 / ukiyo-e woodblock (`--look ukiyoe`) | `looks/ukiyoe.md` | `assets/example-ukiyoe.html` |
+| 博物版画 / natural-history plate (`--look naturalplate`) | `looks/naturalplate.md` | `assets/example-naturalplate.html` |
 
 Paper cut-out (the default look) uses only the core library above; see `assets/example-red-kite.html`. When a new look is verified in a real film, add a file here rather than growing this one.
 
