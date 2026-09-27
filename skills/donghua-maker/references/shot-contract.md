@@ -121,6 +121,7 @@ Look-specific helpers and rules each have a file in `references/looks/`. Read th
 | shadow puppet / 皮影 | `looks/shadow-puppet.md` | `assets/example-shadow-archer.html` |
 | clay / 黏土 | `looks/clay.md` | `assets/example-clay-fishing.html` |
 | watercolour / 水彩 | `looks/watercolor.md` | `assets/example-spring-rain.html` |
+| 3D brick build / 3D 积木拼装 (three.js, `--three`) | `looks/brick3d.md` | `assets/example-brick-robot.html` |
 
 Paper cut-out (the default look) uses only the core library above; see `assets/example-red-kite.html`. When a new look is verified in a real film, add a file here rather than growing this one.
 

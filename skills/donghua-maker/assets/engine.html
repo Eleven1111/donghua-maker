@@ -862,7 +862,8 @@ function simTo(f) {
   while (film.f < f) { film.f++; const sf = film.f - f0; s.step(1 / FPS, sf / FPS, sf); stepGusts(); if (film.smooth || sf % EXPO === 0) s.snap(); }
 }
 // post: exposure flicker (each stop-motion frame is its own photograph), grain, lens falloff
-//   a look can set `const VIGN_TONE = ['60,50,30', .05, .16];` (rgb, alpha at 70 %, alpha at the edge) in its story
+//   a look can set `const VIGN_TONE = ['60,50,30', .05, .16];` (rgb, alpha at 70 %, alpha at the edge) in its story,
+//   and `const POST_GRAIN = .15;` (grain alpha, default .6)
 const VIGN = (() => { const c = mk(W, H), g = g2(c); g.save(); g.translate(W / 2, H / 2); g.scale(1, H / W); const rg = g.createRadialGradient(0, 0, W * .22, 0, 0, W * .72); const [vc, v7, v1] = typeof VIGN_TONE !== 'undefined' ? VIGN_TONE : ['4,14,16', .18, .55]; rg.addColorStop(0, `rgba(${vc},0)`); rg.addColorStop(.7, `rgba(${vc},${v7})`); rg.addColorStop(1, `rgba(${vc},${v1})`); g.fillStyle = rg; g.fillRect(-W, -W, W * 2, W * 2); g.restore(); return c; })();
 function render() {
   const f = film.f, s = film.shot, f0 = Math.round(s.t0 * FPS), sf = f - f0, st = sf / FPS;
@@ -879,7 +880,7 @@ function render() {
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.shadowColor = 'transparent';
   if (!film.smooth) { const fl = (hash(e, 77) - .5) * .05; ctx.fillStyle = fl > 0 ? `rgba(255,244,226,${fl * .55})` : `rgba(4,14,16,${-fl * .7})`; ctx.fillRect(0, 0, W, H); }
   const ox = (hash(e + 1, 5) * 384) | 0, oy = (hash(e + 1, 6) * 384) | 0;
-  ctx.save(); ctx.translate(-ox, -oy); ctx.globalAlpha = .6; ctx.fillStyle = PAT.grain; ctx.fillRect(ox, oy, W, H); ctx.restore();
+  ctx.save(); ctx.translate(-ox, -oy); ctx.globalAlpha = typeof POST_GRAIN !== 'undefined' ? POST_GRAIN : .6; ctx.fillStyle = PAT.grain; ctx.fillRect(ox, oy, W, H); ctx.restore();
   ctx.drawImage(VIGN, 0, 0);
   drawSubs();
 }
@@ -1029,6 +1030,7 @@ addEventListener('keydown', ev => {
   window.EMBED_FONTS = (document.getElementById('embedfonts')?.dataset.families || '').split(',').filter(Boolean);
   await Promise.all(window.EMBED_FONTS.map(f => document.fonts.load(`40px "${f}"`, '字A')));   // canvas text must not fall back mid-film
   film.subs = Q.get('subs') !== '0';
+  if (typeof SMOOTH_DEFAULT !== 'undefined' && Q.get('smooth') == null) film.smooth = !!SMOOTH_DEFAULT;   // a look (e.g. brick3d) can default to smooth 60 fps motion
   applyMarks();
   for (const s of SHOTS) s.build();
   buildScore();
