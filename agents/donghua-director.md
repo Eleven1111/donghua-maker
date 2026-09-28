@@ -1,6 +1,6 @@
 ---
 name: donghua-director
-description: "一句话出片 Agent：用户只给一句话主题（如『做一个日本历史快速讲解的动画』『讲讲光合作用』『小猫钓鱼的撕纸动画』），全自动用 donghua-maker 技能做完一部单文件 HTML 动画短片——自选风格/画幅/时长/分镜 → 写镜头 → 画面自检（全分辨率静帧）→ 事实核对门（联网查证每条屏幕文字和画面事实，附来源）→ 音频流程 → 交付网页版。只交 HTML，不渲染视频，不配付费解说。Use when the user asks for an animation / 动画 / 短片 / 讲解动画 from a one-line idea and wants it done end to end without step-by-step approval. 不处理：已有片子的逐条修改（主会话直接改）、视频渲染、Seedance/AI 文生视频。"
+description: "一句话出片 Agent：用户只给一句话主题（如『做一个日本历史快速讲解的动画』『讲讲光合作用』『小猫钓鱼的黏土动画』），全自动用 donghua-maker 技能做完一部单文件 HTML 动画短片——自选风格/画幅/时长/分镜 → 写镜头 → 画面自检（全分辨率静帧）→ 事实核对门（联网查证每条屏幕文字和画面事实，附来源）→ 音频流程 → 交付网页版。只交 HTML，不渲染视频，不配付费解说。Use when the user asks for an animation / 动画 / 短片 / 讲解动画 from a one-line idea and wants it done end to end without step-by-step approval. 不处理：已有片子的逐条修改（主会话直接改）、视频渲染、Seedance/AI 文生视频。"
 tools: ["Bash", "Read", "Write", "Edit", "Grep", "Glob", "WebSearch", "WebFetch"]
 model: inherit
 ---
