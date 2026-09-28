@@ -80,15 +80,25 @@ git clone https://github.com/Eleven1111/donghua-maker.git && cd donghua-maker
 
 实测情况：Codex（从项目 `.agents/skills` 发现三个技能）、OpenClaw（`openclaw skills list` 显示三个均为 ready）、Claude Code 已实测。其余终端按各自官方文档的目录安装，未在本机实测。卸载：`./install.sh --uninstall <终端>`。
 
-依赖：
-- **必需**：Python 3.10+、`ffmpeg`、`playwright`（Python 版），再加 Google Chrome，或运行 `python3 -m playwright install chromium`。
-- **解说和字体**：`pip install edge-tts fonttools`。edge-tts 需要联网；字体第一次使用时下载到 `~/.cache/donghua-fonts/`。
-- **可选**：
-  - `fluidsynth` 加 GeneralUser GS SoundFont，用于渲染背景音乐。默认路径 `~/.local/share/soundfonts/GeneralUser-GS.sf2`，可用环境变量 `SOUNDFONT` 另指。
-  - `FREESOUND_API_KEY`：多一个音效来源。
-  - `MINIMAX_API_KEY`：生成中文解说。
+**装好之后先体检**，检查这台电脑缺什么，并给出适合当前系统的安装命令：
 
-密钥只从环境变量或 `~/.config/secrets/.env` 读取，脚本不会打印它们。
+```bash
+pip install -r requirements.txt                                   # Python 依赖：playwright、edge-tts、fonttools、numpy
+python3 ~/.claude/skills/donghua-maker/scripts/doctor.py --online # 其他终端换成它的技能目录
+```
+
+| 功能 | 需要 | 缺了会怎样 |
+|---|---|---|
+| 做片和自检（核心） | Python 3.10+、`ffmpeg`、playwright，再加 Chrome 或 `python3 -m playwright install chromium` | 必须装 |
+| 免费解说和字幕 | `edge-tts`，需要能连上微软语音服务，不需要 key | 片子没有解说，或者改用 MiniMax |
+| MiniMax 解说（付费，可选） | `MINIMAX_API_KEY`；海外账号再加 `MINIMAX_API_BASE=https://api.minimax.io` | 用免费的 edge-tts |
+| 可商用字体 | `fonttools`；首次使用时自动下载字体文件 | 只能用系统字体，发布有版权风险 |
+| 自动生成背景音乐 | `fluidsynth` 和一个 SoundFont 音色库 | 用录音配乐，或者代码合成 |
+| 找授权音效 | `numpy`；`FREESOUND_API_KEY` 可选 | 用代码合成的音效 |
+
+**Key 放在哪里**：复制仓库里的 `.env.example` 到 `~/.config/donghua/.env`，只填你要用的，再 `chmod 600`。也可以放在片子所在文件夹的 `.env` 里，或者直接设成环境变量。所有脚本按"环境变量 → 当前文件夹 `.env` → `~/.config/donghua/.env`"的顺序读取，只读不打印。
+
+**下载不了字体**（GitHub 慢或打不开）：Noto Sans 会自动换 jsDelivr 下载。也可以设置 `DONGHUA_FONT_MIRROR` 用镜像，或者手动下载 `.ttf` 文件，放进 `DONGHUA_FONT_DIR` 指定的文件夹。详见 `skills/donghua-maker/references/setup.md`。
 
 ## 使用
 
@@ -141,6 +151,7 @@ film-1080.mp4             导出成片（只在确认后生成）
 ## 目录
 
 ```
+requirements.txt             Python 依赖；.env.example  key 与设置模板（全部可选）
 install.sh                   一键安装到 Claude Code / Codex / Cursor / Antigravity / Gemini / WorkBuddy / OpenClaw
 AGENTS.md                    给改仓库的 Agent 看的规则（CLAUDE.md 引用它）
 tools/validate.py            仓库关卡：技能规范、失效链接、脚本自检、每种风格各起一部空片的冒烟测试、密钥扫描
@@ -166,11 +177,12 @@ skills/donghua-maker/        底座
   assets/toolkit-<look>.js    各风格的模块库（--look <look> 时注入；用到 THREE 的会自动内嵌 three.js：clay3d / voxel / paper3d / datamin / harmonic / brushsketch / ukiyoe / naturalplate / vangogh / seurat / qinglu / inkwash / dunhuang / mondrian / kandinsky / cutout / process / elastic / growth / isometric / datafluid / bloom / opart / nianhua / tessellation / sandart / ascii / bauhaus / chalkboard / blueprint / oneline / pencil / memphis / linocut / retro70 / film16 / terminal / hud / kinetic / flatsci / editorial / layered）
   assets/lib/                three.js r158（MIT，附 LICENSE 与 sources.json）
   references/catalog.md      全部示例片目录（选定风格后再读，不占主文件篇幅）
+  references/setup.md        新机器安装：体检、每项依赖对应的功能、key 的读取顺序、字体下载不了怎么办
   references/onboarding.md   首次使用：读档案、从终端记忆了解用户、三个问题、档案 → 默认值
   references/narration.md    解说流程；references/export.md 导出 MP4
   references/                镜头接口、各风格工具箱（looks/）、配色与节奏、音频、事实核对规范
   scripts/                   scaffold / stills / fact_check / audio_director / music_render /
-                             sfx_search / sfx_import / export / voice / narrate / font_embed / profile
+                             sfx_search / sfx_import / export / voice / narrate / font_embed / profile / doctor
 ```
 
 ## 设计理念

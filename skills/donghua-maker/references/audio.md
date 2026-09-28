@@ -24,7 +24,7 @@ VIDEO PLAN (film score + AUDIO_PLAN)          scripts/audio_director.py <film>.h
 - **Setup (once):**
   - `brew install fluid-synth`.
   - Put the SoundFont at `~/.local/share/soundfonts/GeneralUser-GS.sf2`, or point `SOUNDFONT` elsewhere. GeneralUser GS v2.0.3 is free for music creation, commercial use included.
-  - `FREESOUND_API_KEY` in `~/.config/secrets/.env` is optional; without it the SFX branch uses the local library and Mixkit.
+  - `FREESOUND_API_KEY` (in `~/.config/donghua/.env` or any source in `setup.md`) is optional; without it the SFX branch uses the local library and Mixkit.
 - **Speed.**
   - The SFX search runs categories and downloads in parallel and fetches only Mixkit's full-length preview mp3s; the importer re-encodes anyway, so WAVs added nothing.
   - Everything is cached in `~/.cache/donghua-maker`: tag pages for 7 days, audio forever. `DONGHUA_CACHE` moves it.
