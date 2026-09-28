@@ -149,6 +149,10 @@ Look-specific helpers and rules each have a file in `references/looks/`. Read th
 | 沙画 / sand animation (`--look sandart`) | `looks/sandart.md` | `assets/example-sandart.html` |
 | 字符画 / ASCII art (`--look ascii`) | `looks/ascii.md` | `assets/example-ascii.html` |
 | 包豪斯构成 / Bauhaus (`--look bauhaus`) | `looks/bauhaus.md` | `assets/example-bauhaus.html` |
+| 黑板粉笔 / Chalkboard (`--look chalkboard`) | `looks/chalkboard.md` | `assets/example-chalkboard.html` |
+| 工程蓝图 / Blueprint (`--look blueprint`) | `looks/blueprint.md` | `assets/example-blueprint.html` |
+| 一笔画 / One-line drawing (`--look oneline`) | `looks/oneline.md` | `assets/example-oneline.html` |
+| 铅笔素描 / Pencil sketch (`--look pencil`) | `looks/pencil.md` | `assets/example-pencil.html` |
 
 Paper cut-out (the default look) uses only the core library above; see `assets/example-red-kite.html`. When a new look is verified in a real film, add a file here rather than growing this one.
 
