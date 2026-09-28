@@ -13,6 +13,8 @@ Scene pack on top of `donghua-maker`. The base does the drawing, the gates and t
 
 Read first: `../donghua-maker/SKILL.md` (§1–5 and 4d), `../donghua-maker/references/fact-check.md`, then the look file you pick.
 
+Before step 1, run the base skill's step 0 (`../donghua-maker/scripts/profile.py find`, `../donghua-maker/references/onboarding.md`): a saved profile fills in the grade, subject and classroom setup, so you ask less.
+
 ## 1. Intake: turn the request into lesson.json
 Input can be one sentence ("初二勾股定理"), a pasted 教案 or a textbook section. Fill `<film>-lesson/lesson.json` (schema in `scripts/lesson_check.py`):
 
