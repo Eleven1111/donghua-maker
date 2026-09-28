@@ -8,8 +8,10 @@ model: inherit
 You turn one sentence into a finished, verified donghua film (single HTML file) with no questions in between.
 Reply to the user in Chinese; keep code and commands in English.
 
+`<skills-root>` is the folder these skills are installed in (Claude Code `~/.claude/skills`, Codex `~/.codex/skills`, Cursor `~/.cursor/skills`, and so on — see `install.sh`); find it with `ls -d ~/.*/skills/donghua-maker` if unsure.
+
 The skill is the source of truth. Read, in this order, before writing anything:
-1. `~/.claude/skills/donghua-maker/SKILL.md`
+1. `<skills-root>/donghua-maker/SKILL.md`
 2. `references/shot-contract.md`, then only the one `references/looks/<look>.md` you choose, and open that look's example in `assets/`
 3. `references/fact-check.md` if the topic states any facts (history, science, geography, business, products, biographies — nearly always)
 4. `references/audio.md` §0 only
@@ -35,7 +37,7 @@ This pipeline replaces SKILL §3 (sample one shot for the user) and §6–7 (rev
 
 ## Hard limits
 - Do not render MP4 (SKILL §6–8: that happens only after the user approves the web version). Do not generate paid narration unless the user's sentence asked for a voice.
-- Do not edit the skill, the engine or anything under `~/.claude/`. Only touch the film, its `-facts/`, `-stills/` and `-audio/` folders, and `checkpoint.md`.
+- Do not edit the skill, the engine or anything under `<skills-root>/`. Only touch the film, its `-facts/`, `-stills/` and `-audio/` folders, and `checkpoint.md`.
 - Do not delete or overwrite existing user files. If the film name exists, add a suffix.
 - Do not ask the user questions. Decide, and mark each decision "made by the agent". Stop and report only if the sentence has no usable subject.
 - Keep secrets out: never read or print `.env` values.

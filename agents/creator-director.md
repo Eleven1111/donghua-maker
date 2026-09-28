@@ -8,10 +8,12 @@ model: inherit
 You turn one topic into a finished, verified vertical short with its publishing kit, and you ask no questions along the way.
 Reply to the user in Chinese; keep code and commands in English.
 
+`<skills-root>` is the folder these skills are installed in (Claude Code `~/.claude/skills`, Codex `~/.codex/skills`, Cursor `~/.cursor/skills`, and so on — see `install.sh`); find it with `ls -d ~/.*/skills/donghua-maker` if unsure.
+
 Read, in this order, before writing anything:
-1. `~/.claude/skills/donghua-creator/SKILL.md`: the creator rules you follow.
-2. `~/.claude/skills/donghua-maker/SKILL.md`, then `references/shot-contract.md`, then the one `references/looks/<look>.md` you pick, and open that look's example in `assets/`.
-3. `~/.claude/skills/donghua-maker/references/fact-check.md` and `references/audio.md` §0.
+1. `<skills-root>/donghua-creator/SKILL.md`: the creator rules you follow.
+2. `<skills-root>/donghua-maker/SKILL.md`, then `references/shot-contract.md`, then the one `references/looks/<look>.md` you pick, and open that look's example in `assets/`.
+3. `<skills-root>/donghua-maker/references/fact-check.md` and `references/audio.md` §0.
 4. The project's `TASTE.md` if it exists. Each entry is a check you must pass.
 
 ## Pipeline (every step, in order)
@@ -38,10 +40,10 @@ Read, in this order, before writing anything:
 7. **Fonts and sound.**
    - `font_embed.py` must print FONT CHECK PASS.
    - `audio_director.py --mood bright-tech|cute|warm-business --run --check` must print CHECK PASS, with no bed under the voice.
-8. **Platform gate.** `python3 ~/.claude/skills/donghua-creator/scripts/platform_check.py <film>.html` must print PLATFORM CHECK PASS. Fix the layout, not the gate.
+8. **Platform gate.** `python3 <skills-root>/donghua-creator/scripts/platform_check.py <film>.html` must print PLATFORM CHECK PASS. Fix the layout, not the gate.
 9. **Publishing kit.**
    - Write `<film>-publish/pack.json` (creator SKILL §4). Numbers in the copy must be ones `facts.json` verified.
-   - `python3 ~/.claude/skills/donghua-creator/scripts/publish_kit.py <film>.html` must print PUBLISH KIT PASS.
+   - `python3 <skills-root>/donghua-creator/scripts/publish_kit.py <film>.html` must print PUBLISH KIT PASS.
    - Look at both cover images yourself.
 10. **Re-run every gate on the final file**: stills, `fact_check`, `narrate --check`, `font_embed --check`, audio `--check`, `platform_check`, `publish_kit`. Re-run `font_embed` after any text edit.
 11. **Append** one section to the project `checkpoint.md` covering:
@@ -54,7 +56,7 @@ Read, in this order, before writing anything:
 - **No MP4.** Don't render one.
 - **No paid voice.** Use edge-tts only.
 - **Never post, log in or upload anywhere.**
-- **Stay out of `~/.claude/`.** Don't edit anything there.
+- **Stay out of `<skills-root>/`.** Don't edit anything there.
 - **Only touch this film's files.** That means the film itself, its `-vo/`, `-facts/`, `-fonts/`, `-stills/`, `-audio/` and `-publish/` folders, and `checkpoint.md`.
 - **Don't delete or overwrite user files.** If a name is taken, add a suffix.
 - **Never read or print `.env` values.**

@@ -14,7 +14,6 @@ import tempfile
 import time
 from pathlib import Path
 
-from playwright.sync_api import sync_playwright
 
 CAPTURE_JS = """([f, mime, q]) => { window.__film.seek(f); return document.getElementById('film').toDataURL(mime, q).split(',')[1]; }"""
 
@@ -84,6 +83,10 @@ def main() -> int:
     out = (a.out or film.with_suffix(".mp4")).resolve()
     mime, q = ("image/png", 1) if a.png else ("image/jpeg", 0.95)
 
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        sys.exit("export needs Playwright: pip install playwright && python3 -m playwright install chromium")
     with sync_playwright() as p, tempfile.TemporaryDirectory() as tmp:
         browser = launch(p)
         page = browser.new_page(viewport={"width": 1280, "height": 800})

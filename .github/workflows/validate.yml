@@ -1,0 +1,26 @@
+name: validate
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Agent Skills spec (official reference validator)
+        run: for s in skills/*/; do npx -y skills-ref validate "$s"; done
+      - name: Repo gate (links, scripts, scaffold smoke test, hygiene)
+        run: python3 tools/validate.py
+      - name: Installer dry run into a temp HOME
+        run: |
+          export HOME="$(mktemp -d)"
+          ./install.sh claude codex cursor antigravity gemini workbuddy codebuddy openclaw
+          test "$(find "$HOME" -name SKILL.md | wc -l)" -eq 24
+          ./install.sh --uninstall claude && test ! -e "$HOME/.claude/skills/donghua-maker"
