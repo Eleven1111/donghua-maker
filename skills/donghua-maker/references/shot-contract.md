@@ -157,6 +157,10 @@ Look-specific helpers and rules each have a file in `references/looks/`. Read th
 | 麻胶版画 / Linocut (`--look linocut`) | `looks/linocut.md` | `assets/example-linocut.html` |
 | 七十年代复古 / 70s retro (`--look retro70`) | `looks/retro70.md` | `assets/example-retro70.html` |
 | 16mm 老纪录片 / 16 mm documentary (`--look film16`) | `looks/film16.md` | `assets/example-film16.html` |
+| 绿屏终端 / Terminal (`--look terminal`) | `looks/terminal.md` | `assets/example-terminal.html` |
+| 科幻界面 / Sci-fi HUD (`--look hud`) | `looks/hud.md` | `assets/example-hud.html` |
+| 动态字体 / Kinetic typography (`--look kinetic`) | `looks/kinetic.md` | `assets/example-kinetic.html` |
+| 扁平科普 / Flat science explainer (`--look flatsci`) | `looks/flatsci.md` | `assets/example-flatsci.html` |
 
 Paper cut-out (the default look) uses only the core library above; see `assets/example-red-kite.html`. When a new look is verified in a real film, add a file here rather than growing this one.
 
