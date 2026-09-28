@@ -148,6 +148,8 @@ Look-specific helpers and rules each have a file in `references/looks/`. Read th
 | 镶嵌变形 / tessellation metamorphosis (`--look tessellation`) | `looks/tessellation.md` | `assets/example-tessellation.html` |
 | 沙画 / sand animation (`--look sandart`) | `looks/sandart.md` | `assets/example-sandart.html` |
 | 字符画 / ASCII art (`--look ascii`) | `looks/ascii.md` | `assets/example-ascii.html` |
+| 金色装饰 / Klimt gold (`--look klimt`) | `looks/klimt.md` | `assets/example-klimt.html` |
+| 包豪斯构成 / Bauhaus (`--look bauhaus`) | `looks/bauhaus.md` | `assets/example-bauhaus.html` |
 
 Paper cut-out (the default look) uses only the core library above; see `assets/example-red-kite.html`. When a new look is verified in a real film, add a file here rather than growing this one.
 
