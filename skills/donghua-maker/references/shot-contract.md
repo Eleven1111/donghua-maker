@@ -122,6 +122,8 @@ Look-specific helpers and rules each have a file in `references/looks/`. Read th
 | watercolour / 水彩 | `looks/watercolor.md` | `assets/example-spring-rain.html` |
 | 3D brick build / 3D 积木拼装 (three.js, `--three`) | `looks/brick3d.md` | `assets/example-brick-robot.html` |
 | 3D clay / 3D 黏土定格 (three.js, `--look clay3d`) | `looks/clay3d.md` | `assets/example-clay3d.html` |
+| 3D voxel / 3D 体素 (three.js, `--look voxel`) | `looks/voxel.md` | `assets/example-voxel.html` |
+| 3D paper theatre / 立体纸艺 (three.js, `--look paper3d`) | `looks/paper3d.md` | `assets/example-paper3d.html` |
 | 金屏说史 gold-scroll history series (`--goldscroll`) | `looks/gold-scroll.md` | `assets/example-gold-scroll-chibi.html` |
 | flow-ribbon / 流场色带 (`--flowribbon`) | `looks/flow-ribbon.md` | `assets/example-flow-ribbon.html` |
 | 数据极简 / data-minimal (`--look datamin`) | `looks/datamin.md` | `assets/example-datamin.html` |
