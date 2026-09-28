@@ -112,14 +112,13 @@ Look-specific helpers and rules each have a file in `references/looks/`. Read th
 | look | file | verified example |
 |---|---|---|
 | pixel art / farm-sim (`--pixel N`) | `looks/pixel.md` | `assets/example-pixel-farm.html` |
-| pixel diagram / neural-net explainer (`--pixel 4`) | `looks/pixel-diagram.md` | `assets/example-pixel-neural.html` |
+| pixel diagram / neural-net explainer (`--pixel 4`) | `looks/pixel.md` (§ Pixel diagram) | `assets/example-pixel-neural.html` |
 | cute software demo / 可爱软件演示 (kawaii flat UI) | `looks/ui-demo.md` | `assets/example-ui-demo-editor.html`, `assets/example-ui-demo-dashboard.html` |
 | business / finance explainer / 商务财经图解 | `looks/biz-explainer.md` | `assets/example-biz-margin.html`, `assets/example-biz-equity.html` |
 | hand-drawn explainer | `looks/explainer.md` | `assets/example-earth-explainer.html` |
 | American comic | `looks/comic.md` | `assets/example-comic-night-watch.html` |
 | torn-paper collage | `looks/torn-paper.md` | `assets/example-torn-paper-night.html` |
 | shadow puppet / 皮影 | `looks/shadow-puppet.md` | `assets/example-shadow-archer.html` |
-| clay / 黏土 | `looks/clay.md` | `assets/example-clay-fishing.html` |
 | watercolour / 水彩 | `looks/watercolor.md` | `assets/example-spring-rain.html` |
 | 3D brick build / 3D 积木拼装 (three.js, `--three`) | `looks/brick3d.md` | `assets/example-brick-robot.html` |
 | 金屏说史 gold-scroll history series (`--goldscroll`) | `looks/gold-scroll.md` | `assets/example-gold-scroll-chibi.html` |

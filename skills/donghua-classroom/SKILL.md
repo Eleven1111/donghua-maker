@@ -22,7 +22,7 @@ Input can be one sentence ("初二勾股定理"), a pasted 教案 or a textbook 
 If the teacher supplied material, their wording, order and examples win. Don't add content they didn't ask for, and flag anything in it that fails the fact check. Don't silently fix it.
 
 ## 2. Shape of a classroom film
-- **Format**: scaffold with `--format landscape --narrated` (16:9, for projectors and PPT; `--narrated` leaves out the ambience beds, which hiss under a voice). **Look**: `explainer` by default; `pixel-diagram` for CS topics, `biz-explainer` for economics and data. Use a story look (clay, watercolor…) only for 小学 language and story lessons.
+- **Format**: scaffold with `--format landscape --narrated` (16:9, for projectors and PPT; `--narrated` leaves out the ambience beds, which hiss under a voice). **Look**: `explainer` by default; `pixel` in its diagram variant (`--pixel 4`) for CS topics, `biz-explainer` for economics and data. Use a story look (torn-paper, watercolor…) only for 小学 language and story lessons.
 - **Length**: 45–90 s, 5–9 shots. One objective takes 1–2 shots. Over 90 s, split into two films (one per objective group).
 - **Order**: question or phenomenon → name the parts (terms) → the idea → worked example → misconception → recap.
 - Each shot has one idea, said once in the voice and written once on screen. Labels and formulas land on the word that names them (bookmarks, §3).
