@@ -123,7 +123,7 @@ Compare a few candidates per category and **judge the actual audio, not the titl
 
 **Import**
 ```bash
-python3 ~/.claude/skills/donghua-maker/scripts/sfx_import.py <film>-audio/sounds.json --film <film>.html
+python3 <skill-dir>/scripts/sfx_import.py <film>-audio/sounds.json --film <film>.html
 ```
 The importer does the following for each sound:
 - sfx: trims leading and trailing silence and levels the peak to −3 dBFS. Music: runs loudnorm to −20 LUFS.

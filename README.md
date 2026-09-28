@@ -55,17 +55,27 @@ A Claude Code skill + agent that turns a one-line idea into a self-contained HTM
 
 ## 安装
 
+三个技能遵循 [Agent Skills 开放标准](https://agentskills.io/specification)，同一份文件在下列 AI 终端都能直接用，一条命令装好：
+
 ```bash
-git clone https://github.com/Eleven1111/donghua-maker.git
-cp -R donghua-maker/skills/donghua-maker ~/.claude/skills/
-cp donghua-maker/agents/donghua-director.md ~/.claude/agents/
-# 老师场景包（依赖上面的底座，两个技能要放在同一个 skills 目录下）
-cp -R donghua-maker/skills/donghua-classroom ~/.claude/skills/
-cp donghua-maker/agents/classroom-director.md ~/.claude/agents/
-# 自媒体场景包
-cp -R donghua-maker/skills/donghua-creator ~/.claude/skills/
-cp donghua-maker/agents/creator-director.md ~/.claude/agents/
+git clone https://github.com/Eleven1111/donghua-maker.git && cd donghua-maker
+./install.sh claude              # 也可以一次装多个：./install.sh claude codex cursor workbuddy
+./install.sh --all               # 装进本机已有的所有终端
+./install.sh --project ~/myrepo  # 只装进某个项目：~/myrepo/.agents/skills
 ```
+
+| 终端 | 技能目录 | 一句话出片 Agent |
+|---|---|---|
+| Claude Code | `~/.claude/skills` | 原生子 Agent（`~/.claude/agents`） |
+| Cursor | `~/.cursor/skills` | 原生子 Agent（`~/.cursor/agents`） |
+| Codex | `~/.codex/skills`，或项目内 `.agents/skills` | 主 Agent 按 `directors/*.md` 直接执行 |
+| Antigravity | `~/.gemini/antigravity/skills`，或项目内 `.agents/skills` | 同上 |
+| Gemini CLI | `~/.gemini/skills` | 同上 |
+| WorkBuddy / CodeBuddy | `~/.workbuddy/skills` / `~/.codebuddy/skills` | 同上 |
+| OpenClaw | `~/.openclaw/skills` | 同上 |
+| 其他支持 SKILL.md 的终端 | `./install.sh --dest <它的技能目录>` | 同上 |
+
+实测情况：Codex（从项目 `.agents/skills` 发现三个技能）、OpenClaw（`openclaw skills list` 显示三个均为 ready）、Claude Code 已实测。其余终端按各自官方文档的目录安装，未在本机实测。卸载：`./install.sh --uninstall <终端>`。
 
 依赖：
 - **必需**：Python 3.10+、`ffmpeg`、`playwright`（Python 版），再加 Google Chrome，或运行 `python3 -m playwright install chromium`。
@@ -79,7 +89,7 @@ cp donghua-maker/agents/creator-director.md ~/.claude/agents/
 
 ## 使用
 
-在 Claude Code 里：
+在任意已安装的终端里：
 
 ```
 用 donghua-director 做一个讲光合作用原理的科普动画
@@ -87,12 +97,14 @@ cp donghua-maker/agents/creator-director.md ~/.claude/agents/
 用 creator-director 做一条抖音和小红书的短视频：为什么猫咪爱钻纸箱
 ```
 
+没有子 Agent 的终端（Codex、Antigravity、WorkBuddy、OpenClaw 等）会读 `donghua-maker/directors/` 里对应的说明，由主 Agent 自己按步骤做完。
+
 老师场景包做完后，由主会话另派一个新上下文的 Agent 只看 `film-lesson/blind/packet.md` 答题，然后运行 `lesson_check.py film.html --blind`。
 
 或者手动走技能流程（详见 `skills/donghua-maker/SKILL.md`）：
 
 ```bash
-S=~/.claude/skills/donghua-maker/scripts
+S=~/.claude/skills/donghua-maker/scripts   # 其他终端换成它的技能目录，如 ~/.codex/skills/…
 python3 $S/scaffold.py film.html --title "片名" --format landscape --shots "A,B,C" --durs "4,4,4" --bpm 120
 python3 $S/scaffold.py film.html --title "片名" --look clay3d --shots "A,B,C" --durs "4,4,4"   # 指定风格（3D 风格自动内嵌 three.js）
 python3 $S/stills.py film.html --shots                         # 画面自检
@@ -124,6 +136,10 @@ film-1080.mp4             导出成片（只在确认后生成）
 ## 目录
 
 ```
+install.sh                   一键安装到 Claude Code / Codex / Cursor / Antigravity / Gemini / WorkBuddy / OpenClaw
+AGENTS.md                    给改仓库的 Agent 看的规则（CLAUDE.md 引用它）
+tools/validate.py            仓库关卡：技能规范、失效链接、脚本自检、44 部片的骨架冒烟测试、密钥扫描
+.github/workflows/           CI：官方 skills-ref 校验 + validate.py + 安装器演练
 agents/
   donghua-director.md        一句话出片 Agent
   classroom-director.md      老师一句话出微课 Agent
@@ -143,6 +159,8 @@ skills/donghua-maker/        底座
   assets/toolkit-flowribbon.js 流场色带模块库（--flowribbon 时注入）
   assets/toolkit-<look>.js    各风格的模块库（--look <look> 时注入；用到 THREE 的会自动内嵌 three.js：clay3d / datamin / harmonic / brushsketch / ukiyoe / naturalplate / vangogh / seurat / qinglu / inkwash / dunhuang / mondrian / kandinsky / cutout / process / elastic / growth / isometric / datafluid / bloom / opart / nianhua / tessellation / sandart / ascii / bauhaus / chalkboard / blueprint / oneline / pencil / memphis / linocut / retro70 / film16 / terminal / hud / kinetic / flatsci / editorial / layered）
   assets/lib/                three.js r158（MIT，附 LICENSE 与 sources.json）
+  references/catalog.md      全部示例片目录（选定风格后再读，不占主文件篇幅）
+  references/narration.md    解说流程；references/export.md 导出 MP4
   references/                镜头接口、各风格工具箱（looks/）、配色与节奏、音频、事实核对规范
   scripts/                   scaffold / stills / fact_check / audio_director / music_render /
                              sfx_search / sfx_import / export / voice / narrate / font_embed
@@ -156,6 +174,8 @@ skills/donghua-maker/        底座
 - **确定性**：不用 `Math.random()`，随机都由种子控制。任意一帧都能复现，离线混音和实时播放的结果一致。
 - **靠关卡，不靠自评**：画面、事实、音频各有一道能判失败的检查，每道都用负控测试过（故意改坏必须判失败）。核对关卡只能证明"每条都查过、有来源"，不能代替人的判断。
 - **一个底座，多个场景包**：引擎、画风和关卡属于底座；场景包只调整输入、关卡和产出，不改引擎。
+- **按需加载**：`SKILL.md` 控制在 500 行、约 5k token 以内，描述不超过 1024 字符；示例目录、解说、导出等细节放在 `references/`，用到才读。
+- **一处编写，处处可用**：技能内不写死任何终端的路径，脚本靠相对位置互相找到；`tools/validate.py` 和 CI 每次提交都检查这些约定，并用故意改坏的样例验证过它会报错。
 - **经验沉淀成规则**：每次被否决的输出都写成一条可检验的规则，放进风格文档。
 
 ## 授权与致谢

@@ -133,7 +133,7 @@ def main() -> int:
         L = LIMITS.get(p, {"name": p, "aspect": "9:16"})
         md.append(f"\n## {L['name']}（{L['aspect']}）\n\n**标题**\n\n{c.get('title', '')}\n\n**简介**\n\n{c.get('desc', '')}{credit}\n\n"
                   f"**话题**\n\n{' '.join('#' + t for t in c.get('tags', []))}\n")
-    md.append("\n## 导出（网页版确认后）\n\n```bash\nS=~/.claude/skills/donghua-maker/scripts\n"
+    md.append("\n## 导出（网页版确认后）\n\n```bash\nS=" + str(Path(__file__).resolve().parents[2] / "donghua-maker" / "scripts") + "\n"
               f"python3 $S/export.py {film.name} -o {film.stem}-9x16.mp4 --scale .75 --crf 23\n"
               f"python3 $S/export.py {film.name} -o {film.stem}-3x4.mp4 --aspect 3:4 --scale .75 --crf 23\n```\n")
     md.append("\n## 素材授权\n\n| 素材 | 许可 | 来源 |\n|---|---|---|\n" + "".join(f"| {w} | {l} | {s} |\n" for w, l, s in rows))
