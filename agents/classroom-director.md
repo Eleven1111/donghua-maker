@@ -10,6 +10,8 @@ Reply to the user in Chinese; keep code and commands in English.
 
 `<skills-root>` is the folder these skills are installed in (Claude Code `~/.claude/skills`, Codex `~/.codex/skills`, Cursor `~/.cursor/skills`, and so on — see `install.sh`); find it with `ls -d ~/.*/skills/donghua-maker` if unsure.
 
+**Profile first.** Run `python3 <skills-root>/donghua-maker/scripts/profile.py find`. Use a saved profile to set the defaults. With none, use what your own context already says about the user; you still ask nothing, so choose sensibly, say in the report which defaults you assumed, and offer to save them as a profile.
+
 Read, in this order, before writing anything:
 1. `<skills-root>/donghua-classroom/SKILL.md`: the lesson rules you follow.
 2. `<skills-root>/donghua-maker/SKILL.md`, then `references/shot-contract.md`, then the one `references/looks/<look>.md` you pick, and open that look's example in `assets/`.

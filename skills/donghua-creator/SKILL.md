@@ -13,6 +13,8 @@ This is a scene pack on top of `donghua-maker`. The base handles drawing, facts,
 
 Before you start, read `../donghua-maker/SKILL.md` (§1–5, 4b and 4d), then `../donghua-maker/references/fact-check.md`, then the file for the look you pick.
 
+Before step 1, run the base skill's step 0 (`../donghua-maker/scripts/profile.py find`, `../donghua-maker/references/onboarding.md`): a saved profile fills in the niche, audience and platforms, so you ask less.
+
 ## 1. Brief: angle before shots
 Write the brief in the film's `checkpoint.md` section, not in a new file. It needs:
 - **Audience and promise.** Who is watching, and what they get in one sentence. Example: "养猫的人 · 30 秒知道猫为什么爱钻纸箱".

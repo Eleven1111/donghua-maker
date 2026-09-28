@@ -89,6 +89,8 @@ git clone https://github.com/Eleven1111/donghua-maker.git && cd donghua-maker
 
 ## 使用
 
+**第一次使用**：技能会先了解你是谁。它先看你的 AI 终端里已有的记忆或人设（比如 Claude Code 的 `CLAUDE.md`、Codex 的 `AGENTS.md`、WorkBuddy 的 `USER.md`），只取背景、做哪类片子、给谁看、风格偏好这几项，并先跟你确认；如果读不到，会问你三个小问题。结果存在本机的 `~/.config/donghua/profile.md`，所有终端共用，以后按它自动选场景包、画幅和画风。这个文件可以随时修改或删除，不会上传，也不会写进片子里。查看：`python3 <技能目录>/donghua-maker/scripts/profile.py find`。
+
 在任意已安装的终端里：
 
 ```
