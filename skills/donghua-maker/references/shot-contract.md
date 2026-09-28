@@ -121,6 +121,7 @@ Look-specific helpers and rules each have a file in `references/looks/`. Read th
 | shadow puppet / 皮影 | `looks/shadow-puppet.md` | `assets/example-shadow-archer.html` |
 | watercolour / 水彩 | `looks/watercolor.md` | `assets/example-spring-rain.html` |
 | 3D brick build / 3D 积木拼装 (three.js, `--three`) | `looks/brick3d.md` | `assets/example-brick-robot.html` |
+| 3D clay / 3D 黏土定格 (three.js, `--look clay3d`) | `looks/clay3d.md` | `assets/example-clay3d.html` |
 | 金屏说史 gold-scroll history series (`--goldscroll`) | `looks/gold-scroll.md` | `assets/example-gold-scroll-chibi.html` |
 | flow-ribbon / 流场色带 (`--flowribbon`) | `looks/flow-ribbon.md` | `assets/example-flow-ribbon.html` |
 | 数据极简 / data-minimal (`--look datamin`) | `looks/datamin.md` | `assets/example-datamin.html` |
@@ -139,7 +140,7 @@ Look-specific helpers and rules each have a file in `references/looks/`. Read th
 | 规则粒子 / process particles (`--look process`) | `looks/process.md` | `assets/example-process.html` |
 | 弹性线条 / elastic lines (`--look elastic`) | `looks/elastic.md` | `assets/example-elastic.html` |
 | 差分生长 / differential growth (`--look growth`) | `looks/growth.md` | `assets/example-growth.html` |
-| 等距几何 / isometric blocks (`--look isometric`) | `looks/isometric.md` | `assets/example-isometric.html` |
+| 等距几何 / isometric blocks (three.js, `--look isometric`) | `looks/isometric.md` | `assets/example-isometric.html` |
 | 粒子流体 / data fluid (`--look datafluid`) | `looks/datafluid.md` | `assets/example-datafluid.html` |
 | 发光花 / luminous flowers (`--look bloom`) | `looks/bloom.md` | `assets/example-bloom.html` |
 | 欧普艺术 / Op Art (`--look opart`) | `looks/opart.md` | `assets/example-opart.html` |
@@ -159,7 +160,7 @@ Look-specific helpers and rules each have a file in `references/looks/`. Read th
 | 绿屏终端 / Terminal (`--look terminal`) | `looks/terminal.md` | `assets/example-terminal.html` |
 | 科幻界面 / Sci-fi HUD (`--look hud`) | `looks/hud.md` | `assets/example-hud.html` |
 | 动态字体 / Kinetic typography (`--look kinetic`) | `looks/kinetic.md` | `assets/example-kinetic.html` |
-| 扁平科普 / Flat science explainer (`--look flatsci`) | `looks/flatsci.md` | `assets/example-flatsci.html` |
+| 扁平科普 / Flat science explainer (three.js, `--look flatsci`) | `looks/flatsci.md` | `assets/example-flatsci.html` |
 | 报刊数据图 / Editorial data graphics (`--look editorial`) | `looks/editorial.md` | `assets/example-editorial.html` |
 
 Paper cut-out (the default look) uses only the core library above; see `assets/example-red-kite.html`. When a new look is verified in a real film, add a file here rather than growing this one.
