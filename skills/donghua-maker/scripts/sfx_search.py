@@ -30,7 +30,6 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-import numpy as np
 
 AUDIO_EXT = {".wav", ".mp3", ".ogg", ".flac", ".m4a", ".aif", ".aiff", ".opus"}
 # category → (expanded terms, negative terms, target: dur range s, max onset ms, max tail s, centroid Hz range, peak position range)
@@ -185,6 +184,10 @@ def search_mixkit(need, dest: Path, per: int) -> int:
 
 # ── analysis + ranking ─────────────────────────────────────────────────────
 def analyse(path: Path) -> dict:
+    try:
+        import numpy as np
+    except ImportError:
+        sys.exit("sfx_search needs numpy: pip install numpy")
     raw = subprocess.run(["ffmpeg", "-v", "error", "-i", str(path), "-ac", "1", "-ar", "48000", "-f", "f32le", "-"], capture_output=True, check=True).stdout
     x = np.frombuffer(raw, dtype=np.float32)
     if x.size < 480:
