@@ -1,6 +1,6 @@
 ---
 name: donghua-maker
-description: "动画制作器：用纯 JS（Canvas 2D / three.js + Web Audio）生成单文件 HTML 动画短片的完整流程——分镜、镜头代码、51 种画风、授权音效与配乐、免费或 MiniMax 解说、可商用字体、事实核对、全分辨率静帧自检，确认后导出 MP4。画幅横屏/竖屏/方形。画风包括纸艺定格（默认）、撕纸绘本、皮影、水彩、水墨、青绿长卷、浮世绘、年画、敦煌、像素/像素图解、美漫、手绘科普、黑板、蓝图、铅笔、版画、沙画、字符画、终端、科幻界面、动态字体、报刊数据图、商务图解、软件演示、历史讲解、图层卡通讲解，以及 3D 黏土、3D 积木、3D 等距、3D 扁平科普等（完整目录见 references/catalog.md）。用户说\"用代码做动画/短片\"、\"定格动画\"、\"某某风格的动画\"、\"讲解/科普动画\"、\"canvas 或 three.js 动画带音乐\"、\"给短片配解说\"、\"把这个短片改竖屏/换风格\"时使用，即使没提 skill。不适用于：AI 文生视频提示词（Seedance/可灵）、剪辑已有素材、HyperFrames/Remotion 项目。"
+description: "动画制作器：用纯 JS（Canvas 2D / three.js + Web Audio）生成单文件 HTML 动画短片的完整流程——分镜、镜头代码、53 种画风、授权音效与配乐、免费或 MiniMax 解说、可商用字体、事实核对、全分辨率静帧自检，确认后导出 MP4。画幅横屏/竖屏/方形。画风包括纸艺定格（默认）、撕纸绘本、皮影、水彩、水墨、青绿长卷、浮世绘、年画、敦煌、像素/像素图解、美漫、手绘科普、黑板、蓝图、铅笔、版画、沙画、字符画、终端、科幻界面、动态字体、报刊数据图、商务图解、软件演示、历史讲解、图层卡通讲解，以及 3D 黏土、3D 积木、3D 等距、3D 扁平科普等（完整目录见 references/catalog.md）。用户说\"用代码做动画/短片\"、\"定格动画\"、\"某某风格的动画\"、\"讲解/科普动画\"、\"canvas 或 three.js 动画带音乐\"、\"给短片配解说\"、\"把这个短片改竖屏/换风格\"时使用，即使没提 skill。不适用于：AI 文生视频提示词（Seedance/可灵）、剪辑已有素材、HyperFrames/Remotion 项目。"
 license: MIT
 compatibility: "Python 3.10+; a browser to view films; ffmpeg + Playwright for stills/export; Node 18+ for tools/validate.py. Works in any Agent Skills terminal (Claude Code, Codex, Cursor, Antigravity, WorkBuddy, OpenClaw…)."
 metadata:
