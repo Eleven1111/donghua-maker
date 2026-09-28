@@ -65,6 +65,10 @@ All looks are layers over the same engine; change the texture recipe, not the ar
 | **粒子流体 / data fluid** (`--look datafluid`) | 20k glowing particles in a divergence-free swirl, morphing grid → wave → sphere; additive colour buckets. Verified in 数据之海 (`assets/example-datafluid.html`, `looks/datafluid.md`). |
 | **发光花 / luminous flowers** (`--look bloom`) | Flowers open, glow and scatter in a dark room; halos add light, petals stay distinct; a wind sweeps them away. Verified in 花开无界 (`assets/example-bloom.html`, `looks/bloom.md`). |
 | **欧普艺术 / Op Art** (`--look opart`) | Black-and-white wavy stripes, a swelling checkerboard, moiré ring sets; motion from slow parameter drift and note pushes. Verified in 起伏 (`assets/example-opart.html`, `looks/opart.md`). |
+| **年画 / New Year print** (`--look nianhua`) | Yangliuqing-style print: key-block outline over soft washes; chubby child with carp, lotus, water band, four title characters, seal; printed in block by block (套色). Verified in 年年有余 (`assets/example-nianhua.html`, `looks/nianhua.md`). |
+| **镶嵌变形 / tessellation metamorphosis** (`--look tessellation`) | Checkerboard whose shared edges bend into interlocking fish; a front of change sweeps squares into fish and back; the shoal swims. Verified in 方与鱼 (`assets/example-tessellation.html`, `looks/tessellation.md`). |
+| **沙画 / sand animation** (`--look sandart`) | Amber light table, dark sand; fingertip wipes, soft finger strokes, palm clearings, poured-sand silhouettes, palm sweep scene change, a hand following the tip. Verified in 沙上月 (`assets/example-sandart.html`, `looks/sandart.md`). |
+| **字符画 / ASCII art** (`--look ascii`) | Everything is characters on black: density ramp, phosphor tint and glow; torus, layered ridges, ringed planet; title forced into the grid. Verified in 字符宇宙 (`assets/example-ascii.html`, `looks/ascii.md`). |
 | **Night / lantern** | dark backdrop dark .5, radial glow sprites with `globalCompositeOperation='lighter'`, warm accent only on light sources |
 
 ## 3. Palettes

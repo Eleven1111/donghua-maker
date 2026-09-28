@@ -144,6 +144,10 @@ Look-specific helpers and rules each have a file in `references/looks/`. Read th
 | 粒子流体 / data fluid (`--look datafluid`) | `looks/datafluid.md` | `assets/example-datafluid.html` |
 | 发光花 / luminous flowers (`--look bloom`) | `looks/bloom.md` | `assets/example-bloom.html` |
 | 欧普艺术 / Op Art (`--look opart`) | `looks/opart.md` | `assets/example-opart.html` |
+| 年画 / New Year print (`--look nianhua`) | `looks/nianhua.md` | `assets/example-nianhua.html` |
+| 镶嵌变形 / tessellation metamorphosis (`--look tessellation`) | `looks/tessellation.md` | `assets/example-tessellation.html` |
+| 沙画 / sand animation (`--look sandart`) | `looks/sandart.md` | `assets/example-sandart.html` |
+| 字符画 / ASCII art (`--look ascii`) | `looks/ascii.md` | `assets/example-ascii.html` |
 
 Paper cut-out (the default look) uses only the core library above; see `assets/example-red-kite.html`. When a new look is verified in a real film, add a file here rather than growing this one.
 
