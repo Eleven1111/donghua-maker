@@ -54,7 +54,8 @@ A Claude Code skill + agent that turns a one-line idea into a self-contained HTM
   - 科幻界面 `hud`（对接）；
   - 动态字体 `kinetic`（开口）；
   - 扁平科普 `flatsci`（月亮为什么会变，three.js 真 3D 卡通分色，月相由真实光照得出）；
-  - 报刊数据图 `editorial`（练习数据）。
+  - 报刊数据图 `editorial`（练习数据）；
+  - 图层卡通讲解 `layered`（十万粉）。
 - **3D 黏土定格风**（`scaffold.py --look clay3d`）：three.js 真立体泥塑，表面有指纹、拇指按痕和刀痕，暖色主光加柔和阴影，角色每秒 12 个姿势、镜头平滑运动（示例：小猫钓鱼）。
 - **3D 积木拼装风**（`scaffold.py --three`）：three.js r158 直接内嵌进片子，仍是离线可播的单文件。用 ASCII 分层图写模型，自动拆成标准积木；积木旋转落下拼装，带运动模糊；最后是说明书翻页，页面上的步骤图由实时渲染生成。
 - **定格质感引擎**：每秒 12 次摆位、镜头平滑运动、纸纹、胶片颗粒、曝光闪烁；跳转任意帧结果都一样，可复现。
@@ -172,7 +173,7 @@ skills/donghua-maker/        底座
   assets/toolkit-clay3d.js   3D 黏土工具（--look clay3d；isometric、flatsci 也是 WebGL 风格，会自动内嵌 three.js）
   assets/toolkit-goldscroll.js 金屏说史模块库（--goldscroll 时注入）
   assets/toolkit-flowribbon.js 流场色带模块库（--flowribbon 时注入）
-  assets/toolkit-<look>.js    其他风格的模块库（--look <look> 时注入：clay3d / datamin / harmonic / brushsketch / ukiyoe / naturalplate / vangogh / seurat / qinglu / inkwash / dunhuang / mondrian / kandinsky / cutout / process / elastic / growth / isometric / datafluid / bloom / opart / nianhua / tessellation / sandart / ascii / bauhaus / chalkboard / blueprint / oneline / pencil / memphis / linocut / retro70 / film16 / terminal / hud / kinetic / flatsci / editorial）
+  assets/toolkit-<look>.js    其他风格的模块库（--look <look> 时注入：clay3d / datamin / harmonic / brushsketch / ukiyoe / naturalplate / vangogh / seurat / qinglu / inkwash / dunhuang / mondrian / kandinsky / cutout / process / elastic / growth / isometric / datafluid / bloom / opart / nianhua / tessellation / sandart / ascii / bauhaus / chalkboard / blueprint / oneline / pencil / memphis / linocut / retro70 / film16 / terminal / hud / kinetic / flatsci / editorial / layered）
   assets/lib/                three.js r158（MIT，附 LICENSE 与 sources.json）
   references/                镜头接口、各风格工具箱（looks/）、配色与节奏、音频、事实核对规范
   scripts/                   scaffold / stills / fact_check / audio_director / music_render /

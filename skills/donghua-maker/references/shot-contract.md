@@ -162,6 +162,7 @@ Look-specific helpers and rules each have a file in `references/looks/`. Read th
 | 动态字体 / Kinetic typography (`--look kinetic`) | `looks/kinetic.md` | `assets/example-kinetic.html` |
 | 扁平科普 / Flat science explainer (three.js, `--look flatsci`) | `looks/flatsci.md` | `assets/example-flatsci.html` |
 | 报刊数据图 / Editorial data graphics (`--look editorial`) | `looks/editorial.md` | `assets/example-editorial.html` |
+| 图层卡通讲解 / Layered cartoon explainer (`--look layered`) | `looks/layered.md` | `assets/example-layered.html` |
 
 Paper cut-out (the default look) uses only the core library above; see `assets/example-red-kite.html`. When a new look is verified in a real film, add a file here rather than growing this one.
 
