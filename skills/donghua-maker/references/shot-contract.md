@@ -153,6 +153,10 @@ Look-specific helpers and rules each have a file in `references/looks/`. Read th
 | 工程蓝图 / Blueprint (`--look blueprint`) | `looks/blueprint.md` | `assets/example-blueprint.html` |
 | 一笔画 / One-line drawing (`--look oneline`) | `looks/oneline.md` | `assets/example-oneline.html` |
 | 铅笔素描 / Pencil sketch (`--look pencil`) | `looks/pencil.md` | `assets/example-pencil.html` |
+| 孟菲斯 / Memphis (`--look memphis`) | `looks/memphis.md` | `assets/example-memphis.html` |
+| 麻胶版画 / Linocut (`--look linocut`) | `looks/linocut.md` | `assets/example-linocut.html` |
+| 七十年代复古 / 70s retro (`--look retro70`) | `looks/retro70.md` | `assets/example-retro70.html` |
+| 16mm 老纪录片 / 16 mm documentary (`--look film16`) | `looks/film16.md` | `assets/example-film16.html` |
 
 Paper cut-out (the default look) uses only the core library above; see `assets/example-red-kite.html`. When a new look is verified in a real film, add a file here rather than growing this one.
 
