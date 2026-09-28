@@ -24,3 +24,10 @@ jobs:
           ./install.sh claude codex cursor antigravity gemini workbuddy codebuddy openclaw
           test "$(find "$HOME" -name SKILL.md | wc -l)" -eq 24
           ./install.sh --uninstall claude && test ! -e "$HOME/.claude/skills/donghua-maker"
+      - name: Newcomer setup on a clean machine (README steps, then doctor must pass)
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+          pip install -q -r requirements.txt
+          python3 -m playwright install --with-deps chromium
+          export HOME="$(mktemp -d)"
+          python3 skills/donghua-maker/scripts/doctor.py --online

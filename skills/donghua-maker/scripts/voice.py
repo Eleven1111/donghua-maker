@@ -11,25 +11,21 @@ lines.json:
 Writes <id>.mp3 next to lines.json (48 kHz mono 80 kbps, silence trimmed, loudnorm I=-16 TP=-2)
 and writes each clip's measured "dur" back into lines.json.
 
-Key lookup: env MINIMAX_API_KEY, else ~/.config/secrets/.env (override with SECRETS_ENV). The key is never
-printed or passed on a command line. Model: env MINIMAX_TTS_MODEL (default speech-2.8-hd).
+Key lookup (donghua_env.py): env, ./.env, ~/.config/donghua/.env, then ~/.config/secrets/.env. MINIMAX_API_BASE picks the region. The key is never
+printed or passed on a command line. Model: MINIMAX_TTS_MODEL (env or .env) (default speech-2.8-hd).
 """
 import argparse, io, json, os, subprocess, sys, tarfile, tempfile, time, urllib.request
 from pathlib import Path
 
-BASE = "https://api.minimax.chat"
-SECRETS = Path(os.environ.get("SECRETS_ENV", Path.home() / ".config/secrets/.env"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import donghua_env  # noqa: E402
+
+# mainland accounts: https://api.minimax.chat (default); international accounts: MINIMAX_API_BASE=https://api.minimax.io
+BASE = donghua_env.get("MINIMAX_API_BASE", "https://api.minimax.chat").rstrip("/")
 
 
 def secret(name):
-    if os.environ.get(name):
-        return os.environ[name]
-    if SECRETS.exists():
-        for line in SECRETS.read_text().splitlines():
-            k, sep, v = line.partition("=")
-            if sep and k.strip() == name and v.strip():
-                return v.strip().strip('"').strip("'")
-    sys.exit(f"missing {name}: add `{name}=...` to {SECRETS} (chmod 600) or export it")
+    return donghua_env.require(name, "MiniMax narration is paid and opt-in")
 
 
 def call(path, key, body=None):
@@ -77,7 +73,7 @@ def main():
     ap.add_argument("lines"); ap.add_argument("--only", action="append", default=[]); ap.add_argument("--force", action="store_true")
     a = ap.parse_args()
     path = Path(a.lines); data = json.loads(path.read_text()); key = secret("MINIMAX_API_KEY")
-    model = os.environ.get("MINIMAX_TTS_MODEL", "speech-2.8-hd"); failed = []
+    model = donghua_env.get("MINIMAX_TTS_MODEL", "speech-2.8-hd"); failed = []
     for c in data["clips"]:
         out = path.parent / f"{c['id']}.mp3"
         if a.only and c["id"] not in a.only: continue

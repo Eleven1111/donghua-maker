@@ -16,6 +16,7 @@ Each film is **one self-contained HTML file**. A shared engine handles the clock
 Bundled files:
 - `scripts/scaffold.py`: writes a new film file (format, duration, shot names, bpm) with a stub for every shot.
 - `assets/engine.html`: the template the script fills. Don't edit it for a single film; edit the scaffolded copy.
+- `references/setup.md` + `scripts/doctor.py` + `scripts/donghua_env.py`: what each feature needs, one key lookup order for every script (env → `./.env` → `~/.config/donghua/.env`), fonts without GitHub, MiniMax region.
 - `references/onboarding.md` + `scripts/profile.py`: the local creator profile (`~/.config/donghua/profile.md`, shared by every terminal): read it, learn it from the terminal's memory, or ask three questions; it sets the brief's defaults.
 - `references/catalog.md`: **every verified example film** (`assets/example-*.html`) with what to copy from each, plus the trigger phrases for each look. Read it when you choose a look, then open only that example.
 - `references/shot-contract.md`: the shot interface and the core helper library. **Read it before writing shot code.**
@@ -34,8 +35,8 @@ When the user wants a whole film from one line with no questions (「做一个�
 
 ## Workflow
 
-### 0. Know the user (first use, then once per session)
-Run `python3 scripts/profile.py find` before anything else. With a profile, let it set the defaults of the brief (pack, format, look shortlist, language) and say which ones came from it. Without one, learn it from what your terminal already knows about the user (your loaded memory or persona, then your own terminal's memory files, profile fields only) and confirm it in one line; if nothing is known, ask up to three short questions (背景、做哪类片子、给谁看/发哪里) and save the answers with `profile.py save`. Without a profile, your first reply must open with that one-line confirmation or those three questions, before any topic or style question (the script prints the exact wording). A specific request never waits on this: make the film and offer to save a profile at the end. Details and the profile → defaults table: `references/onboarding.md`.
+### 0. Machine and user (first use, then once per session)
+On a machine's first use run `python3 scripts/doctor.py`: it checks ffmpeg, the browser, edge-tts, fonts, the SoundFont and which keys are set (never their values), and prints the install command for anything missing. Fix the core before making films and ask before installing anything; keys and fonts are covered in `references/setup.md`. Then run `python3 scripts/profile.py find`. With a profile, let it set the defaults of the brief (pack, format, look shortlist, language) and say which ones came from it. Without one, learn it from what your terminal already knows about the user (your loaded memory or persona, then your own terminal's memory files, profile fields only) and confirm it in one line; if nothing is known, ask up to three short questions (背景、做哪类片子、给谁看/发哪里) and save the answers with `profile.py save`. Without a profile, your first reply must open with that one-line confirmation or those three questions, before any topic or style question (the script prints the exact wording). A specific request never waits on this: make the film and offer to save a profile at the end. Details and the profile → defaults table: `references/onboarding.md`.
 
 ### 1. Brief (story before code)
 Turn the user's theme into a shot table. If the user leaves story, format or style open, choose them yourself and say they are your choices. Ask only if the theme itself is unclear.

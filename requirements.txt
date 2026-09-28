@@ -1,0 +1,6 @@
+# donghua skills — Python packages. System tools (ffmpeg, a browser, fluidsynth + a SoundFont) are listed by
+#   python3 skills/donghua-maker/scripts/doctor.py
+playwright>=1.40      # stills, audio check, export (then: python3 -m playwright install chromium, or have Google Chrome)
+edge-tts>=6.1         # free narration with word timing (network)
+fonttools>=4.40       # subset + embed OFL fonts
+numpy>=1.24           # rank found sound effects

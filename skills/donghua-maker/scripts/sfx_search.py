@@ -9,7 +9,7 @@ needs.json (audio_director.py writes it): {"needs": [{"cat": "click", "query": "
 
 Sources, in order: the user's local library (--local dirs; filename/path tokens are matched), Mixkit tag pages
 (no key; full WAVs, Mixkit Sound Effects Free License), Freesound API v2
-(only when FREESOUND_API_KEY is set: env or ~/.config/secrets/.env; CC0 and CC-BY only, HQ mp3 previews),
+(only when FREESOUND_API_KEY is set: env, ./.env or ~/.config/donghua/.env; CC0 and CC-BY only, HQ mp3 previews),
 and anything added by hand with `add` (e.g. a Pixabay file downloaded in the browser, with its page URL
 and licence). Every candidate gets a sidecar <file>.json with its metadata.
 
@@ -64,15 +64,9 @@ def tokens(s: str) -> set:
 
 
 def secret(name):
-    if os.environ.get(name):
-        return os.environ[name]
-    f = Path(os.environ.get("SECRETS_ENV", Path.home() / ".config/secrets/.env"))
-    if f.exists():
-        for line in f.read_text().splitlines():
-            k, sep, v = line.partition("=")
-            if sep and k.strip() == name and v.strip():
-                return v.strip().strip('"').strip("'")
-    return None
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import donghua_env
+    return donghua_env.get(name)
 
 
 def save_meta(path: Path, meta: dict):

@@ -38,17 +38,42 @@ CATALOG = {
                   "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/notoserifsc/OFL.txt"},
 }
 CACHE = Path.home() / ".cache" / "donghua-fonts"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import donghua_env  # noqa: E402
+# no GitHub access? put the .ttf files (names as in CATALOG[*]["file"]) in DONGHUA_FONT_DIR, or set DONGHUA_FONT_MIRROR
+# to a prefix that proxies GitHub URLs (the original URL is appended to it). references/setup.md §fonts
 STYLE = re.compile(r'<style id="embedfonts"[^>]*>.*?</style>\n?', re.S)
 EXTRA = "".join(chr(c) for c in range(0x20, 0x7F)) + "，。！？；：、“”‘’（）《》【】…—·～％°×÷±≈≠≤≥√²³½αβπθΔ→←↑↓"
 
 
+def cdn(url: str) -> str | None:
+    """jsDelivr copy of a GitHub file (reachable where GitHub is slow); None when there is none (release assets,
+    files over jsDelivr's 20 MB limit fail there and fall through to the manual fix)."""
+    m = re.match(r"https://github\.com/([^/]+)/([^/]+)/raw/([^/]+)/(.+)", url) or \
+        re.match(r"https://raw\.githubusercontent\.com/([^/]+)/([^/]+)/([^/]+)/(.+)", url)
+    return f"https://cdn.jsdelivr.net/gh/{m[1]}/{m[2]}@{m[3]}/{m[4]}" if m else None
+
+
 def fetch(url: str, dest: Path) -> Path:
-    if not dest.exists():
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        print(f"  downloading {url}")
-        with urllib.request.urlopen(url, timeout=120) as r:
-            dest.write_bytes(r.read())
-    return dest
+    if dest.exists():
+        return dest
+    local = donghua_env.get("DONGHUA_FONT_DIR")
+    if local and (Path(local).expanduser() / dest.name).is_file():
+        return Path(local).expanduser() / dest.name
+    mirror = donghua_env.get("DONGHUA_FONT_MIRROR", "")
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    errors = []
+    for u in ([mirror + url] if mirror else []) + [url] + ([cdn(url)] if cdn(url) else []):
+        try:
+            print(f"  downloading {u}")
+            with urllib.request.urlopen(u, timeout=45) as r:
+                dest.write_bytes(r.read())
+            return dest
+        except OSError as e:
+            errors.append(f"{u}: {e}")
+    sys.exit("could not download " + dest.name + ":\n  " + "\n  ".join(errors) + "\n"
+             f"Fix: download it yourself from {url} and save it as {dest} (or into DONGHUA_FONT_DIR), "
+             "or set DONGHUA_FONT_MIRROR. See references/setup.md.")
 
 
 def drawn_chars(html: str) -> set:
