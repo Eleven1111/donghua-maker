@@ -69,7 +69,6 @@ All looks are layers over the same engine; change the texture recipe, not the ar
 | **镶嵌变形 / tessellation metamorphosis** (`--look tessellation`) | Checkerboard whose shared edges bend into interlocking fish; a front of change sweeps squares into fish and back; the shoal swims. Verified in 方与鱼 (`assets/example-tessellation.html`, `looks/tessellation.md`). |
 | **沙画 / sand animation** (`--look sandart`) | Amber light table, dark sand; fingertip wipes, soft finger strokes, palm clearings, poured-sand silhouettes, palm sweep scene change, a hand following the tip. Verified in 沙上月 (`assets/example-sandart.html`, `looks/sandart.md`). |
 | **字符画 / ASCII art** (`--look ascii`) | Everything is characters on black: density ramp, phosphor tint and glow; torus, layered ridges, ringed planet; title forced into the grid. Verified in 字符宇宙 (`assets/example-ascii.html`, `looks/ascii.md`). |
-| **金色装饰 / Klimt gold** (`--look klimt`) | Gold-leaf ground, a tree of dense gold spirals with fans and eyes, triangle-mosaic robes, jewel circle-mosaic ground, a black bird; no faces. Verified in 生命之树 (`assets/example-klimt.html`, `looks/klimt.md`). |
 | **包豪斯构成 / Bauhaus** (`--look bauhaus`) | Primary colours and black on off-white; circle/square/triangle, bars, construction grid, strong diagonal, big rotated sans type; mechanical snaps on the beat. Verified in 形与色 (`assets/example-bauhaus.html`, `looks/bauhaus.md`). |
 | **Night / lantern** | dark backdrop dark .5, radial glow sprites with `globalCompositeOperation='lighter'`, warm accent only on light sources |
 
