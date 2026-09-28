@@ -49,7 +49,11 @@ A Claude Code skill + agent that turns a one-line idea into a self-contained HTM
   - 孟菲斯 `memphis`（周末去哪儿）；
   - 麻胶版画 `linocut`（早安版画）；
   - 七十年代复古 `retro70`（慢慢来）；
-  - 16mm 老纪录片 `film16`（守灯人）。
+  - 16mm 老纪录片 `film16`（守灯人）；
+  - 绿屏终端 `terminal`（咖啡机）；
+  - 科幻界面 `hud`（对接）；
+  - 动态字体 `kinetic`（开口）；
+  - 扁平科普 `flatsci`（月亮为什么会变）。
 - **3D 积木拼装风**（`scaffold.py --three`）：three.js r158 直接内嵌进片子，仍是离线可播的单文件。用 ASCII 分层图写模型，自动拆成标准积木；积木旋转落下拼装，带运动模糊；最后是说明书翻页，页面上的步骤图由实时渲染生成。
 - **定格质感引擎**：每秒 12 次摆位、镜头平滑运动、纸纹、胶片颗粒、曝光闪烁；跳转任意帧结果都一样，可复现。
 - **一句话出片 Agent（`donghua-director`）**：自己选风格、画幅、时长和分镜，然后写镜头，过三道关卡后交付网页版，中间不问人。
@@ -165,7 +169,7 @@ skills/donghua-maker/        底座
   assets/toolkit-brick3d.js  3D 积木工具（--three 时注入）
   assets/toolkit-goldscroll.js 金屏说史模块库（--goldscroll 时注入）
   assets/toolkit-flowribbon.js 流场色带模块库（--flowribbon 时注入）
-  assets/toolkit-<look>.js    其他风格的模块库（--look <look> 时注入：datamin / harmonic / brushsketch / ukiyoe / naturalplate / vangogh / seurat / qinglu / inkwash / dunhuang / mondrian / kandinsky / cutout / process / elastic / growth / isometric / datafluid / bloom / opart / nianhua / tessellation / sandart / ascii / bauhaus / chalkboard / blueprint / oneline / pencil / memphis / linocut / retro70 / film16）
+  assets/toolkit-<look>.js    其他风格的模块库（--look <look> 时注入：datamin / harmonic / brushsketch / ukiyoe / naturalplate / vangogh / seurat / qinglu / inkwash / dunhuang / mondrian / kandinsky / cutout / process / elastic / growth / isometric / datafluid / bloom / opart / nianhua / tessellation / sandart / ascii / bauhaus / chalkboard / blueprint / oneline / pencil / memphis / linocut / retro70 / film16 / terminal / hud / kinetic / flatsci）
   assets/lib/                three.js r158（MIT，附 LICENSE 与 sources.json）
   references/                镜头接口、各风格工具箱（looks/）、配色与节奏、音频、事实核对规范
   scripts/                   scaffold / stills / fact_check / audio_director / music_render /
