@@ -1,12 +1,12 @@
 # donghua-maker
 
-**一句话生成动画短片**：一个 [Claude Code](https://claude.com/claude-code) 技能加一个 Agent。输入一句主题（"做一个日本历史快速讲解的动画"），自动产出一部**单文件 HTML** 动画短片：画面用 Canvas 2D 或 WebGL（three.js 内嵌）绘制，声音用 Web Audio，全部由代码生成，浏览器里直接播放，也能逐帧导出 MP4。
+**一句话生成动画短片**：三个遵循 [Agent Skills 开放标准](https://agentskills.io/specification) 的技能加三个一句话出片 Agent，Claude Code、Codex、Cursor、Antigravity、WorkBuddy、OpenClaw 等终端都能用。输入一句主题（"做一个日本历史快速讲解的动画"），自动产出一部**单文件 HTML** 动画短片：画面用 Canvas 2D 或 WebGL（three.js 内嵌）绘制，声音用 Web Audio，全部由代码生成，浏览器里直接播放，也能逐帧导出 MP4。
 
-A Claude Code skill + agent that turns a one-line idea into a self-contained HTML animated short (Canvas 2D or inlined three.js WebGL + Web Audio) in 50+ verified looks, with visual self-checks, a sourced fact gate and an automatic sound pass.
+Agent Skills (Claude Code, Codex, Cursor, Antigravity, WorkBuddy, OpenClaw…) that turn a one-line idea into a self-contained HTML animated short (Canvas 2D or inlined three.js WebGL + Web Audio) in 53 verified looks, with visual self-checks, a sourced fact gate, an automatic sound pass and a first-use creator profile.
 
 ## 功能
 
-- **50 多种画面风格**：默认的纸艺定格，加 53 种各有风格说明书（`references/looks/`）和验证过示例片的风格，用 `scaffold.py --look <名字>` 起片。按用途分：
+- **53 种画面风格**：默认的纸艺定格之外，每种风格都有说明书（`references/looks/`）和验证过的示例片，用 `scaffold.py --look <名字>` 起片。按用途分：
 
   | 用途 | 风格（`--look` 名字，括号里是示例片） |
   |---|---|
@@ -19,6 +19,8 @@ A Claude Code skill + agent that turns a one-line idea into a self-contained HTM
   金屏说史和流场色带用各自的开关起片：`--goldscroll`、`--flowribbon`。
 - **真 3D 风格**：`clay3d`、`voxel`、`paper3d`、`brick3d`、`isometric`、`flatsci` 用 WebGL 渲染。three.js r158 直接内嵌进片子，所以仍是离线可播的单文件；这几种风格会自动开启 three.js。
   - 3D 黏土：立体泥塑表面有指纹、拇指按痕和刀痕，打暖色主光和柔和阴影；角色每秒 12 个姿势，镜头平滑运动。
+  - 3D 体素：浮在空中的方块小岛，每块颜色略有差别；一条光照曲线从清晨走到夜晚，窗户亮灯、萤火虫；上下边缘移轴虚化，看起来像微缩模型。
+  - 3D 立体纸艺：每张纸片有厚度、手剪毛边和白色纸芯，前后分层互相投影，镜头推进时有视差；纸偶每秒 12 个姿势。
   - 3D 积木：积木旋转落下、拼装，带运动模糊；最后是说明书翻页，页面上的步骤图由实时渲染生成。
   - 等距几何：用正交等距镜头，镜头可以绕场景转；房间一件件搭起来，城市拔地而起、整体换色。
   - 扁平科普：卡通分色着色，星球的晨昏线来自真实光照，月相也由光照得出。
@@ -27,6 +29,7 @@ A Claude Code skill + agent that turns a one-line idea into a self-contained HTM
   - 动画件包括常驻计数器、仪表、堆叠、数值标签、盖章大字、故障转场；
   - 可以用自己生成的图片逐层替换（`LY.image(名字, 图片)`），动画代码不用改，图层清单写在 `looks/layered.md`。
 - **定格质感引擎**：每秒 12 次摆位、镜头平滑运动、纸纹、胶片颗粒、曝光闪烁；跳转任意帧结果都一样，可复现。
+- **首次使用先了解你**（`profile.py`）：先读本机档案；没有就从终端已有的记忆里取你的背景并跟你确认，读不到就问三个小问题。之后按档案自动选场景包、画幅和画风。
 - **一句话出片 Agent（`donghua-director`）**：自己选风格、画幅、时长和分镜，然后写镜头，过三道关卡后交付网页版，中间不问人。
 - **事实核对关卡**（`fact_check.py`）：片中每一句屏幕文字都必须登记为三种状态之一：已核实（附来源网址）、有争议（写明另一种说法）、非事实（注明原因）。地图方位这类画面事实也要登记。片子改过字，旧的核对记录自动失效。
 - **画面自检**（`stills.py`）：截出每个镜头开头、中间、结尾的原尺寸静帧，拼成一张总览图，页面报错时判失败。
@@ -140,11 +143,12 @@ film-1080.mp4             导出成片（只在确认后生成）
 ```
 install.sh                   一键安装到 Claude Code / Codex / Cursor / Antigravity / Gemini / WorkBuddy / OpenClaw
 AGENTS.md                    给改仓库的 Agent 看的规则（CLAUDE.md 引用它）
-tools/validate.py            仓库关卡：技能规范、失效链接、脚本自检、44 部片的骨架冒烟测试、密钥扫描
+tools/validate.py            仓库关卡：技能规范、失效链接、脚本自检、每种风格各起一部空片的冒烟测试、密钥扫描
 .github/workflows/           CI：官方 skills-ref 校验 + validate.py + 安装器演练
 agents/
   donghua-director.md        一句话出片 Agent
   classroom-director.md      老师一句话出微课 Agent
+  creator-director.md        自媒体一句话出片 Agent
 skills/donghua-classroom/    老师场景包（建立在底座之上，不改引擎）
   SKILL.md                   学段节奏表、课程结构、解说/字幕/字体/盲测流程
   scripts/lesson_check.py    课程关卡：目标、关键词、语速、停顿、小测证据、盲测 → 讲义.md
@@ -162,10 +166,11 @@ skills/donghua-maker/        底座
   assets/toolkit-<look>.js    各风格的模块库（--look <look> 时注入；用到 THREE 的会自动内嵌 three.js：clay3d / voxel / paper3d / datamin / harmonic / brushsketch / ukiyoe / naturalplate / vangogh / seurat / qinglu / inkwash / dunhuang / mondrian / kandinsky / cutout / process / elastic / growth / isometric / datafluid / bloom / opart / nianhua / tessellation / sandart / ascii / bauhaus / chalkboard / blueprint / oneline / pencil / memphis / linocut / retro70 / film16 / terminal / hud / kinetic / flatsci / editorial / layered）
   assets/lib/                three.js r158（MIT，附 LICENSE 与 sources.json）
   references/catalog.md      全部示例片目录（选定风格后再读，不占主文件篇幅）
+  references/onboarding.md   首次使用：读档案、从终端记忆了解用户、三个问题、档案 → 默认值
   references/narration.md    解说流程；references/export.md 导出 MP4
   references/                镜头接口、各风格工具箱（looks/）、配色与节奏、音频、事实核对规范
   scripts/                   scaffold / stills / fact_check / audio_director / music_render /
-                             sfx_search / sfx_import / export / voice / narrate / font_embed
+                             sfx_search / sfx_import / export / voice / narrate / font_embed / profile
 ```
 
 ## 设计理念
@@ -178,6 +183,7 @@ skills/donghua-maker/        底座
 - **一个底座，多个场景包**：引擎、画风和关卡属于底座；场景包只调整输入、关卡和产出，不改引擎。
 - **按需加载**：`SKILL.md` 控制在 500 行、约 5k token 以内，描述不超过 1024 字符；示例目录、解说、导出等细节放在 `references/`，用到才读。
 - **一处编写，处处可用**：技能内不写死任何终端的路径，脚本靠相对位置互相找到；`tools/validate.py` 和 CI 每次提交都检查这些约定，并用故意改坏的样例验证过它会报错。
+- **先了解人，再做片**：用户档案只存在本机、所有终端共用，只记背景、片子类型、受众和风格偏好，不上传，不写进片子。
 - **经验沉淀成规则**：每次被否决的输出都写成一条可检验的规则，放进风格文档。
 
 ## 授权与致谢
