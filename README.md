@@ -41,7 +41,6 @@ A Claude Code skill + agent that turns a one-line idea into a self-contained HTM
   - 镶嵌变形 `tessellation`（方与鱼）；
   - 沙画 `sandart`（沙上月）；
   - 字符画 `ascii`（字符宇宙）；
-  - 克里姆特金色装饰 `klimt`（生命之树）；
   - 包豪斯构成 `bauhaus`（形与色）。
 - **3D 积木拼装风**（`scaffold.py --three`）：three.js r158 直接内嵌进片子，仍是离线可播的单文件。用 ASCII 分层图写模型，自动拆成标准积木；积木旋转落下拼装，带运动模糊；最后是说明书翻页，页面上的步骤图由实时渲染生成。
 - **定格质感引擎**：每秒 12 次摆位、镜头平滑运动、纸纹、胶片颗粒、曝光闪烁；跳转任意帧结果都一样，可复现。
@@ -158,7 +157,7 @@ skills/donghua-maker/        底座
   assets/toolkit-brick3d.js  3D 积木工具（--three 时注入）
   assets/toolkit-goldscroll.js 金屏说史模块库（--goldscroll 时注入）
   assets/toolkit-flowribbon.js 流场色带模块库（--flowribbon 时注入）
-  assets/toolkit-<look>.js    其他风格的模块库（--look <look> 时注入：datamin / harmonic / brushsketch / ukiyoe / naturalplate / vangogh / seurat / qinglu / inkwash / dunhuang / mondrian / kandinsky / cutout / process / elastic / growth / isometric / datafluid / bloom / opart / nianhua / tessellation / sandart / ascii / klimt / bauhaus）
+  assets/toolkit-<look>.js    其他风格的模块库（--look <look> 时注入：datamin / harmonic / brushsketch / ukiyoe / naturalplate / vangogh / seurat / qinglu / inkwash / dunhuang / mondrian / kandinsky / cutout / process / elastic / growth / isometric / datafluid / bloom / opart / nianhua / tessellation / sandart / ascii / bauhaus）
   assets/lib/                three.js r158（MIT，附 LICENSE 与 sources.json）
   references/                镜头接口、各风格工具箱（looks/）、配色与节奏、音频、事实核对规范
   scripts/                   scaffold / stills / fact_check / audio_director / music_render /
