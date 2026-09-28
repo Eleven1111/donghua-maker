@@ -1,63 +1,31 @@
 # donghua-maker
 
-**一句话生成动画短片**：一个 [Claude Code](https://claude.com/claude-code) 技能加一个 Agent。输入一句主题（"做一个日本历史快速讲解的动画"），自动产出一部**单文件 HTML** 动画短片：Canvas 2D 画面加 Web Audio 声音，全部由代码生成，浏览器里直接播放，也能逐帧导出 MP4。
+**一句话生成动画短片**：一个 [Claude Code](https://claude.com/claude-code) 技能加一个 Agent。输入一句主题（"做一个日本历史快速讲解的动画"），自动产出一部**单文件 HTML** 动画短片：画面用 Canvas 2D 或 WebGL（three.js 内嵌）绘制，声音用 Web Audio，全部由代码生成，浏览器里直接播放，也能逐帧导出 MP4。
 
-A Claude Code skill + agent that turns a one-line idea into a self-contained HTML animated short (Canvas 2D + Web Audio), with visual self-checks, a sourced fact gate and an automatic sound pass.
+A Claude Code skill + agent that turns a one-line idea into a self-contained HTML animated short (Canvas 2D or inlined three.js WebGL + Web Audio) in 50+ verified looks, with visual self-checks, a sourced fact gate and an automatic sound pass.
 
 ## 功能
 
-- **14 种画面风格**，每种都有验证过的示例片：纸艺定格（默认）、撕纸拼贴绘本、皮影戏、3D 黏土、水彩、美漫分镜、手绘科普笔记、像素农场、像素技术图解、商务财经图解、可爱软件产品演示等。
-- **金屏说史 · 历史讲解系列**（`scaffold.py --goldscroll`）：固定的节目格式，每回 60 秒、11 个镜头。
-  - 结构：金箔屏风片头 → 年份滚轮和时间轴 → 河流地图行军 → 夜江剪影 → 火攻高潮 → 辨误卡 → 对峙分屏 → 片尾悬念；
-  - 每条字幕都要经过事实核对，有争议的说法在画面上注明；
-  - 示例：第一回 赤壁之战。
-- **流场色带风**（`scaffold.py --flowribbon`）：生成艺术风格。
-  - 画面：粗色带顺着看不见的风流动，互不重叠，会绕开画面中留白的"风眼"，标题或物体就放在风眼里。
-  - 场型有三种：普通风、绕障碍、旋涡；配色有暖纸和夜色两套。
-  - 粗色带踩着旋律音符入场。
-  - 示例：风的形状。
-- **十三种新风格**（`scaffold.py --look <名字>`），每种都有 12 秒示例和一份风格说明书：
-  - 数据极简 `datamin`（光速）；
-  - 谐波运动 `harmonic`（圆与波）；
-  - 简笔漫画 `brushsketch`（放风筝）；
-  - 浮世绘 `ukiyoe`（浪里行舟）；
-  - 博物版画 `naturalplate`（海里的几何）；
-  - 梵高厚涂 `vangogh`（麦浪与星夜）；
-  - 修拉点彩 `seurat`（河岸的午后）；
-  - 青绿长卷 `qinglu`（江山市井图，清明上河图 × 千里江山图）；
-  - 写意水墨 `inkwash`（清水游虾）；
-  - 敦煌壁画 `dunhuang`（飞天）；
-  - 格子构成 `mondrian`（格子里的节奏）；
-  - 康定斯基构成 `kandinsky`（点线面）；
-  - 剪纸拼贴 `cutout`（海藻与星）；
-  - 规则粒子 `process`（规则的痕迹）；
-  - 弹性线条 `elastic`（弹一弹）；
-  - 差分生长 `growth`（生长）；
-  - 等距几何 `isometric`（积木城，three.js 真 3D，正交等距镜头可环绕）；
-  - 粒子流体 `datafluid`（数据之海）；
-  - 发光花 `bloom`（花开无界）；
-  - 欧普艺术 `opart`（起伏）；
-  - 年画 `nianhua`（年年有余）；
-  - 镶嵌变形 `tessellation`（方与鱼）；
-  - 沙画 `sandart`（沙上月）；
-  - 字符画 `ascii`（字符宇宙）；
-  - 包豪斯构成 `bauhaus`（形与色）；
-  - 黑板粉笔 `chalkboard`（黑板课）；
-  - 工程蓝图 `blueprint`（台灯设计图）；
-  - 一笔画 `oneline`（一笔一天）；
-  - 铅笔素描 `pencil`（苹果写生）；
-  - 孟菲斯 `memphis`（周末去哪儿）；
-  - 麻胶版画 `linocut`（早安版画）；
-  - 七十年代复古 `retro70`（慢慢来）；
-  - 16mm 老纪录片 `film16`（守灯人）；
-  - 绿屏终端 `terminal`（咖啡机）；
-  - 科幻界面 `hud`（对接）；
-  - 动态字体 `kinetic`（开口）；
-  - 扁平科普 `flatsci`（月亮为什么会变，three.js 真 3D 卡通分色，月相由真实光照得出）；
-  - 报刊数据图 `editorial`（练习数据）；
-  - 图层卡通讲解 `layered`（十万粉）。
-- **3D 黏土定格风**（`scaffold.py --look clay3d`）：three.js 真立体泥塑，表面有指纹、拇指按痕和刀痕，暖色主光加柔和阴影，角色每秒 12 个姿势、镜头平滑运动（示例：小猫钓鱼）。
-- **3D 积木拼装风**（`scaffold.py --three`）：three.js r158 直接内嵌进片子，仍是离线可播的单文件。用 ASCII 分层图写模型，自动拆成标准积木；积木旋转落下拼装，带运动模糊；最后是说明书翻页，页面上的步骤图由实时渲染生成。
+- **50 多种画面风格**：默认的纸艺定格，加 51 种各有风格说明书（`references/looks/`）和验证过示例片的风格，用 `scaffold.py --look <名字>` 起片。按用途分：
+
+  | 用途 | 风格（`--look` 名字，括号里是示例片） |
+  |---|---|
+  | **讲故事、有角色** | 撕纸拼贴绘本 `torn-paper`（晚安纸条）、皮影戏 `shadow-puppet`（射日）、水彩 `watercolor`（春雨）、美漫分镜 `comic`（夜巡）、**3D 黏土** `clay3d`（小猫钓鱼）、**3D 积木** `brick3d`（积木机器人）、**图层卡通讲解** `layered`（十万粉）、简笔漫画 `brushsketch`（放风筝）、像素农场 / 像素技术图解 `pixel`（农场的一天、像素神经网络） |
+  | **讲解知识、数据、产品** | 手绘科普 `explainer`（地球的诞生）、商务财经图解 `biz-explainer`（毛利、股权稀释）、可爱软件演示 `ui-demo`（小克剪辑、小克数据台）、**3D 扁平科普** `flatsci`（月亮为什么会变）、报刊数据图 `editorial`（练习数据）、黑板粉笔 `chalkboard`（黑板课）、工程蓝图 `blueprint`（台灯设计图）、数据极简 `datamin`（光速）、**3D 等距几何** `isometric`（积木城）、金屏说史系列 `gold-scroll`（赤壁之战，60 秒一回）、谐波运动 `harmonic`（圆与波）、科幻界面 `hud`（对接）、绿屏终端 `terminal`（咖啡机） |
+  | **中国传统** | 青绿长卷 `qinglu`（江山市井图）、写意水墨 `inkwash`（清水游虾）、敦煌壁画 `dunhuang`（飞天）、年画 `nianhua`（年年有余） |
+  | **艺术史、版画、复古** | 浮世绘 `ukiyoe`、博物版画 `naturalplate`、梵高厚涂 `vangogh`、修拉点彩 `seurat`、格子构成 `mondrian`、康定斯基构成 `kandinsky`、包豪斯 `bauhaus`、剪纸拼贴 `cutout`、麻胶版画 `linocut`、铅笔素描 `pencil`、一笔画 `oneline`、孟菲斯 `memphis`、七十年代复古 `retro70`、16mm 老纪录片 `film16`、欧普艺术 `opart`、镶嵌变形 `tessellation`、沙画 `sandart` |
+  | **生成艺术、文字** | 流场色带 `flow-ribbon`（风的形状）、规则粒子 `process`、弹性线条 `elastic`、差分生长 `growth`、粒子流体 `datafluid`（两万粒子）、发光花 `bloom`、字符画 `ascii`、动态字体 `kinetic`（开口） |
+
+  金屏说史和流场色带用各自的开关起片：`--goldscroll`、`--flowribbon`。
+- **真 3D 风格**：`clay3d`、`brick3d`、`isometric`、`flatsci` 用 WebGL 渲染。three.js r158 直接内嵌进片子，所以仍是离线可播的单文件；这几种风格会自动开启 three.js。
+  - 3D 黏土：立体泥塑表面有指纹、拇指按痕和刀痕，打暖色主光和柔和阴影；角色每秒 12 个姿势，镜头平滑运动。
+  - 3D 积木：积木旋转落下、拼装，带运动模糊；最后是说明书翻页，页面上的步骤图由实时渲染生成。
+  - 等距几何：用正交等距镜头，镜头可以绕场景转；房间一件件搭起来，城市拔地而起、整体换色。
+  - 扁平科普：卡通分色着色，星球的晨昏线来自真实光照，月相也由光照得出。
+- **图层卡通讲解，素材可以换**（`layered`）：画面按有名字的图层组织，比如 `hero.head`、`hero.eyes.happy`、`bg.office`。
+  - 默认每层由代码画出占位图：粗细变化的墨线、两级明暗、背景虚化、角色会呼吸眨眼、换眼换嘴；
+  - 动画件包括常驻计数器、仪表、堆叠、数值标签、盖章大字、故障转场；
+  - 可以用自己生成的图片逐层替换（`LY.image(名字, 图片)`），动画代码不用改，图层清单写在 `looks/layered.md`。
 - **定格质感引擎**：每秒 12 次摆位、镜头平滑运动、纸纹、胶片颗粒、曝光闪烁；跳转任意帧结果都一样，可复现。
 - **一句话出片 Agent（`donghua-director`）**：自己选风格、画幅、时长和分镜，然后写镜头，过三道关卡后交付网页版，中间不问人。
 - **事实核对关卡**（`fact_check.py`）：片中每一句屏幕文字都必须登记为三种状态之一：已核实（附来源网址）、有争议（写明另一种说法）、非事实（注明原因）。地图方位这类画面事实也要登记。片子改过字，旧的核对记录自动失效。
@@ -126,6 +94,7 @@ cp donghua-maker/agents/creator-director.md ~/.claude/agents/
 ```bash
 S=~/.claude/skills/donghua-maker/scripts
 python3 $S/scaffold.py film.html --title "片名" --format landscape --shots "A,B,C" --durs "4,4,4" --bpm 120
+python3 $S/scaffold.py film.html --title "片名" --look clay3d --shots "A,B,C" --durs "4,4,4"   # 指定风格（3D 风格自动内嵌 three.js）
 python3 $S/stills.py film.html --shots                         # 画面自检
 python3 $S/fact_check.py film.html --init                      # 生成事实清单，填好后：
 python3 $S/fact_check.py film.html                             # → FACT CHECK PASS
@@ -170,10 +139,9 @@ skills/donghua-maker/        底座
   assets/engine.html         引擎模板
   assets/example-*.html      每种风格验证过的示例片
   assets/toolkit-brick3d.js  3D 积木工具（--three 时注入）
-  assets/toolkit-clay3d.js   3D 黏土工具（--look clay3d；isometric、flatsci 也是 WebGL 风格，会自动内嵌 three.js）
   assets/toolkit-goldscroll.js 金屏说史模块库（--goldscroll 时注入）
   assets/toolkit-flowribbon.js 流场色带模块库（--flowribbon 时注入）
-  assets/toolkit-<look>.js    其他风格的模块库（--look <look> 时注入：clay3d / datamin / harmonic / brushsketch / ukiyoe / naturalplate / vangogh / seurat / qinglu / inkwash / dunhuang / mondrian / kandinsky / cutout / process / elastic / growth / isometric / datafluid / bloom / opart / nianhua / tessellation / sandart / ascii / bauhaus / chalkboard / blueprint / oneline / pencil / memphis / linocut / retro70 / film16 / terminal / hud / kinetic / flatsci / editorial / layered）
+  assets/toolkit-<look>.js    各风格的模块库（--look <look> 时注入；用到 THREE 的会自动内嵌 three.js：clay3d / datamin / harmonic / brushsketch / ukiyoe / naturalplate / vangogh / seurat / qinglu / inkwash / dunhuang / mondrian / kandinsky / cutout / process / elastic / growth / isometric / datafluid / bloom / opart / nianhua / tessellation / sandart / ascii / bauhaus / chalkboard / blueprint / oneline / pencil / memphis / linocut / retro70 / film16 / terminal / hud / kinetic / flatsci / editorial / layered）
   assets/lib/                three.js r158（MIT，附 LICENSE 与 sources.json）
   references/                镜头接口、各风格工具箱（looks/）、配色与节奏、音频、事实核对规范
   scripts/                   scaffold / stills / fact_check / audio_director / music_render /
@@ -182,7 +150,8 @@ skills/donghua-maker/        底座
 
 ## 设计理念
 
-- **单文件**：一部片子就是一个 HTML 文件，没有构建步骤，改完刷新就能看。
+- **单文件**：一部片子就是一个 HTML 文件，3D 风格也一样（three.js 内嵌），没有构建步骤，改完刷新就能看。
+- **画面可以换，动画不用改**：图层按名字取用，代码画的占位图和自己生成的图片可以互相替换。
 - **先网页后视频**：所有修改都在浏览器里完成，确认之后才导出 MP4。
 - **确定性**：不用 `Math.random()`，随机都由种子控制。任意一帧都能复现，离线混音和实时播放的结果一致。
 - **靠关卡，不靠自评**：画面、事实、音频各有一道能判失败的检查，每道都用负控测试过（故意改坏必须判失败）。核对关卡只能证明"每条都查过、有来源"，不能代替人的判断。
