@@ -871,12 +871,12 @@ function render() {
   const cam = film.cam = s.cam(st); s._sq = sq;
   if (PIX) { // pixel mode: draw small, scale up hard-edged; no grain, flicker or vignette (they would blur the pixels)
     LOG.setTransform(1, 0, 0, 1, 0, 0); LOG.globalAlpha = 1; LOG.globalCompositeOperation = 'source-over'; LOG.imageSmoothingEnabled = false; LOG.fillStyle = '#000'; LOG.fillRect(0, 0, LW, LH);
-    s.draw(LOG, st, sq, e, cam);
+    LOG.save(); s.draw(LOG, st, sq, e, cam); LOG.restore();   // a shot's lineCap/font/filter must not reach the next shot
     ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.imageSmoothingEnabled = false; ctx.drawImage(LO, 0, 0, W, H);
     drawSubs(); return;
   }
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = '#0c1719'; ctx.fillRect(0, 0, W, H);
-  s.draw(ctx, st, sq, e, cam);
+  ctx.save(); s.draw(ctx, st, sq, e, cam); ctx.restore();   // same: canvas state set in one shot used to leak into later ones
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.shadowColor = 'transparent';
   if (!film.smooth) { const fl = (hash(e, 77) - .5) * .05; ctx.fillStyle = fl > 0 ? `rgba(255,244,226,${fl * .55})` : `rgba(4,14,16,${-fl * .7})`; ctx.fillRect(0, 0, W, H); }
   const ox = (hash(e + 1, 5) * 384) | 0, oy = (hash(e + 1, 6) * 384) | 0;
