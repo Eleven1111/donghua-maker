@@ -2,7 +2,7 @@
 """Embed commercially usable (SIL OFL) fonts into a film, subset to the characters it uses.
 
     python3 font_embed.py <film>.html                       # default: wenkai (hand/kai look) for FONT + notosans for subtitles
-    python3 font_embed.py <film>.html --fonts wenkai        # any of: wenkai, notosans, notoserif
+    python3 font_embed.py <film>.html --fonts wenkai        # any of: wenkai, notosans, notoserif, jetbrainsmono (Latin-only mono, put a CJK face after it)
     python3 font_embed.py <film>.html --check               # only verify: every drawn CJK char is covered, licence files present
 
 Why: system fonts such as Xingkai SC / STKaiti ship with macOS under Apple's licence — not cleared for commercial video, and
@@ -36,6 +36,11 @@ CATALOG = {
                   "url": "https://github.com/google/fonts/raw/main/ofl/notoserifsc/NotoSerifSC%5Bwght%5D.ttf",
                   "home": "https://github.com/google/fonts/tree/main/ofl/notoserifsc", "license": "SIL Open Font License 1.1",
                   "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/notoserifsc/OFL.txt"},
+    # Latin-only monospace (opsboard): put it first and a CJK face after it; it is checked against ASCII only
+    "jetbrainsmono": {"family": "JetBrains Mono", "file": "JetBrainsMono-wght.ttf", "weights": "100 800", "latin": True,
+                      "url": "https://github.com/google/fonts/raw/main/ofl/jetbrainsmono/JetBrainsMono%5Bwght%5D.ttf",
+                      "home": "https://github.com/JetBrains/JetBrainsMono", "license": "SIL Open Font License 1.1",
+                      "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/jetbrainsmono/OFL.txt"},
 }
 CACHE = Path.home() / ".cache" / "donghua-fonts"
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -112,10 +117,14 @@ def check(film: Path) -> int:
     chars = {c for c in drawn_chars(html) if not c.isspace()}
     errs = []
     faces = re.findall(r'font-family:"([^"]+)";src:url\(data:font/woff;base64,([A-Za-z0-9+/=]+)\)', m.group(0))
+    latin = {c["family"] for c in CATALOG.values() if c.get("latin")}
     for fam, b64 in faces:
-        miss = sorted(chars - covered(b64, chars))
+        need = {c for c in chars if " " < c < "\x7f"} if fam in latin else chars
+        miss = sorted(need - covered(b64, need))
         if miss:
             errs.append(f"{fam} lacks {len(miss)} chars used by the film: {''.join(miss[:30])} — re-run font_embed.py")
+    if faces and latin >= {f for f, _ in faces}:
+        errs.append("only Latin faces embedded: add a CJK face after them (e.g. --fonts jetbrainsmono,notosans)")
     src = film.with_name(film.stem + "-fonts") / "sources.json"
     led = json.loads(src.read_text()) if src.exists() else []
     for fam, _ in faces:
