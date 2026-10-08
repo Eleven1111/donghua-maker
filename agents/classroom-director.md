@@ -57,6 +57,7 @@ Read, in this order, before writing anything:
 
 ## Final report (Chinese, concise)
 - **微课**: path, grade and stage, length, and for each shot one line with its idea and narration.
+- **Directions not taken**: the two other looks (or character takes) you considered, one line each with why you passed, so the user can ask for one instead.
 - **Gates**, each with its numbers: stills, QA, FACT (list the disputed items), NARRATE, FONT, audio, LESSON.
 - **Blind test**: pending. Tell the main conversation to dispatch a fresh reader with `<film>-lesson/blind/packet.md`, then run `lesson_check.py --blind`.
 - **Handout**: the path to `讲义.md` and the SRT.

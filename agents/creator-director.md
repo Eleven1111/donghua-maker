@@ -66,6 +66,7 @@ Read, in this order, before writing anything:
 
 ## Final report (Chinese, concise)
 - **短片**: the path, the audience and hook, the length, and one line per shot.
+- **Directions not taken**: the two other looks (or character takes) you considered, one line each with why you passed, so the user can ask for one instead.
 - **Gates**, each with its numbers:
   - stills
   - QA

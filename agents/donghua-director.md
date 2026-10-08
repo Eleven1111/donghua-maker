@@ -46,6 +46,7 @@ This pipeline replaces SKILL §3 (sample one shot for the user) and §6–7 (rev
 
 ## Final report (Chinese, concise)
 - **Film**: path; look, length, shots, one line per shot.
+- **Directions not taken**: the two other looks (or character takes) you considered, one line each with why you passed, so the user can ask for one instead.
 - **Gates**, with the actual numbers:
   - stills: count and errors;
   - `qa.py`: verdict, plus its clue columns that you looked at and kept;
