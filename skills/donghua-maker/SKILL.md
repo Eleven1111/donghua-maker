@@ -53,6 +53,8 @@ Per shot: name · time span · one-sentence cause→effect · the thing handed t
 
 Why a handoff per shot matters: these films read as one continuous chain reaction (steam → note → birds → petals → girl). That causal thread is what makes 10 seconds feel like a story and not a slideshow.
 
+**Given a reference video** ("make one like this"), run `python3 scripts/breakdown.py <video>` first and brief from its cuts, tempo, shot lengths and motion; copy the mechanism, not the pixels.
+
 **Length and shot count come from the theme.** "Four shots, 10 s" is not a default to fall back on. Decide both in the brief and state the reason in one line.
 
 | theme shape | total | shots | rhythm |
@@ -73,7 +75,7 @@ python3 <skill-dir>/scripts/scaffold.py <out>.html --title "Name" --format portr
 - Write `<out>.html` into the user's working folder, not into the skill folder.
 - Put cuts on the music grid: every boundary should be a whole number of eighth notes (30/bpm s). The script warns about any cut that isn't and suggests the nearest grid time. At 96 bpm the eighth is 0.3125 s, so 2.5 s = 8 eighths, 1.875 s = 6.
 - The timeline bar's segments are sized by shot length automatically.
-- **Pixel-art films** (cosy farm-sim, retro game looks): add `--pixel 8`. Shots then draw on a 320×180 buffer (portrait 180×320) with the pixel toolkit in `references/shot-contract.md` `looks/pixel.md`, and the stubs are generated accordingly. The paper-look rules (`boil`, `sprite`, `backdrop`) don't apply in this mode. Before writing pixel shots, read the scale and layout rules in `looks/pixel.md`: 1× sprites on a 320×180 buffer read too small, and the user rejected that.
+- **Pixel-art films**: add `--pixel 8` (a 320×180 buffer; paper-look helpers don't apply). Read `references/looks/pixel.md` first: 1× sprites read too small and were rejected.
 - Keep `DUR × 60` a whole number (at 96 bpm use an even count of eighths). An odd count such as 19.375 s gives 1162.5 frames, and the exported MP4 ends up one frame short.
 - Browser screenshots at pane size downscale the frame. To judge detail, grab full-resolution stills with `canvas.toDataURL()` after `__film.seek(f)` (a still, not a video render).
 
