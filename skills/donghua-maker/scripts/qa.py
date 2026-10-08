@@ -29,6 +29,8 @@ CLUES (exit 0) — go look at that frame; style can make them right:
                    moves > 2 % per exposure and > 2× the whole frame's share, for ≥ 0.3 s — action the subtitle
                    will cover. A camera pan moves everything alike and is not flagged.
   slow frames      render() + a forced read, on CPU raster (see RASTER): a shot far slower than its siblings is the clue.
+  camera back      the shot's camera x moves backwards between exposures (a pan reversing reads as a rewind); in a
+                   long-scroll film counted across seams too, where the camera must only ever move forward.
 Blind spots: text hidden behind a non-text object still counts as visible; text passed through getImageData/putImageData
 or a WebGL texture is not followed; motion counts camera moves as motion; leak cannot see a shot that paints the clear
 colour itself.
@@ -48,6 +50,7 @@ FPS = 60
 LEAK_FAIL, PERSIST_S = 0.002, 0.3
 DRIFT_LEVEL, DRIFT_AREA = 24, 0.0002   # visible difference between two renders of one frame (640-px grey thumbnail)
 TEXT_OVERLAP, SAFE_DEFAULT = 0.15, None
+BACK_PX = 0.5   # a camera step backwards larger than this (px per exposure) counts
 UNDER_SUB, UNDER_RATIO = 0.02, 2.0   # plate share moving (subtitles hidden), and how much more than the whole frame
 
 HERE = Path(__file__).resolve().parent
@@ -242,11 +245,24 @@ async def measure(url, out, a):
         for s, row in zip(info["shots"], report["shots"]):
             m = await ev(pg, f"window.__qaMotion({s['i']}, {step}, {a.width})", errs)
             row.update(summarize_motion(m or {"area": [], "mag": [], "blank": []}, step))
+            row["_camx"] = (m or {}).get("camx", [])
             if m:
                 (out / f"shot_{s['i'] + 1:02d}.jpg").write_bytes(base64.b64decode(m["img"].split(",")[1]))
         await browser.close()
+    camera_back(report, info.get("scroll", False))
     report["errors"] = sorted(set(errs))
     return report
+
+
+def camera_back(report, scroll):
+    """Count camera steps backwards within each shot; in a scroll film also across seams (one continuous camera)."""
+    prev = None
+    for s in report["shots"]:
+        xs = [x for x in s.pop("_camx", []) if x is not None]
+        seq = ([prev] if scroll and prev is not None else []) + xs
+        s["cam_back"] = sum(1 for a, b in zip(seq, seq[1:]) if b < a - BACK_PX)
+        prev = xs[-1] if xs else prev
+    report["scroll"] = scroll
 
 
 def write_md(r, path):
@@ -254,7 +270,8 @@ def write_md(r, path):
          "| # | shot | span s | move % | static % | jumps | blank % | leak first/max % | ms p50/p90 | text / subtitle clues |",
          "|---|---|---|---|---|---|---|---|---|---|"]
     for i, s in enumerate(r["shots"], 1):
-        tx = "; ".join(f"{t['key'][0]} {'/'.join(t['key'][1:])[:30]} @{t['t0']}–{t['t1']}" for t in s["text"] + s.get("under_sub", [])) or "–"
+        tx = "; ".join([f"{t['key'][0]} {'/'.join(t['key'][1:])[:30]} @{t['t0']}–{t['t1']}" for t in s["text"] + s.get("under_sub", [])]
+                       + ([f"camera steps back {s['cam_back']}×"] if s.get("cam_back") else [])) or "–"
         L.append(f"| {i} | {s['name']}{' (not measured: threw)' if s.get('unmeasured') else ''} | {s['t0']}–{s['t1']} | {s['area_mean']} | {s['static']} | {s['jumps']} | {s['blank']} | "
                  f"{s['leak_first'] * 100:.2f}/{s['leak_max'] * 100:.2f}{' **FAIL**' if s['leak_fail'] else ''} | {s['ms_p50']}/{s['ms_p90']} | {tx} |")
     L += ["", "Page errors: " + ("; ".join(r["errors"]) or "none"),

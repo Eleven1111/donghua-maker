@@ -16,7 +16,7 @@ Agent Skills (Claude Code, Codex, Cursor, Antigravity, WorkBuddy, OpenClaw…) t
   | **艺术史、版画、复古** | 浮世绘 `ukiyoe`、博物版画 `naturalplate`、梵高厚涂 `vangogh`、修拉点彩 `seurat`、格子构成 `mondrian`、康定斯基构成 `kandinsky`、包豪斯 `bauhaus`、剪纸拼贴 `cutout`、麻胶版画 `linocut`、铅笔素描 `pencil`、一笔画 `oneline`、孟菲斯 `memphis`、七十年代复古 `retro70`、16mm 老纪录片 `film16`、欧普艺术 `opart`、镶嵌变形 `tessellation`、沙画 `sandart` |
   | **生成艺术、文字** | 流场色带 `flow-ribbon`（风的形状）、规则粒子 `process`、弹性线条 `elastic`、差分生长 `growth`、粒子流体 `datafluid`（两万粒子）、发光花 `bloom`、字符画 `ascii`、动态字体 `kinetic`（开口） |
 
-  金屏说史和流场色带用各自的开关起片：`--goldscroll`、`--flowribbon`。
+  金屏说史和流场色带用各自的开关起片：`--goldscroll`、`--flowribbon`。长卷穿越片（一个人从左走到右，穿过几种画风，跨边界时人和世界一起换画法）用 `--scroll paper,inkwash,ukiyoe`，示例片「穿过三幅画」，说明书 `references/looks/scroll.md`。
 - **真 3D 风格**：`clay3d`、`voxel`、`paper3d`、`brick3d`、`isometric`、`flatsci` 用 WebGL 渲染。three.js r158 直接内嵌进片子，所以仍是离线可播的单文件；这几种风格会自动开启 three.js。
   - 3D 黏土：立体泥塑表面有指纹、拇指按痕和刀痕，打暖色主光和柔和阴影；角色每秒 12 个姿势，镜头平滑运动。
   - 3D 体素：浮在空中的方块小岛，每块颜色略有差别；一条光照曲线从清晨走到夜晚，窗户亮灯、萤火虫；上下边缘移轴虚化，看起来像微缩模型。

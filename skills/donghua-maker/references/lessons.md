@@ -86,6 +86,7 @@ confirms or refutes one, move it up with the evidence, or delete it.
   ("rose 9×" vs "rose to 9×"; see `review.md`).
 - **In a scroll film the camera only moves forward**: track a monotonic target (the running maximum, then smooth it). A
   camera that steps back while a character pauses was the most visible fault in one 24-segment film, and no metric
-  caught it; a reviewer did.
+  caught it; a reviewer did. Now built in (`toolkit-scroll.js`, `looks/scroll.md`) and counted by `qa.py`; proven on the
+  example film only.
 - **Wear stays off characters**: peeling, stains and scratches on a figure read as damage to the figure; keep them on
   the backdrop.
