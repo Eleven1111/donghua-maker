@@ -34,12 +34,12 @@ This pipeline replaces SKILL §3 (sample one shot for the user) and §6–7 (rev
    Fix, then re-shoot. 0 page errors is required.
 5. **Fact gate.** Run `scripts/fact_check.py <film>.html --init`, then fill `<film>-facts/facts.json` from pages you actually read in this run, including the `visual` claims with the still each was checked on. When a source contradicts the film, fix the film. Re-run until `FACT CHECK PASS`. When you use WebFetch, ask it to quote the exact sentence that supports the claim, and put that quote in `note`: WebFetch returns a summary, and the quote is the evidence. If a site blocks you (403), use another source. `visual` scope covers anything a teacher would mark wrong: geography and positions, counts, colours that carry meaning, the order of stages or processes, which part a label points to. Stylisation doesn't count, such as line wobble, simplified shapes or a palette choice. Never write a source from memory. If search fails, the entry stays `unverified`, the gate fails, and you report it.
 6. **Sound.** `python3 scripts/audio_director.py <film>.html --mood <mood> --key <key> --run --check` must print `CHECK PASS`. Pick the mood from `music_render.py` MOODS to fit the topic. The `offGrid` list is informational: sfx tied to a picture moment stay on the picture, and only cuts must sit on the eighth-note grid. Downloads are pre-authorised; every sound is logged in `sources.json`.
-7. **Re-run the gates after the last edit**: stills (0 errors), `fact_check.py` PASS and `audio_director.py --check` PASS, all on the final file.
+7. **Re-run the gates after the last edit**: stills (0 errors), `qa.py` QA PASS, `fact_check.py` PASS and `audio_director.py --check` PASS, all on the final file.
 8. **Append** one section to the project `checkpoint.md`: the prompt, the choices you made, gate results, and what is UNVERIFIED.
 
 ## Hard limits
 - Do not render MP4 (SKILL §6–8: that happens only after the user approves the web version). Do not generate paid narration unless the user's sentence asked for a voice.
-- Do not edit the skill, the engine or anything under `<skills-root>/`. Only touch the film, its `-facts/`, `-stills/` and `-audio/` folders, and `checkpoint.md`.
+- Do not edit the skill, the engine or anything under `<skills-root>/`. Only touch the film, its `-facts/`, `-stills/`, `-qa/` and `-audio/` folders, and `checkpoint.md`.
 - Do not delete or overwrite existing user files. If the film name exists, add a suffix.
 - Do not ask the user questions. Decide, and mark each decision "made by the agent". Stop and report only if the sentence has no usable subject.
 - Keep secrets out: never read or print `.env` values.
@@ -48,8 +48,10 @@ This pipeline replaces SKILL §3 (sample one shot for the user) and §6–7 (rev
 - **Film**: path; look, length, shots, one line per shot.
 - **Gates**, with the actual numbers:
   - stills: count and errors;
+  - `qa.py`: verdict, plus its clue columns that you looked at and kept;
   - `FACT CHECK`: counts, plus every `disputed` item with its note;
   - audio `CHECK`.
 - **Fixed during self-check**: each defect you caught, and which gate caught it.
+- **Independent review**: pending. Tell the main conversation to dispatch a fresh reviewer per `<skills-root>/donghua-maker/references/review.md`, with the film, `<film>-stills/` and `<film>-qa/`.
 - **Not verified**: always includes "audio not auditioned". Add anything the gates can't prove, such as a tone-of-voice judgment.
 - **Next step for the user**: review in the browser, then approve for rendering or name changes. List the controls: Space, 1–N, M.

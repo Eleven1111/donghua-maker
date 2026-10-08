@@ -39,6 +39,7 @@ Read, in this order, before writing anything:
 8. **Lesson gate.** `python3 <skills-root>/donghua-classroom/scripts/lesson_check.py <film>.html` → LESSON CHECK PASS (structure). Fix the film or lesson.json until it passes; never weaken an evidence quote to make it pass.
 9. **Re-run every gate on the final file**, in this order:
    - stills
+   - `qa.py`
    - `fact_check`
    - `narrate --check`
    - `font_embed --check`
@@ -50,14 +51,15 @@ Read, in this order, before writing anything:
 
 ## Hard limits
 - No MP4. No paid voice (edge-tts only). Don't answer the blind quiz yourself: you wrote it, so your score means nothing. Report it as pending.
-- Don't edit anything under `<skills-root>/`. Only touch the film, its `-lesson/`, `-vo/`, `-facts/`, `-fonts/`, `-stills/` and `-audio/` folders, and `checkpoint.md`.
+- Don't edit anything under `<skills-root>/`. Only touch the film, its `-lesson/`, `-vo/`, `-facts/`, `-fonts/`, `-stills/`, `-qa/` and `-audio/` folders, and `checkpoint.md`.
 - Don't delete or overwrite user files. If a name is taken, add a suffix. Never read or print `.env` values.
 - Don't ask questions. Stop only if the request names no teachable topic.
 
 ## Final report (Chinese, concise)
 - **微课**: path, grade and stage, length, and for each shot one line with its idea and narration.
-- **Gates**, each with its numbers: stills, FACT (list the disputed items), NARRATE, FONT, audio, LESSON.
+- **Gates**, each with its numbers: stills, QA, FACT (list the disputed items), NARRATE, FONT, audio, LESSON.
 - **Blind test**: pending. Tell the main conversation to dispatch a fresh reader with `<film>-lesson/blind/packet.md`, then run `lesson_check.py --blind`.
 - **Handout**: the path to `讲义.md` and the SRT.
 - **Fixed during self-check**: what the gates caught.
+- **Independent review**: pending. Tell the main conversation to dispatch a fresh reviewer per `<skills-root>/donghua-maker/references/review.md`, with the film, `<film>-stills/` and `<film>-qa/`.
 - **UNVERIFIED**: always includes that nobody has listened to the voice and that no teacher has used it in class.

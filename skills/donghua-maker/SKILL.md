@@ -28,6 +28,8 @@ Bundled files:
 - `scripts/font_embed.py`: embeds SIL OFL fonts (霞鹜文楷 and Noto Sans SC), subset to the film's characters, and writes a licence ledger. Use it whenever the film may be published or used commercially. `--check` catches a stale subset.
 - `__film.textBoxes(frame)` (engine hook): every text drawn in that frame with its string and canvas box, subtitles tagged. Scene packs use it for safe-area and overlap checks. It can't see text baked into sprites.
 - `scripts/stills.py`: full-resolution stills (`--shots` = first/mid/last frame of every shot) plus a contact sheet, on its own local server; exits 1 on page errors. The input for the step-5 visual check.
+- `scripts/qa.py`: step-5 numbers: page errors, determinism, backdrop leak; motion, text and subtitle clues per shot.
+- `references/lessons.md`: what worked on earlier films, with evidence. Read it while briefing.
 - `references/styles.md`: formats and vertical composition, texture recipes, palettes, rhythm, music. Read it when you turn a theme into parameters.
 
 ## One-sentence mode (directors)
@@ -104,6 +106,7 @@ Follow `references/fact-check.md`: search the claims while briefing, then `pytho
 Serve the folder (`python3 -m http.server <port>`, since file:// may be blocked). Then:
 1. Run `python3 scripts/stills.py <film>.html --shots` (or `--at` key moments) and look at every still. Also check every place, date and object for being factually right, not just readable (Edo was once drawn on the wrong coast). Look at each one: does the hero read, is anything cropped or floating where it should be attached or landed, does the palette hold?
    Also check each shot's **first frame**, not only its key moments. If the camera starts low or high (low z, big y offset), the edges can show past the backdrop, and the canvas clear colour (near-black) appears as a band. Screenshots taken mid-shot miss this. Fix it by filling the frame with the paper colour before drawing the backdrop, or by giving the backdrop more margin.
+   Then run `python3 scripts/qa.py <film>.html` (platform portrait: add `--safe 0.12,0.2`) and require `QA PASS` (no page errors, no backdrop leak, deterministic frames). Its clue columns point at frames to look at, not failures.
 2. Check that the console has zero errors. After every edit, first run `node --check` on the extracted `<script>`: a `// comment` appended to a one-line object literal silently swallows every property after it on that line. Reload with a cache-busting `&v=N`, because `http.server` pages get cached and console errors from earlier loads persist across navigations.
 3. Run `await window.__film.wav()`. The byte length must equal `44 + DUR*48000*4`, and `__film.score()` must hold the expected events.
    Then run `__film.audio()`. Its warnings must be empty, or each one explained. Every key action needs an sfx cue within 1–2 frames of its picture moment. Check ducking by measuring the music stem with and without `duck` after the loudest cue (`references/audio.md` §5).
@@ -112,6 +115,9 @@ Serve the folder (`python3 -m http.server <port>`, since file:// may be blocked)
 5. Stop the server.
 
 Report honestly what you did not check, e.g. that you didn't listen to the audio or didn't click-test `poke`.
+
+### 5b. Independent review (films anyone else will see)
+A reviewer who took no part in the film sees only the film, its stills and the `qa.py` strips. Packet, prompt and follow-up: `references/review.md`. A director agent reports it as pending.
 
 ### 6. Deliver the web version, then stop
 Deliver **only the HTML**. Give the file path, the controls (Space play, S toggles stop-motion/smooth, 1–N jump to shot, ←/→ step one exposure, M mute, click/drag to poke or blow on the scene), a list of what was verified and what wasn't, and ask the user to review it in the browser. End with a clear question: approve it for rendering, or name what to change.
@@ -125,6 +131,7 @@ Every round of change requests happens in the HTML: edit it, re-verify with the 
 Only after the user explicitly approves the web version (e.g. "没问题了，渲染吧", "OK, export it"), run the export described in "Export to video" and verify the MP4. An approval of an earlier version doesn't carry over: if the user asks for more changes after approving, go back to step 7 and wait for a fresh approval. If a request is ambiguous ("看起来不错" with no word about rendering), ask whether to render instead of assuming.
 
 ## Extending
+- **After every film**: what worked (approved or measurably fixed) → `references/lessons.md` with its evidence; a new pitfall → that look's file.
 - **New look / palette / music mood**: once it has worked in a real film, add a row to `references/styles.md`. If the look needs its own helpers or rules, also add `references/looks/<name>.md`, list it in shot-contract §7b, and save the film as `assets/example-<name>.html`. The library grows from verified results.
 - **New sound voice**: add a method on the film's `Sound` class plus a `case` in `play()`.
 - **New format**: add it to `FORMATS` in `scaffold.py`. For tall formats the page reserves 290 px for the control bar (`{{UIH}}`).
