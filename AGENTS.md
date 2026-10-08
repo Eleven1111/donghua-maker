@@ -20,6 +20,10 @@ This file is for **changing the repo**. To **make a film**, use the skills in `s
 
 ## Verify a change
 ```bash
-python3 tools/validate.py                                  # spec, links, scripts --help, 44-film scaffold smoke test, secrets
+python3 tools/validate.py                                  # spec, links, scripts --help, scaffold smoke test of every look, secrets
 python3 skills/donghua-maker/scripts/stills.py <film>.html --shots   # full-res stills + page-error gate (needs Playwright)
+python3 skills/donghua-maker/scripts/qa.py <film>.html               # QA PASS: page errors, determinism, backdrop leak
 ```
+After touching `assets/engine.html` or a toolkit, run `qa.py` on a scaffolded film and on at least one example that uses
+what you changed. `validate.py` only parses the JavaScript; it never runs a film. A canvas-state leak between shots and
+three backdrop leaks all parsed fine and were caught only by `qa.py`.
