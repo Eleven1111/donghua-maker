@@ -21,7 +21,7 @@
     q.sub = '#00ff00'; render(); const b = g.getImageData(0, 0, cv.width, cv.height).data; q.sub = null; render();
     let n = 0; for (let i = 0; i < a.length; i += 4) if (a[i] !== b[i] || a[i + 1] !== b[i + 1]) n++; return n / (a.length / 4);
   };
-  window.__qaInfo = () => ({ w: cv.width, h: cv.height, pix: !!pix, leakable: q.clear.size > 0, subs: hasSubs(),
+  window.__qaInfo = () => ({ w: cv.width, h: cv.height, pix: !!pix, leakable: q.clear.size > 0, subs: hasSubs(), scroll: typeof SCROLL !== 'undefined',
     expo: typeof EXPO !== 'undefined' ? EXPO : 5, shots: SHOTS.map((s, i) => ({ i, name: s.name || 'shot' + (i + 1), t0: s.t0, t1: s.t1 })) });
   // stop-motion pass: on-screen text boxes, render cost, and backdrop leak on a sparser grid
   window.__qaStill = (i, step, leakStep) => {
@@ -51,12 +51,13 @@
   // smooth pass, one sample per exposure: moving area, a strip of 4 frames + heat map, and (films with subtitles)
   // how much of the picture moves under the subtitle plate — measured with subtitles hidden, so phrase changes don't count
   window.__qaMotion = (i, step, w) => {
-    const [f0, f1] = span(SHOTS[i]), area = [], mag = [], blank = [], under = [], subs = hasSubs();
+    const [f0, f1] = span(SHOTS[i]), area = [], mag = [], blank = [], under = [], camx = [], subs = hasSubs();
     const h = Math.round(w * cv.height / cv.width), strip = document.createElement('canvas'), sx = strip.getContext('2d');
     strip.width = w * 5; strip.height = h;
     const shots4 = [.05, .35, .65, .95].map(p => f0 + Math.round(p * (f1 - f0))); let tile = 0, prev = null, heat = null, mid = null;
     for (let f = f0; f <= f1; f += step) {
       const text = seekText(f), mask = subs ? subMask(text, w, h) : null;
+      camx.push(film.cam && typeof film.cam.x === 'number' ? film.cam.x : null);
       if (subs) { film.subs = false; render(); }
       const cur = gray(w);
       while (tile < 4 && f + step > shots4[tile]) sx.drawImage(cv, tile++ * w, 0, w, h);
@@ -75,7 +76,7 @@
     for (let k = 0; k < mid.length; k++) { const a = Math.min(1, heat[k] / 60) * (heat[k] > 12), v = mid[k] * .55;
       id.data.set([v + (255 - v) * a, v * (1 - a), v * (1 - a), 255], 4 * k); }
     sg.putImageData(id, 0, 0); sx.drawImage(sm, w * 4, 0);
-    return { area, mag, blank, under: under.filter(Boolean), img: strip.toDataURL('image/jpeg', .8) };
+    return { area, mag, blank, camx, under: under.filter(Boolean), img: strip.toDataURL('image/jpeg', .8) };
   };
   return window.__qaInfo();
 })()
