@@ -14,7 +14,7 @@ This file is for **changing the repo**. To **make a film**, use the skills in `s
 2. **Agent Skills spec**: `name` = folder name, lowercase-hyphen; `description` ≤ 1024 chars and says what + when + when not; `SKILL.md` ≤ 500 lines / ~5k tokens. New detail goes to `references/`, never into the description or the main file.
 3. **No machine paths.** Inside skills write `<skill-dir>/…` or a relative path; in agents write `<skills-root>/…`. Scripts locate siblings with `Path(__file__)`. Never `~/.claude/skills/…`.
 4. **Secrets only from the environment / `.env`.** Scripts read keys, never print them; the validator greps for key shapes.
-5. **Library grows from verified films only.** A new look = `assets/toolkit-<look>.js` + `assets/example-<look>.html` (+ `-fonts/` if fonts are embedded) + `references/looks/<look>.md` + a row in `references/catalog.md` and `references/styles.md` + the README table. The example must pass `scripts/stills.py` with zero page errors.
+5. **Library grows from verified films only** (how to build a look: `skills/donghua-maker/references/new-look.md`). A new look = `assets/toolkit-<look>.js` + `assets/example-<look>.html` (+ `-fonts/` if fonts are embedded) + `references/looks/<look>.md` + a row in `references/catalog.md` and `references/styles.md` + the README table. The example must pass `scripts/stills.py` with zero page errors.
 6. **No names of living artists or studios inside films or look toolkits** — copy the technique only. Trigger phrases in `references/catalog.md` may quote how users ask ("像某某那种"), because that is what users type.
 7. Films are deterministic: no `Math.random()` in `step`/`draw`; use `rng(seed)` / `hash()`.
 

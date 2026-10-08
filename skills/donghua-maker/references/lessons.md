@@ -70,3 +70,22 @@ confirms or refutes one, move it up with the evidence, or delete it.
   alive. Read `qa.py`'s static column against the film's grammar.
 - **Parameterised scenes need hostile inputs**: negative numbers, long titles, portrait, missing images — a demo that
   passed review broke on real data in 5 of 8 grammars.
+
+- **Tighten a montage by shortening shots, not by raising the tempo**: keep one BPM and cut each section a few eighths
+  shorter (6 → 4 → 3 → 2 → 1), then hold the last shot long for the payoff. The ear hears it speed up; the beat grid
+  stays clean.
+- **One short motif through the whole film, re-voiced per section** (each section's own instrument), over a single
+  four-chord loop. Hard attacks on the cuts; no crossfades or whooshes in a montage.
+- **The reveal frame is the accent**: put the downbeat on the frame where the new thing *shows*, not where its move
+  starts. A transition's first visible change and a punch belong on the same beat.
+- **When the first shot has no cut to borrow, let it paint itself**: strokes write on, colour plates land one by one,
+  pixels light row by row. Frame 0 is otherwise a blank sheet.
+- **One focus per screen**: structure first (axes, the empty map), then the data, then mark exactly one thing.
+- **Charts tell the truth about their axes**: no silently truncated axis (say "axis starts at 120" on screen), units,
+  a source, and an "illustrative data" tag when the numbers are made up. A reviewer reads numbers for sense too
+  ("rose 9×" vs "rose to 9×"; see `review.md`).
+- **In a scroll film the camera only moves forward**: track a monotonic target (the running maximum, then smooth it). A
+  camera that steps back while a character pauses was the most visible fault in one 24-segment film, and no metric
+  caught it; a reviewer did.
+- **Wear stays off characters**: peeling, stains and scratches on a figure read as damage to the figure; keep them on
+  the backdrop.

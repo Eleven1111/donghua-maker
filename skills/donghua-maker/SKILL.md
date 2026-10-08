@@ -137,7 +137,7 @@ Only after the user explicitly approves the web version (e.g. "没问题了，�
 
 ## Extending
 - **After every film**: what worked (approved or measurably fixed) → `references/lessons.md` with its evidence; a new pitfall → that look's file.
-- **New look / palette / music mood**: once it has worked in a real film, add a row to `references/styles.md`. If the look needs its own helpers or rules, also add `references/looks/<name>.md`, list it in shot-contract §7b, and save the film as `assets/example-<name>.html`. The library grows from verified results.
+- **New look / palette / music mood**: only from verified films. A look (built by you or a dispatched agent) follows `references/new-look.md`; a palette or mood is a row in `references/styles.md`.
 - **New sound voice**: add a method on the film's `Sound` class plus a `case` in `play()`.
 - **New format**: add it to `FORMATS` in `scaffold.py`. For tall formats the page reserves 290 px for the control bar (`{{UIH}}`).
 ## Export to video (MP4)
