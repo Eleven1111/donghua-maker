@@ -7,7 +7,8 @@ used under the MIT License below:
 - skills/donghua-maker/scripts/qa_init.js, from the TEXT_HOOK in scripts/qa.py (text boxes that follow drawImage,
   clip tracking, full-canvas wipes);
 - skills/donghua-maker/scripts/frames_import.py and references/frames.md, from scripts/key_green.py,
-  scripts/key_split.py and references/10-角色.md (green key with spill removal, pose splitting, the frame route).
+  scripts/key_split.py and references/10-角色.md (green key with spill removal, pose splitting, the frame route);
+- skills/donghua-maker/scripts/compare.py, after scripts/engine/compare.py (reference and film side by side).
 
 MIT License
 

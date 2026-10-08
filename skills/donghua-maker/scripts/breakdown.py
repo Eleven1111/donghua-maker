@@ -13,6 +13,7 @@ Output (in <video>-breakdown/):
   cut_NN.jpg       the 15 frames around cut NN (every 2nd frame): what the transition actually does
   motion.jpg       per shot, where pixels move (red) over a grey still of the shot
   ref/shot_NN.png  the last clean frame of each shot at full size: the composition reference for that shot
+Then compare.py puts the reference and your film side by side with a 50 % overlay at chosen moments.
 
 Measure before you name a style: a grammar remembered from memory is often someone else's (one look's "torn-paper
 wipe" never appeared in five real samples; another look turned out to sit still 70 % of the time). Copy the mechanism —
@@ -171,6 +172,7 @@ def ffmpeg_sheets(video, out, cuts, bounds, fps, W, H):
 
 def write_md(r, path):
     g = r["grid"]
+    at = ",".join("%g" % max(0, x["t1"] - .1) for x in r["shots"][:4])   # just before each cut: settled compositions
     L = [f"# Breakdown — {r['video']}", "", f"{r['size'][0]}×{r['size'][1]} · {r['fps']:g} fps · {r['duration_s']} s · {len(r['shots'])} shots", ""]
     if g:
         bp = ", ".join(f"{c['bpm']:g} ({c['beats_per_step']} beats)" for c in g["bpm_candidates"][:6]) or "none in 60–180"
@@ -184,7 +186,9 @@ def write_md(r, path):
     L += ["", "| shot | span s | length s | grid steps | moving % | still pairs % |", "|---|---|---|---|---|---|"]
     for s in r["shots"]:
         L.append(f"| {s['shot']} | {s['t0']}–{s['t1']} | {s['len_s']} | {s.get('steps', '–')} | {s.get('move_pct', '–')} | {s.get('still_pct', '–')} |")
-    L += ["", "Start a film with this rhythm (rename the shots):", "```bash", r["scaffold"], "```"]
+    L += ["", "Start a film with this rhythm (rename the shots):", "```bash", r["scaffold"], "```",
+          "", "Once shots exist, check composition against the reference frames (reference | film | 50 % overlay):",
+          "```bash", "python3 scripts/compare.py %s film.html --at %s" % (r["video"], at), "```"]
     path.write_text("\n".join(L) + "\n", encoding="utf-8")
 
 
