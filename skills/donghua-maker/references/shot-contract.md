@@ -137,6 +137,7 @@ Look-specific helpers and rules each have a file in `references/looks/`. Read th
 | 梵高 / Van Gogh impasto (`--look vangogh`) | `looks/vangogh.md` | `assets/example-vangogh.html` |
 | 修拉 · 点彩 / pointillism (`--look seurat`) | `looks/seurat.md` | `assets/example-seurat.html` |
 | 青绿长卷 / blue-green handscroll (`--look qinglu`) | `looks/qinglu.md` | `assets/example-qinglu.html` |
+| 长卷穿越 / long scroll (`--scroll paper,inkwash,…`) | `looks/scroll.md` | `assets/example-scroll.html` |
 | 写意水墨 / ink wash (Qi Baishi study) (`--look inkwash`) | `looks/inkwash.md` | `assets/example-inkwash.html` |
 | 敦煌壁画 / Dunhuang mural (`--look dunhuang`) | `looks/dunhuang.md` | `assets/example-dunhuang.html` |
 | 格子构成 / Mondrian grid (`--look mondrian`) | `looks/mondrian.md` | `assets/example-mondrian.html` |

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Scaffold a single-file stop-motion canvas film from the engine template."""
 import argparse
+import re
 import html
 import sys
 from pathlib import Path
@@ -61,6 +62,26 @@ const S{n} = {{
 SHOTS.push(S{n});
 """
 
+SCROLL_STUB = """// ═══ WORLD {n} · {name_up} ({t0:g}–{t1:g} s, look: {look}) — TODO what happens here ═══════════════════
+const S{n} = {{ name: '{name}', t0: {t0:g}, t1: {t1:g}, poke() {{ return false; }} }};
+SCROLL.add(S{n}, {{
+  name: '{name}', w: W * 1.6,                      // world width (local px); keep w / walking time close across worlds
+  build() {{ }},
+  back(g, S) {{                                    // local x 0 … w; draw the world in its look
+    g.fillStyle = ['#e9dcc0', '#d8e4e0', '#e6d6e8', '#dfe6cf'][{n} % 4]; g.fillRect(S.camX - 10, 0, W + 20, H);
+    g.fillStyle = 'rgba(40,40,40,.25)'; g.fillRect(S.camX - 10, S.G, W + 20, H - S.G);
+  }},
+  hero(g, x, y, h, phase, S) {{                    // the hero in THIS world's material; feet at (x, y)
+    const sw = Math.sin(phase * Math.PI * 2) * h * .12;
+    g.strokeStyle = '#222'; g.lineWidth = h * .05; g.lineCap = 'round'; g.beginPath();
+    g.moveTo(x - sw, y); g.lineTo(x, y - h * .45); g.lineTo(x + sw, y); g.moveTo(x, y - h * .45); g.lineTo(x, y - h * .8); g.stroke();
+    g.beginPath(); g.arc(x, y - h * .9, h * .1, 0, 7); g.stroke();
+  }},
+  acts: [],                                        // e.g. {{ at: W * .8, dur: 1, lead: W * .08, pose: u => 0 }}
+}});
+SHOTS.push(S{n});
+"""
+
 STORY_HEAD = """// ═══ STORY: {title} ═══════════════════════════════════════════════════════════
 // palette override — keep names used by the shared puppets (ink, cream, red, sky…), add your own
 Object.assign(C, {{}});
@@ -85,6 +106,44 @@ def tc(sec: float) -> str:
     return f"00:{int(sec):02d}.{int(round((sec % 1) * 100)):02d}"
 
 
+
+FILM_SETTINGS = ("POST_GRAIN", "SMOOTH_DEFAULT", "VIGN_TONE")
+
+
+def scroll_toolkits(assets: Path, looks: list) -> str:
+    """The scroll skeleton plus each distinct look's toolkit. Film-level settings a toolkit declares can't differ per
+    world: they are dropped (listed on stderr) for the author to set once. Any other duplicate declaration is an error."""
+    out, seen, dropped = [(assets / "toolkit-scroll.js").read_text(encoding="utf-8")], {}, []
+    for look in dict.fromkeys(looks):
+        if look == "paper":
+            continue
+        tk = assets / f"toolkit-{look}.js"
+        if not tk.exists():
+            sys.exit(f"no toolkit for look {look!r}; have: paper, " + ", ".join(sorted(x.stem[8:] for x in assets.glob("toolkit-*.js") if x.stem != "toolkit-scroll")))
+        src = tk.read_text(encoding="utf-8")
+        if "THREE." in src:
+            sys.exit(f"--scroll: {look} is a WebGL look; scroll worlds are 2D")
+        lines = []
+        for line in src.splitlines():
+            m = re.match(r"\s*(?:const|let)\s+([A-Za-z_]\w*)\s*=", line)
+            if m and m.group(1) in FILM_SETTINGS and not line.startswith(" "):
+                names = re.findall(r"(?:^|,)\s*(?:const|let)?\s*([A-Za-z_]\w*)\s*=(?!=)", re.sub(r"\[[^\]]*\]|\{[^}]*\}|'[^']*'", "", line))
+                if not line.rstrip().endswith(";") or set(names) - set(FILM_SETTINGS):
+                    sys.exit(f"--scroll: can't drop the film settings in {look}'s line (multi-line, or mixed with {sorted(set(names) - set(FILM_SETTINGS))}): {line.strip()[:80]}")
+                dropped.append(f"{look}: {line.strip()[:90]}")
+                lines.append("// (scroll) film-level setting dropped: " + line.strip())
+                continue
+            if m and not line.startswith(" "):
+                if m.group(1) in seen:
+                    sys.exit(f"--scroll: {m.group(1)} is declared by both {seen[m.group(1)]} and {look}; these looks can't share a film yet")
+                seen[m.group(1)] = look
+            lines.append(line)
+        out.append("\n".join(lines))
+    if dropped:
+        print("note: film-level settings dropped (set them once in the story if you want them):\n  " + "\n  ".join(dropped), file=sys.stderr)
+    return "\n".join(out) + "\n"
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("out", type=Path)
@@ -97,6 +156,7 @@ def main() -> int:
     ap.add_argument("--bed", default="room", help="default ambience bed: room|street|field|stage")
     ap.add_argument("--goldscroll", action="store_true", help="金屏说史 look: paste the gold-scroll toolkit (references/looks/gold-scroll.md)")
     ap.add_argument("--flowribbon", action="store_true", help="flow-ribbon look: paste the flow-field ribbon toolkit (references/looks/flow-ribbon.md)")
+    ap.add_argument("--scroll", default="", help="long-scroll film: comma-separated looks, one world per shot in order (paper = the core look, no toolkit); references/looks/scroll.md")
     ap.add_argument("--look", default="", help="paste assets/toolkit-<look>.js into the story, e.g. datamin, harmonic, brushsketch, ukiyoe, naturalplate (references/looks/<look>.md)")
     ap.add_argument("--three", action="store_true", help="3D look: inline three.js (assets/lib); with no --look it pastes the brick3d toolkit (references/looks/brick3d.md). WebGL looks (clay3d, voxel, paper3d, isometric, flatsci) turn this on by themselves")
     ap.add_argument("--narrated", action="store_true", help="the film will have a voice track: no ambience beds (they hiss under speech)")
@@ -146,6 +206,8 @@ def main() -> int:
         story += (assets / "toolkit-goldscroll.js").read_text(encoding="utf-8") + "\n"
     if a.flowribbon:
         story += (assets / "toolkit-flowribbon.js").read_text(encoding="utf-8") + "\n"
+    if a.look == "scroll":
+        sys.exit("scroll is a film format: use --scroll <look>,<look>,… (one look per world); see references/looks/scroll.md")
     if a.look:
         tk = assets / f"toolkit-{a.look}.js"
         if not tk.exists():
@@ -155,8 +217,18 @@ def main() -> int:
         story += tk_src + "\n"
     if a.three and not a.look:
         story += (assets / "toolkit-brick3d.js").read_text(encoding="utf-8") + "\n"
+    scroll_looks = [x.strip() for x in a.scroll.split(",") if x.strip()]
+    if scroll_looks:
+        if a.pixel or a.three or a.look:
+            sys.exit("--scroll can't be combined with --pixel, --three or --look (give each world's look in --scroll)")
+        if len(scroll_looks) != len(names):
+            sys.exit(f"--scroll names {len(scroll_looks)} looks for {len(names)} shots: one look per world")
+        story += scroll_toolkits(assets, scroll_looks)
     for i, (name, (t0, t1)) in enumerate(zip(names, bounds), 1):
-        story += (PIXEL_STUB if a.pixel else SHOT_STUB).format(n=i, name=name, name_up=name.upper(), t0=t0, t1=t1, dur=t1 - t0, seed=i * 10 + 1)
+        if scroll_looks:
+            story += SCROLL_STUB.format(n=i, name=name, name_up=name.upper(), t0=t0, t1=t1, look=scroll_looks[i - 1])
+        else:
+            story += (PIXEL_STUB if a.pixel else SHOT_STUB).format(n=i, name=name, name_up=name.upper(), t0=t0, t1=t1, dur=t1 - t0, seed=i * 10 + 1)
 
     esc = html.escape
     rep = {

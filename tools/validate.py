@@ -93,12 +93,15 @@ def check_scaffold() -> None:
         fail("node not found: needed to parse scaffolded films (install Node ≥ 18)")
         return
     maker = ROOT / "skills" / "donghua-maker"
-    looks = [None, *sorted(p.stem.removeprefix("toolkit-") for p in (maker / "assets").glob("toolkit-*.js"))]
+    # toolkit-scroll is a film format, scaffolded with --scroll (below), not a --look
+    looks = [None, *sorted(p.stem.removeprefix("toolkit-") for p in (maker / "assets").glob("toolkit-*.js") if p.stem != "toolkit-scroll"), "scroll-format"]
     with tempfile.TemporaryDirectory() as tmp:
         for look in looks:
             out = Path(tmp) / f"{look or 'plain'}.html"
             cmd = [sys.executable, str(maker / "scripts" / "scaffold.py"), str(out), "--title", "T",
                    "--shots", "A,B", "--durs", "2.5,2.5", "--bpm", "96", *(["--look", look] if look else [])]
+            if look == "scroll-format":
+                cmd = cmd[:-2] + ["--shots", "A,B,C", "--durs", "2.5,2.5,2.5", "--scroll", "paper,inkwash,ukiyoe"]
             r = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
             if r.returncode or not out.exists():
                 fail(f"scaffold --look {look}: exit {r.returncode}: {(r.stderr or r.stdout).strip()[-300:]}")
@@ -109,7 +112,7 @@ def check_scaffold() -> None:
             err = js_parses(out)
             if err:
                 fail(f"scaffold --look {look}: JavaScript does not parse: {err}")
-    print(f"  scaffolded {len(looks)} films (plain + {len(looks) - 1} looks)")
+    print(f"  scaffolded {len(looks)} films (plain + {len(looks) - 2} looks + the long-scroll format)")
 
 
 def check_hygiene() -> None:
