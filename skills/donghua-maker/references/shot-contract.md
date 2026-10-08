@@ -11,6 +11,7 @@ Read this before writing any shot code. Everything here exists in `assets/engine
 6. Library: sound
 7. Cross-shot continuity
 7b. Look toolkits → `references/looks/`
+7c. Transitions (optional)
 8. Test hooks
 9. Narration
 
@@ -169,6 +170,36 @@ Look-specific helpers and rules each have a file in `references/looks/`. Read th
 | 图层卡通讲解 / Layered cartoon explainer (`--look layered`) | `looks/layered.md` | `assets/example-layered.html` |
 
 Paper cut-out (the default look) uses only the core library above; see `assets/example-red-kite.html`. When a new look is verified in a real film, add a file here rather than growing this one.
+
+## 7c. Transitions (optional)
+
+A hard cut on the beat is the default and is usually right. When a cut should *say* something, a shot opens with a
+transition in its look's own language: the new picture grows out of the material of the look, not out of a generic wipe.
+
+```js
+const S2 = { name: 'Pond', t0: 4, t1: 8, enter: { kind: 'ink', dur: .6, at: [.5, .55], punch: true }, ... };
+```
+
+| kind | for looks | what happens | options |
+|---|---|---|---|
+| `ink` | ink wash, watercolour, sumi | the new shot blooms out from `at` like ink on wet paper; the front pools dark, then fades | `ink: 'r,g,b'` front colour |
+| `tear` | paper cut-out (default), torn paper, collage | the old sheet is torn away from one side; the ragged edge shows the white paper core | `from: 'left'|'right'|'top'|'bottom'`, `core` colour |
+| `pixel` | pixel, pixel-diagram | blocks switch in a hashed order, nearer `at` first, hard-edged | `cell` px (default 32, or 4 in pixel mode) |
+
+- `dur` (default .5 s) is taken from the **start of the new shot**: the cut time stays on the beat and the reveal runs
+  over the first `dur` seconds. Keep that shot's opening action after `dur`, or it happens under the old picture.
+  `at` is a fraction of the frame, so the same values work in pixel mode. `punch: true` eases the whole frame from
+  1.03 to 1 over 20 frames on the cut (not in pixel mode).
+- The old picture is the previous shot's **last frame**, re-simulated from its own `reset()` when the new shot is
+  entered (before the new shot resets), never a screenshot. Seeking, cold loads and the export stay frame-exact, and
+  `qa.py` checks it like any other frame. Its `step()` sounds are not replayed.
+- A shot that *reads* state another shot left behind is fine; a shot whose `reset()` *depends on running after* the
+  previous shot's last step is not (the previous shot is re-run before it). Shared rigs that each shot resets
+  (the kite pattern in §7) are fine.
+- Rendering doubles during the reveal (two shots plus a mask). Keep `dur` short; past ~0.8 s a reveal reads as a fade.
+- New kind: add it to `XFADE` in the film (`mask(g, p, en, w, h, seed)` fills where the new shot shows; optional
+  `edge(...)` draws the signature on top), deterministic (`hash`, no `Math.random`). Prove it in a real film first,
+  then move it into `assets/engine.html` and list it here.
 
 ## 8. Test hooks
 

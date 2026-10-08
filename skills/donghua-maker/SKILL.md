@@ -28,7 +28,7 @@ Bundled files:
 - `scripts/font_embed.py`: embeds SIL OFL fonts (霞鹜文楷 and Noto Sans SC), subset to the film's characters, and writes a licence ledger. Use it whenever the film may be published or used commercially. `--check` catches a stale subset.
 - `__film.textBoxes(frame)` (engine hook): every text drawn in that frame with its string and canvas box, subtitles tagged. Scene packs use it for safe-area and overlap checks. It can't see text baked into sprites.
 - `scripts/stills.py`: full-resolution stills (`--shots` = first/mid/last frame of every shot) plus a contact sheet, on its own local server; exits 1 on page errors. The input for the step-5 visual check.
-- `scripts/frames_import.py` + `references/frames.md`: opt-in character frames (image model or a person), keyed and embedded.
+- `scripts/frames_import.py` + `references/frames.md`: opt-in drawn character frames.
 - `scripts/qa.py`: step-5 numbers: page errors, determinism, backdrop leak; motion, text and subtitle clues per shot.
 - `references/lessons.md`: what worked on earlier films, with evidence. Read it while briefing.
 - `references/styles.md`: formats and vertical composition, texture recipes, palettes, rhythm, music. Read it when you turn a theme into parameters.
@@ -78,7 +78,7 @@ python3 <skill-dir>/scripts/scaffold.py <out>.html --title "Name" --format portr
 - The timeline bar's segments are sized by shot length automatically.
 - **Pixel-art films**: add `--pixel 8` (a 320×180 buffer; paper-look helpers don't apply). Read `references/looks/pixel.md` first: 1× sprites read too small and were rejected.
 - Keep `DUR × 60` a whole number (at 96 bpm use an even count of eighths). An odd count such as 19.375 s gives 1162.5 frames, and the exported MP4 ends up one frame short.
-- Browser screenshots at pane size downscale the frame. To judge detail, grab full-resolution stills with `canvas.toDataURL()` after `__film.seek(f)` (a still, not a video render).
+- Judge detail on `scripts/stills.py` stills; pane screenshots downscale.
 
 ### 3. Sample one shot first
 Fill in the palette (`Object.assign(C, {...})`), `MELODY`, `baseScore()` beds and **shot 1 only**. Verify it (step 5) and show the user before writing the rest. Style problems are cheap to fix at one shot and expensive at four.
@@ -89,6 +89,7 @@ The same goes for animals and people in any look: check real anatomy in a photo 
 
 ### 4. Write the remaining shots
 Follow `references/shot-contract.md`. Rules that keep the look:
+- Cuts are hard and on the beat by default; a shot may open with a transition in its look's language: `enter: { kind: 'ink'|'tear'|'pixel', dur, at }` (shot-contract §7c).
 - `draw()` reads only the snapshot state (`rx/ry/ra`, `rope.at()`), and every puppet gets `boil(id, e)` jitter. This produces the 12-poses-per-second stop-motion feel while the camera glides smoothly.
 - No `Math.random()` in `step` or `draw`. Use `rng(seed)` from `reset()`, or `hash()`. That keeps seeking and the offline audio mix deterministic.
 - Pre-run the physics inside `reset()` so every shot opens with things already moving.
@@ -121,7 +122,7 @@ Serve the folder (`python3 -m http.server <port>`, since file:// may be blocked)
 Report honestly what you did not check, e.g. that you didn't listen to the audio or didn't click-test `poke`.
 
 ### 5b. Independent review (films anyone else will see)
-A reviewer who took no part in the film sees only the film, its stills and the `qa.py` strips. Packet, prompt and follow-up: `references/review.md`. A director agent reports it as pending.
+A reviewer who took no part in the film sees only it, its stills and the `qa.py` strips (`references/review.md`). Directors report it as pending.
 
 ### 6. Deliver the web version, then stop
 Deliver **only the HTML**. Give the file path, the controls (Space play, S toggles stop-motion/smooth, 1–N jump to shot, ←/→ step one exposure, M mute, click/drag to poke or blow on the scene), a list of what was verified and what wasn't, and ask the user to review it in the browser. End with a clear question: approve it for rendering, or name what to change.
