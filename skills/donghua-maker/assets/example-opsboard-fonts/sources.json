@@ -1,0 +1,24 @@
+[
+ {
+  "family": "JetBrains Mono",
+  "file": "JetBrainsMono-wght.ttf",
+  "source": "https://github.com/google/fonts/raw/main/ofl/jetbrainsmono/JetBrainsMono%5Bwght%5D.ttf",
+  "home": "https://github.com/JetBrains/JetBrainsMono",
+  "license": "SIL Open Font License 1.1",
+  "license_file": "LICENSE-jetbrainsmono.txt",
+  "commercial_use": true,
+  "subset_chars": 338,
+  "bytes": 42868
+ },
+ {
+  "family": "Noto Sans SC",
+  "file": "NotoSansSC-wght.ttf",
+  "source": "https://github.com/google/fonts/raw/main/ofl/notosanssc/NotoSansSC%5Bwght%5D.ttf",
+  "home": "https://github.com/google/fonts/tree/main/ofl/notosanssc",
+  "license": "SIL Open Font License 1.1",
+  "license_file": "LICENSE-notosans.txt",
+  "commercial_use": true,
+  "subset_chars": 338,
+  "bytes": 135140
+ }
+]

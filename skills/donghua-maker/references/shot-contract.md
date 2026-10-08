@@ -165,6 +165,7 @@ Look-specific helpers and rules each have a file in `references/looks/`. Read th
 | 16mm 老纪录片 / 16 mm documentary (`--look film16`) | `looks/film16.md` | `assets/example-film16.html` |
 | 绿屏终端 / Terminal (`--look terminal`) | `looks/terminal.md` | `assets/example-terminal.html` |
 | 科幻界面 / Sci-fi HUD (`--look hud`) | `looks/hud.md` | `assets/example-hud.html` |
+| 控制台大屏 / Ops board (`--look opsboard`) | `looks/opsboard.md` | `assets/example-opsboard.html` |
 | 动态字体 / Kinetic typography (`--look kinetic`) | `looks/kinetic.md` | `assets/example-kinetic.html` |
 | 扁平科普 / Flat science explainer (three.js, `--look flatsci`) | `looks/flatsci.md` | `assets/example-flatsci.html` |
 | 报刊数据图 / Editorial data graphics (`--look editorial`) | `looks/editorial.md` | `assets/example-editorial.html` |
