@@ -18,6 +18,8 @@
 // reports them) or the stride visibly changes at a seam.
 const SCROLL = {
   worlds: [], GROUND: H * .74, HERO_H: H * .30, HERO_X: W * .36, START_X: W * .22,
+  LABEL_X: W * .04, LABEL_Y: H * .06,   // portrait for 小红书: W * .08, H * .165 (inside the 3:4 crop and its UI margins)
+  overlay: null,      // (g, T) => …: whole-screen layer above every world (a hook title, a caption); not clipped at seams
   add(shot, world) {
     world.shot = shot; this.worlds.push(world); this._plan = null;
     shot.cam = st => ({ x: SCROLL.camAt(shot.t0 + st) + W / 2, y: H / 2, z: 1 });   // the real camera, for qa.py
@@ -104,6 +106,7 @@ const SCROLL = {
       if (wd.seam) { for (let y = -10; y < H + 10; y += 12) { g.save(); g.translate(this.seamX(wd, y) - camX, 0); wd.seam(g, y, S); g.restore(); } }
       else { g.fillStyle = '#f3eee2'; for (let y = -10; y < H + 10; y += 6) g.fillRect(this.seamX(wd, y) - camX - 5, y, 7 + hash(y, k) * 5, 7); }
       g.restore(); }
+    if (this.overlay) { g.save(); g.setTransform(1, 0, 0, 1, 0, 0); this.overlay(g, T); g.restore(); }
     this.label(g, T);
   },
   label(g, T) {   // the world's name, top left, fading in after each crossing
@@ -111,7 +114,7 @@ const SCROLL = {
     if (!wd.name || a <= 0) return;
     g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = a; g.font = `600 ${Math.round(H * .045)}px ${typeof SUBFONT === 'function' ? SUBFONT() : 'serif'}`;
     g.textBaseline = 'top'; const w = g.measureText(wd.name).width, pad = H * .02;
-    g.fillStyle = 'rgba(250,246,236,.8)'; g.beginPath(); g.roundRect(W * .04 - pad, H * .06 - pad * .7, w + pad * 2, H * .045 + pad * 1.4, pad * .6); g.fill();
-    g.fillStyle = 'rgba(30,30,40,.9)'; g.fillText(wd.name, W * .04, H * .06); g.restore();
+    g.fillStyle = 'rgba(250,246,236,.8)'; g.beginPath(); g.roundRect(this.LABEL_X - pad, this.LABEL_Y - pad * .7, w + pad * 2, H * .045 + pad * 1.4, pad * .6); g.fill();
+    g.fillStyle = 'rgba(30,30,40,.9)'; g.fillText(wd.name, this.LABEL_X, this.LABEL_Y); g.restore();
   },
 };
