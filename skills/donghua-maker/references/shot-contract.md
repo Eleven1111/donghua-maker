@@ -51,6 +51,8 @@ Physics-born sounds: `emit({k:'rustle', ...})` inside step (baked into the offli
 |---|---|
 | `backdrop(w, h, {grad, mottle, vstreak, hstreak, scratches, scratchAng, dust, light:[x,y], glow, dark, seed})` | printed sky/wall. Size `W+256, H+144`, draw at `-128,-72` |
 | `sprite(w, h, ax, ay, g => {...}, {ss, pad, shadow:{dx,dy,blur,a}, paper})` | bake a cut-out with paper texture + contact shadow. `ax, ay` = anchor (feet / base) |
+| `frameSprite(name, h, {shadow, paper})` | bake an imported character frame (`scripts/frames_import.py`, `references/frames.md`) as a cut-out `h` px tall, anchored at the feet; place it with `put()` |
+| `frameAt(name, t, fps = 9)` | name of the pose of sequence `name_0…name_n` showing at time `t` (limited animation, no in-betweens) |
 | `put(ctx, sp, x, y, rot, scale, {alpha, flip, shadow, sy})` | place sprite by its anchor |
 | `cutPath(g, pts, {amp, step, seed})` | polygon with scissor-wobble edges |
 | `blobPath(g, cx, cy, rx, ry, {amp, seed, rot})` | organic blob (canopies, clouds, bushes) |

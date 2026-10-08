@@ -5,7 +5,9 @@ Parts of donghua-maker are adapted from huashu-art-motion (https://github.com/al
 used under the MIT License below:
 - skills/donghua-maker/scripts/breakdown.py, from scripts/analyze/breakdown.py (cut detection, grid fit, sheets);
 - skills/donghua-maker/scripts/qa_init.js, from the TEXT_HOOK in scripts/qa.py (text boxes that follow drawImage,
-  clip tracking, full-canvas wipes).
+  clip tracking, full-canvas wipes);
+- skills/donghua-maker/scripts/frames_import.py and references/frames.md, from scripts/key_green.py,
+  scripts/key_split.py and references/10-角色.md (green key with spill removal, pose splitting, the frame route).
 
 MIT License
 

@@ -28,6 +28,7 @@ Bundled files:
 - `scripts/font_embed.py`: embeds SIL OFL fonts (霞鹜文楷 and Noto Sans SC), subset to the film's characters, and writes a licence ledger. Use it whenever the film may be published or used commercially. `--check` catches a stale subset.
 - `__film.textBoxes(frame)` (engine hook): every text drawn in that frame with its string and canvas box, subtitles tagged. Scene packs use it for safe-area and overlap checks. It can't see text baked into sprites.
 - `scripts/stills.py`: full-resolution stills (`--shots` = first/mid/last frame of every shot) plus a contact sheet, on its own local server; exits 1 on page errors. The input for the step-5 visual check.
+- `scripts/frames_import.py` + `references/frames.md`: opt-in character frames (image model or a person), keyed and embedded.
 - `scripts/qa.py`: step-5 numbers: page errors, determinism, backdrop leak; motion, text and subtitle clues per shot.
 - `references/lessons.md`: what worked on earlier films, with evidence. Read it while briefing.
 - `references/styles.md`: formats and vertical composition, texture recipes, palettes, rhythm, music. Read it when you turn a theme into parameters.

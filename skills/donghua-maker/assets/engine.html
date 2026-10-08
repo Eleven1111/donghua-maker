@@ -52,7 +52,7 @@ html.bare body{padding:0;gap:0}html.bare #bar,html.bare #hint{display:none}html.
 <script>
 // ═══════════════════════════════════════════════════════════════════════════
 //  {{TITLE}} — a stop-motion film, drawn and scored entirely in code.
-//  No images or libraries: every pixel is drawn here; sounds are synthesised here or embedded recordings (SAMPLES block).
+//  No libraries: every pixel is drawn here (except opt-in character frames, FRAMES block); sounds are synthesised here or embedded recordings (SAMPLES block).
 //  Film: {{W}}×{{H}}, 60 fps, {{DUR}} s. Puppets are "posed" 12× a second (every 5th
 //  frame, like stop motion on twos), the motion-control camera runs on every frame.
 // ═══════════════════════════════════════════════════════════════════════════
@@ -268,6 +268,25 @@ function put(ctx, sp, x, y, rot = 0, sc = 1, { alpha = 1, flip = false, shadow =
     ctx.globalAlpha = alpha; ctx.drawImage(sp.s, ox, oy); ctx.restore();
   }
   ctx.save(); ctx.translate(x, y); if (rot) ctx.rotate(rot); ctx.scale(flip ? -k : k, k * sy); ctx.globalAlpha = alpha; ctx.drawImage(sp.c, ox, oy); ctx.restore();
+}
+
+// ── character frames (opt-in, scripts/frames_import.py): drawn by an image model or a person, keyed off green and embedded.
+//    FRM.lib[name] = { src: base64 png, w, h, ax, ay }; a sequence is name_0 … name_n. Decoded at boot, before shots build.
+const FRM = { lib: {}, img: {} };
+function frmReady() {
+  return Promise.all(Object.entries(FRM.lib).map(([k, m]) => new Promise((ok, bad) => {
+    const im = new Image(); im.onload = () => { FRM.img[k] = im; ok(); }; im.onerror = () => bad(new Error(`frame ${k} did not decode`));
+    im.src = 'data:image/png;base64,' + m.src; })));
+}
+// a frame baked like any cut-out (paper texture, contact shadow), h px tall, anchored where frames_import put the feet
+function frameSprite(k, h, o = {}) {
+  const m = FRM.lib[k]; if (!m || !FRM.img[k]) throw new Error(`no frame ${k} (run frames_import.py)`);
+  const s = h / m.h; return sprite(m.w * s, h, m.ax * s, m.ay * s, g => g.drawImage(FRM.img[k], 0, 0, m.w * s, h), o);
+}
+// which frame of the sequence `name` shows at time t: limited animation at fps poses a second, no in-betweens
+function frameAt(name, t, fps = 9) {
+  let n = 0; while (FRM.lib[`${name}_${n}`]) n++;
+  return n ? `${name}_${Math.floor(t * fps) % n}` : name;
 }
 
 // ── stop-motion clock helpers ───────────────────────────────────────────────
@@ -1033,6 +1052,7 @@ addEventListener('keydown', ev => {
   film.subs = Q.get('subs') !== '0';
   if (typeof SMOOTH_DEFAULT !== 'undefined' && Q.get('smooth') == null) film.smooth = !!SMOOTH_DEFAULT;   // a look (e.g. brick3d) can default to smooth 60 fps motion
   applyMarks();
+  await frmReady();   // character frames decode before build() bakes them into sprites
   for (const s of SHOTS) s.build();
   buildScore();
   const t = Q.get('t'), fr = Q.get('frame');
