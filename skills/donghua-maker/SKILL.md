@@ -24,10 +24,11 @@ Bundled files:
 - `scripts/sfx_import.py`: turns found recordings (sfx or a music bed) into an embedded `SAMPLES` block. It trims, levels, encodes, measures the landing point, and records source and licence in `sources.json`. Downloading a sound needs the user's OK first.
 - `references/looks/<look>.md`: look-specific toolkits and rules (`pixel`, `explainer`, `comic`, `torn-paper`, `shadow-puppet`, `watercolor`, `clay3d`, `brick3d`, `gold-scroll`). Read only the file for the look you're building, after the shot contract.
 - `references/fact-check.md` + `scripts/fact_check.py`: the fact gate for any film that states facts (history, science, geography, business, product claims): every on-screen string is sourced, disputed-with-note or marked non-factual, plus the picture's factual claims (map positions, costumes…). **Read it before briefing a factual topic.**
-- `scripts/narrate.py`: free narration (edge-tts, no key) with word-level timing. `<film>-vo/script.json` holds one line per shot; a `{FIELD}` bookmark moves that shot's cue field onto the next spoken word. It writes the NARRATION block, burned-in subtitles (C toggles them; `?subs=0`) and an `.srt`. It fails when a line overruns its shot. `--check` re-verifies.
+- `scripts/narrate.py`: free narration (edge-tts, no key), word timing, subtitles and `.srt`; usage in `references/narration.md`.
 - `scripts/font_embed.py`: embeds SIL OFL fonts (霞鹜文楷 and Noto Sans SC), subset to the film's characters, and writes a licence ledger. Use it whenever the film may be published or used commercially. `--check` catches a stale subset.
 - `__film.textBoxes(frame)` (engine hook): every text drawn in that frame with its string and canvas box, subtitles tagged. Scene packs use it for safe-area and overlap checks. It can't see text baked into sprites.
 - `scripts/stills.py`: full-resolution stills (`--shots` = first/mid/last frame of every shot) plus a contact sheet, on its own local server; exits 1 on page errors. The input for the step-5 visual check.
+- `scripts/frames_import.py` + `references/frames.md`: opt-in drawn character frames.
 - `scripts/qa.py`: step-5 numbers: page errors, determinism, backdrop leak; motion, text and subtitle clues per shot.
 - `references/lessons.md`: what worked on earlier films, with evidence. Read it while briefing.
 - `references/styles.md`: formats and vertical composition, texture recipes, palettes, rhythm, music. Read it when you turn a theme into parameters.
@@ -53,6 +54,8 @@ Per shot: name · time span · one-sentence cause→effect · the thing handed t
 
 Why a handoff per shot matters: these films read as one continuous chain reaction (steam → note → birds → petals → girl). That causal thread is what makes 10 seconds feel like a story and not a slideshow.
 
+**Given a reference video** ("make one like this"), run `python3 scripts/breakdown.py <video>` first and brief from its cuts, tempo, shot lengths and motion; copy the mechanism, not the pixels.
+
 **Length and shot count come from the theme.** "Four shots, 10 s" is not a default to fall back on. Decide both in the brief and state the reason in one line.
 
 | theme shape | total | shots | rhythm |
@@ -73,18 +76,20 @@ python3 <skill-dir>/scripts/scaffold.py <out>.html --title "Name" --format portr
 - Write `<out>.html` into the user's working folder, not into the skill folder.
 - Put cuts on the music grid: every boundary should be a whole number of eighth notes (30/bpm s). The script warns about any cut that isn't and suggests the nearest grid time. At 96 bpm the eighth is 0.3125 s, so 2.5 s = 8 eighths, 1.875 s = 6.
 - The timeline bar's segments are sized by shot length automatically.
-- **Pixel-art films** (cosy farm-sim, retro game looks): add `--pixel 8`. Shots then draw on a 320×180 buffer (portrait 180×320) with the pixel toolkit in `references/shot-contract.md` `looks/pixel.md`, and the stubs are generated accordingly. The paper-look rules (`boil`, `sprite`, `backdrop`) don't apply in this mode. Before writing pixel shots, read the scale and layout rules in `looks/pixel.md`: 1× sprites on a 320×180 buffer read too small, and the user rejected that.
+- **Pixel-art films**: add `--pixel 8` (a 320×180 buffer; paper-look helpers don't apply). Read `references/looks/pixel.md` first: 1× sprites read too small and were rejected.
 - Keep `DUR × 60` a whole number (at 96 bpm use an even count of eighths). An odd count such as 19.375 s gives 1162.5 frames, and the exported MP4 ends up one frame short.
-- Browser screenshots at pane size downscale the frame. To judge detail, grab full-resolution stills with `canvas.toDataURL()` after `__film.seek(f)` (a still, not a video render).
+- Judge detail on `scripts/stills.py` stills; pane screenshots downscale.
 
 ### 3. Sample one shot first
 Fill in the palette (`Object.assign(C, {...})`), `MELODY`, `baseScore()` beds and **shot 1 only**. Verify it (step 5) and show the user before writing the rest. Style problems are cheap to fix at one shot and expensive at four.
+**Three directions on one frame**: when the look is new to this user or a character is newly designed, render shot 1's key frame three ways (e.g. three looks, or three takes on the character) and let the user pick before going on, even if they named a style.
 
 For a look that imitates a real tradition (皮影, 年画, 剪纸 folk art, ukiyo-e…), first look at a few real examples (museum photos on Wikimedia Commons) and list the construction rules they share. Then bake the characters as a static cast sheet and get it approved before shot 1. In 射日, a cartoon drawn from memory was rejected outright, while the reference-checked cast sheet passed after two face rounds.
 The same goes for animals and people in any look: check real anatomy in a photo first (小猫钓鱼's first cat head was rejected). When checking any character, also confirm three things: jointed pieces overlap with no background showing at the seam; the character's hue and value differ from what it stands on; and its whole motion path stays clear of other focal props.
 
 ### 4. Write the remaining shots
 Follow `references/shot-contract.md`. Rules that keep the look:
+- Cuts are hard and on the beat by default; a shot may open with a transition in its look's language: `enter: { kind: 'ink'|'tear'|'pixel', dur, at }` (shot-contract §7c).
 - `draw()` reads only the snapshot state (`rx/ry/ra`, `rope.at()`), and every puppet gets `boil(id, e)` jitter. This produces the 12-poses-per-second stop-motion feel while the camera glides smoothly.
 - No `Math.random()` in `step` or `draw`. Use `rng(seed)` from `reset()`, or `hash()`. That keeps seeking and the offline audio mix deterministic.
 - Pre-run the physics inside `reset()` so every shot opens with things already moving.
@@ -117,7 +122,7 @@ Serve the folder (`python3 -m http.server <port>`, since file:// may be blocked)
 Report honestly what you did not check, e.g. that you didn't listen to the audio or didn't click-test `poke`.
 
 ### 5b. Independent review (films anyone else will see)
-A reviewer who took no part in the film sees only the film, its stills and the `qa.py` strips. Packet, prompt and follow-up: `references/review.md`. A director agent reports it as pending.
+A reviewer who took no part in the film sees only it, its stills and the `qa.py` strips (`references/review.md`). Directors report it as pending.
 
 ### 6. Deliver the web version, then stop
 Deliver **only the HTML**. Give the file path, the controls (Space play, S toggles stop-motion/smooth, 1–N jump to shot, ←/→ step one exposure, M mute, click/drag to poke or blow on the scene), a list of what was verified and what wasn't, and ask the user to review it in the browser. End with a clear question: approve it for rendering, or name what to change.

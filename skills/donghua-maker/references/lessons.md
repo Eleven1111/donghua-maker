@@ -57,7 +57,8 @@ From another code-animation skill (art-style speed-run films, 36 looks). Treat e
 confirms or refutes one, move it up with the evidence, or delete it.
 
 - **Transitions speak the next look's language** (the new style grows from an object in frame, not a generic wipe).
-  Needs a transition layer the engine doesn't have yet.
+  The engine now has the layer (`enter`, kinds ink / tear / pixel, shot-contract §7c), verified for determinism and
+  sound on test films only; no real film has used it yet.
 - **Region palettes beat colour jitter**: give each region (sky, water, wall) its own 7–8 swatches and draw each stroke
   from them, mixing in 30–45 % of the base tone to keep light and shade.
 - **Characters go through the look's renderer too** (stroke, grain, paper multiply, halftone); flat-filled characters

@@ -1,0 +1,32 @@
+Third-party notices
+===================
+
+Parts of donghua-maker are adapted from an MIT-licensed code-animation project by alchaincyf,
+used under the MIT License below:
+- skills/donghua-maker/scripts/breakdown.py, from scripts/analyze/breakdown.py (cut detection, grid fit, sheets);
+- skills/donghua-maker/scripts/qa_init.js, from the TEXT_HOOK in scripts/qa.py (text boxes that follow drawImage,
+  clip tracking, full-canvas wipes);
+- skills/donghua-maker/scripts/frames_import.py and references/frames.md, from scripts/key_green.py,
+  scripts/key_split.py and references/10-角色.md (green key with spill removal, pose splitting, the frame route).
+
+MIT License
+
+Copyright (c) 2026 alchaincyf (花叔 · 花生)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

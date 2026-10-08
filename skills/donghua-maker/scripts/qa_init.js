@@ -1,4 +1,5 @@
 // qa.py, installed before the film's own scripts.
+// Text-box tracking adapted from MIT-licensed code by alchaincyf (Copyright (c) 2026); see NOTICE.
 // 1. Text boxes live on the canvas they were drawn on (canvas.__tb). When that canvas is drawImage'd somewhere
 //    else, its boxes follow through the same transform — so text baked into sprites at boot, drawn into the pixel
 //    buffer, or composited from an offscreen layer still reaches the film canvas with its on-screen box.
