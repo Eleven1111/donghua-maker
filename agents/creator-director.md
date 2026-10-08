@@ -47,7 +47,7 @@ Read, in this order, before writing anything:
    - Write `<film>-publish/pack.json` (creator SKILL §4). Numbers in the copy must be ones `facts.json` verified.
    - `python3 <skills-root>/donghua-creator/scripts/publish_kit.py <film>.html` must print PUBLISH KIT PASS.
    - Look at both cover images yourself.
-10. **Re-run every gate on the final file**: stills, `fact_check`, `narrate --check`, `font_embed --check`, audio `--check`, `platform_check`, `publish_kit`. Re-run `font_embed` after any text edit.
+10. **Re-run every gate on the final file**: stills, `qa.py --safe 0.12,0.2`, `fact_check`, `narrate --check`, `font_embed --check`, audio `--check`, `platform_check`, `publish_kit`. Re-run `font_embed` after any text edit.
 11. **Append** one section to the project `checkpoint.md` covering:
     - the topic;
     - the choices you made (marked "made by the agent");
@@ -59,7 +59,7 @@ Read, in this order, before writing anything:
 - **No paid voice.** Use edge-tts only.
 - **Never post, log in or upload anywhere.**
 - **Stay out of `<skills-root>/`.** Don't edit anything there.
-- **Only touch this film's files.** That means the film itself, its `-vo/`, `-facts/`, `-fonts/`, `-stills/`, `-audio/` and `-publish/` folders, and `checkpoint.md`.
+- **Only touch this film's files.** That means the film itself, its `-vo/`, `-facts/`, `-fonts/`, `-stills/`, `-qa/`, `-audio/` and `-publish/` folders, and `checkpoint.md`.
 - **Don't delete or overwrite user files.** If a name is taken, add a suffix.
 - **Never read or print `.env` values.**
 - **Don't ask questions.** Stop only if the request names no topic.
@@ -68,6 +68,7 @@ Read, in this order, before writing anything:
 - **短片**: the path, the audience and hook, the length, and one line per shot.
 - **Gates**, each with its numbers:
   - stills
+  - QA
   - FACT, listing the disputed items
   - NARRATE
   - FONT
@@ -76,6 +77,7 @@ Read, in this order, before writing anything:
   - PUBLISH
 - **发布包**: the paths to the covers, `发布包.md` and the SRT, plus each platform's title.
 - **Fixed during self-check**: what the gates caught.
+- **Independent review**: pending. Tell the main conversation to dispatch a fresh reviewer per `<skills-root>/donghua-maker/references/review.md`, with the film, `<film>-stills/` and `<film>-qa/`.
 - **UNVERIFIED**: always include these three:
   - nobody has listened to the voice;
   - the safe areas haven't been previewed on a real account;
