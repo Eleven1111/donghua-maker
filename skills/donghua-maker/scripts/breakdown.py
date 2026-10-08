@@ -25,7 +25,7 @@ in-shot action 1–7 %, end fades 0–1 %. Slow cross-dissolves have no single c
 ≥ 80 % of cuts within 1.5 frames of t0 + k·step (the smallest residual would pick a tiny step that fits anything);
 the rest are listed as outliers (usually big in-shot action, or a cut off the beat).
 
-Adapted from breakdown.py in huashu-art-motion (MIT License, Copyright (c) 2026 alchaincyf); see the repo NOTICE.
+Adapted from MIT-licensed code by alchaincyf (Copyright (c) 2026); see the repo NOTICE.
 """
 import argparse
 import json

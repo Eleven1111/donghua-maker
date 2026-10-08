@@ -1,7 +1,7 @@
 Third-party notices
 ===================
 
-Parts of donghua-maker are adapted from huashu-art-motion (https://github.com/alchaincyf/huashu-art-motion),
+Parts of donghua-maker are adapted from an MIT-licensed code-animation project by alchaincyf,
 used under the MIT License below:
 - skills/donghua-maker/scripts/breakdown.py, from scripts/analyze/breakdown.py (cut detection, grid fit, sheets);
 - skills/donghua-maker/scripts/qa_init.js, from the TEXT_HOOK in scripts/qa.py (text boxes that follow drawImage,
