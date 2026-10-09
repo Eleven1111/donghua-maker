@@ -28,6 +28,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
 PPQ = 480
 SF_DEFAULT = Path.home() / ".local/share/soundfonts/GeneralUser-GS.sf2"
 KEYS = {"C": 60, "C#": 61, "Db": 61, "D": 62, "Eb": 63, "E": 64, "F": 65, "F#": 66, "G": 67, "Ab": 68, "A": 69, "Bb": 70, "B": 71}
@@ -229,14 +231,25 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("brief", type=Path)
     ap.add_argument("-o", "--out", type=Path, required=True, help="output stem, e.g. film-audio/bgm")
+    ap.add_argument("--stems", action="store_true", help="stem pipeline (mido MIDI per part, per-part engine, levels + effect chains) even without a `voices` map in the brief")
     a = ap.parse_args()
     sf2 = Path(os.environ.get("SOUNDFONT", SF_DEFAULT)).expanduser()
-    if not sf2.is_file():
-        sys.exit(f"SoundFont not found: {sf2} (see references/audio.md §7)")
     brief = json.loads(a.brief.read_text())
+    stems = a.stems or bool(brief.get("voices"))
+    if not sf2.is_file() and not stems:
+        sys.exit(f"SoundFont not found: {sf2} (see references/audio.md §7)")
     P = plan(brief)
     perf = perform(compose(P), P)
     a.out.parent.mkdir(parents=True, exist_ok=True)
+    if stems:
+        import music_stems
+        progs = {k: P["inst"][k] for k in ("pad", "comp", "bass", "lead")}
+        progs["drums"] = P["inst"]["kit"]
+        rep = music_stems.render_stems(perf, P, brief.get("voices", {}), a.out, sf2, progs)
+        parts = sorted({p for p, *_ in perf})
+        a.out.with_suffix(".plan.json").write_text(json.dumps({"brief": brief, "bars": P["bars"], "instruments": P["inst"], "notes": len(perf), "parts": parts, "voices": brief.get("voices", {}), "mix": rep}, indent=2))
+        print(f"ok  {len(perf)} notes · stems {', '.join(parts)} · {len(P['bars'])} bars @ {P['bpm']:g} bpm · master peak {rep['_master']['peak']} → {a.out.with_suffix('.wav')}")
+        return 0
     mid, wav = a.out.with_suffix(".mid"), a.out.with_suffix(".wav")
     write_midi(perf, P, mid)
     render(mid, wav, P["dur"], sf2)

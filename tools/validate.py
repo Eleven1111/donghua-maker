@@ -114,6 +114,41 @@ def check_scaffold() -> None:
                 fail(f"scaffold --look {look}: JavaScript does not parse: {err}")
     print(f"  scaffolded {len(looks)} films (plain + {len(looks) - 2} looks + the long-scroll format)")
     check_chapters(maker)
+    check_music_stems(maker)
+
+
+def check_music_stems(maker: Path) -> None:
+    """music_stems.py: the loudness measure counts only the sounding part; mido (if installed) writes one note_on per note."""
+    sys.path.insert(0, str(maker / "scripts"))
+    try:
+        import numpy as np
+        import music_stems as ms
+    except ImportError as e:
+        print(f"  music_stems skipped ({e})")
+        return
+    sr = ms.SR
+    t = np.arange(sr) / sr
+    tone = (0.1 * np.sqrt(2) * np.sin(2 * np.pi * 220 * t)).astype("float32")   # RMS 0.1 = -20 dBFS
+    x = np.zeros((2, 10 * sr), dtype="float32")
+    x[:, :sr] = tone
+    got = ms.active_rms_db(x)
+    plain = 10 * np.log10((x.mean(axis=0) ** 2).mean())
+    if not (-20.5 < got < -19.5) or plain > -29:
+        fail(f"music_stems.active_rms_db: a 1 s tone in 10 s should read -20 dB (got {got:.2f}); plain RMS reads {plain:.1f}")
+    if ms.active_rms_db(np.zeros((2, sr), dtype="float32")) > -100:
+        fail("music_stems.active_rms_db: silence should read below -100 dB")
+    try:
+        import mido  # noqa: F401
+    except ImportError:
+        print("  music_stems: level measure OK (mido not installed, MIDI check skipped)")
+        return
+    P = {"beat": .5, "bpm": 120}
+    perf = [("pad", 0.0, 1.0, 60, 80), ("pad", 1.0, 1.0, 64, 80), ("bass", 0.0, .5, 36, 90)]
+    mids = ms.build_midi(perf, P, {"pad": 89, "bass": 38})
+    on = lambda mf: sum(1 for tr in mf.tracks for m in tr if m.type == "note_on")
+    if on(mids["pad"]) != 2 or on(mids["bass"]) != 1 or on(mids[None]) != 3 or len(mids[None].tracks) != 3:
+        fail("music_stems.build_midi: expected 2 pad + 1 bass note_on, one track per part plus the conductor")
+    print("  music_stems: level measure + one MIDI track per part OK")
 
 
 def check_chapters(maker: Path) -> None:

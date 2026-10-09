@@ -1,0 +1,7 @@
+// Slow pad from two detuned saws through a low-pass: long attack and release, almost no velocity response.
+<global>
+ampeg_attack=0.7 ampeg_decay=1 ampeg_sustain=85 ampeg_release=1.4
+fil_type=lpf_2p cutoff=1100 resonance=1 fil_veltrack=400
+amp_veltrack=15
+<region> sample=*saw pitch_keycenter=60 lokey=0 hikey=127 tune=-8 pan=-30
+<region> sample=*saw pitch_keycenter=60 lokey=0 hikey=127 tune=8 pan=30
