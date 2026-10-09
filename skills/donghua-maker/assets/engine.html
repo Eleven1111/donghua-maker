@@ -879,7 +879,7 @@ function sfx(e) { if (film.audio) liveSfx(e); }
 const shotAt = f => { let i = 0; for (let k = 0; k < SHOTS.length; k++) if (f >= Math.round(SHOTS[k].t0 * FPS)) i = k; return i; };
 function simTo(f) {
   const i = shotAt(f), s = SHOTS[i], f0 = Math.round(s.t0 * FPS);
-  if (i !== film.shotIdx || f < film.f) { film.shotIdx = i; film.shot = s; xfEnter(i); s.reset(); film.f = f0; GUSTS = []; }
+  if (i !== film.shotIdx || f < film.f) { film.shotIdx = i; film.shot = s; xfEnter(i); film.f = f0; s.reset(); GUSTS = []; }   // f first: a sound emitted in reset() is stamped at the shot's start, not at a stale frame
   while (film.f < f) { film.f++; const sf = film.f - f0; s.step(1 / FPS, sf / FPS, sf); stepGusts(); if (film.smooth || sf % EXPO === 0) s.snap(); }
 }
 // ── transitions (optional): a shot may open with `enter: { kind, dur = .5, at: [.5, .5], from: 'left', punch, ink, cell }`.
@@ -1031,13 +1031,29 @@ function audioPump() {
   const horizon = AC.currentTime + .25;
   while (cursor < SCORE.length && SCORE[cursor].t + audioT0 < horizon) { const e = SCORE[cursor++]; if (!film.muted) SND.play(e, Math.max(AC.currentTime, e.t + audioT0)); }
 }
+// Chromium sums a node's inputs in hash order (pointer-dependent), so ≥3 live inputs round differently on every render;
+// 1 LSB of that, through AAC, becomes a ±10k sample difference. While the offline mix is wired, every input instead joins a
+// chain of 2-input gains (a + b is exact either way round), so the mix is bit-identical run to run.
+let PAIRCTX = null;
+{ const raw = AudioNode.prototype.connect, tails = new WeakMap();
+  AudioNode.prototype.connect = function (dst, out = 0, inp = 0) {
+    if (!PAIRCTX || this.context !== PAIRCTX || inp) return raw.apply(this, arguments);
+    const t = tails.get(dst);
+    if (t && t.n < 2) { t.n++; raw.call(this, t.j, out); }
+    else { const j = PAIRCTX.createGain(); if (t) { t.j.disconnect(); raw.call(t.j, j); } raw.call(this, j, out); raw.call(j, dst); tails.set(dst, { j, n: t ? 2 : 1 }); }
+    return dst instanceof AudioNode ? dst : undefined;
+  };
+}
 async function renderWav({ stem = null, duck = true } = {}) { // offline mix of exactly what the film does (for the video file)
   // stem: 'music' | 'sfx' | 'voice' renders one role alone (the music stem keeps its ducking unless duck: false)
   await voReady(); await smpReady();
   BAKING = true; EMITTED = []; film.shotIdx = -1; for (let f = 0; f < NF; f++) simTo(f); BAKING = false; film.shotIdx = -1;
-  const sr = 48000, O = new OfflineAudioContext(2, sr * DUR, sr), S = new Sound(O), all = SCORE.concat(EMITTED).sort((a, b) => a.t - b.t);
-  if (duck) { const cv = duckCurve(all); S.mix.music.gain.setValueCurveAtTime(cv, 0, (cv.length - 1) / DUCK.rate); }
-  for (const e of all) if (!stem || roleOf(e) === stem) S.play(e, e.t);
+  const sr = 48000, O = new OfflineAudioContext(2, sr * DUR, sr), all = SCORE.concat(EMITTED).sort((a, b) => a.t - b.t); let S;
+  PAIRCTX = O; try {
+    S = new Sound(O);
+    if (duck) { const cv = duckCurve(all); S.mix.music.gain.setValueCurveAtTime(cv, 0, (cv.length - 1) / DUCK.rate); }
+    for (const e of all) if (!stem || roleOf(e) === stem) S.play(e, e.t);
+  } finally { PAIRCTX = null; }
   S.master.gain.setValueAtTime(.92, DUR - .45); S.master.gain.linearRampToValueAtTime(0, DUR - .005);
   const buf = await O.startRendering(), L = buf.getChannelData(0), Rr = buf.getChannelData(1), n = L.length, ab = new ArrayBuffer(44 + n * 4), dv = new DataView(ab);
   const ws = (o, s) => { for (let i = 0; i < s.length; i++) dv.setUint8(o + i, s.charCodeAt(i)); };
