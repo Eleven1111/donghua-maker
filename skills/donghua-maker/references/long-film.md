@@ -57,3 +57,6 @@ only its own `ch/` file, and anything shared is changed in `story.js` by one own
 of the shot table (with the `out` of the chapter before and of its own last shot), and this page. Build and run
 `qa.py` on the whole film after merging their files.
 
+## Export
+A long film takes minutes to export. `export.py --workers N` renders in parallel, and `--frames DIR` keeps the frames
+so an interrupted export picks up where it stopped (`references/export.md`).
