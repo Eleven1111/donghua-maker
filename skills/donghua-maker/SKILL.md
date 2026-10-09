@@ -1,6 +1,6 @@
 ---
 name: donghua-maker
-description: "动画制作器：用纯 JS（Canvas 2D / three.js + Web Audio）生成单文件 HTML 动画短片的完整流程——分镜、镜头代码、54 种画风、授权音效与配乐、免费或 MiniMax 解说、可商用字体、事实核对、全分辨率静帧自检，确认后导出 MP4。画幅横屏/竖屏/方形。画风包括纸艺定格（默认）、撕纸绘本、皮影、水彩、水墨、青绿长卷、浮世绘、年画、敦煌、像素/像素图解、美漫、手绘科普、黑板、蓝图、铅笔、版画、沙画、字符画、终端、科幻界面、控制台大屏、动态字体、报刊数据图、商务图解、软件演示、历史讲解、图层卡通讲解，以及 3D 黏土、3D 积木、3D 等距、3D 扁平科普等（完整目录见 references/catalog.md）。用户说\"用代码做动画/短片\"、\"定格动画\"、\"某某风格的动画\"、\"讲解/科普动画\"、\"canvas 或 three.js 动画带音乐\"、\"给短片配解说\"、\"把这个短片改竖屏/换风格\"时使用，即使没提 skill。不适用于：AI 文生视频提示词（Seedance/可灵）、剪辑已有素材、HyperFrames/Remotion 项目。"
+description: "动画制作器：用纯 JS（Canvas 2D / three.js + Web Audio）生成单文件 HTML 动画短片的完整流程——分镜、镜头代码、28 种画风、授权音效与配乐、免费或 MiniMax 解说、可商用字体、事实核对、全分辨率静帧自检，确认后导出 MP4。画幅横屏/竖屏/方形。画风包括纸艺定格（默认）、撕纸绘本、皮影、水彩、水墨、青绿长卷、浮世绘、像素/像素图解、美漫、手绘科普、黑板、蓝图、铅笔、版画、科幻界面、控制台大屏、动态字体、报刊数据图、商务图解、软件演示、历史讲解、图层卡通讲解，以及 3D 黏土、3D 等距、3D 扁平科普等（完整目录见 references/catalog.md）。用户说\"用代码做动画/短片\"、\"定格动画\"、\"某某风格的动画\"、\"讲解/科普动画\"、\"canvas 或 three.js 动画带音乐\"、\"给短片配解说\"、\"把这个短片改竖屏/换风格\"时使用，即使没提 skill。不适用于：AI 文生视频提示词（Seedance/可灵）、剪辑已有素材、HyperFrames/Remotion 项目。"
 license: MIT
 compatibility: "Python 3.10+; a browser to view films; ffmpeg + Playwright for stills/export; Node 18+ for tools/validate.py. Works in any Agent Skills terminal (Claude Code, Codex, Cursor, Antigravity, WorkBuddy, OpenClaw…)."
 metadata:
@@ -22,7 +22,7 @@ Bundled files:
 - `references/shot-contract.md`: the shot interface and the core helper library. **Read it before writing shot code.**
 - `references/audio.md`: sound roles and buses, automatic music ducking under sfx/voice, **recorded sounds first** (search order, licences, `scripts/sfx_import.py`, synthesised fallback per category), the `ui` sound set, `groove()` layered music, cue alignment, stems and loudness mastering. **Read it before writing the score.**
 - `scripts/sfx_import.py`: turns found recordings (sfx or a music bed) into an embedded `SAMPLES` block. It trims, levels, encodes, measures the landing point, and records source and licence in `sources.json`. Downloading a sound needs the user's OK first.
-- `references/looks/<look>.md`: look-specific toolkits and rules (`pixel`, `explainer`, `comic`, `torn-paper`, `shadow-puppet`, `watercolor`, `clay3d`, `brick3d`, `gold-scroll`). Read only the file for the look you're building, after the shot contract.
+- `references/looks/<look>.md`: look-specific toolkits and rules (`pixel`, `explainer`, `comic`, `torn-paper`, `shadow-puppet`, `watercolor`, `clay3d`, `gold-scroll`). Read only the file for the look you're building, after the shot contract.
 - `references/fact-check.md` + `scripts/fact_check.py`: the fact gate for any film that states facts (history, science, geography, business, product claims): every on-screen string is sourced, disputed-with-note or marked non-factual, plus the picture's factual claims (map positions, costumes…). **Read it before briefing a factual topic.**
 - `scripts/narrate.py`: free narration (edge-tts, no key), word timing, subtitles and `.srt`; usage in `references/narration.md`.
 - `scripts/font_embed.py`: embeds SIL OFL fonts (霞鹜文楷 and Noto Sans SC), subset to the film's characters, and writes a licence ledger. Use it whenever the film may be published or used commercially. `--check` catches a stale subset.

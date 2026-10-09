@@ -155,10 +155,9 @@ def main() -> int:
     ap.add_argument("--bpm", type=float, default=96)
     ap.add_argument("--bed", default="room", help="default ambience bed: room|street|field|stage")
     ap.add_argument("--goldscroll", action="store_true", help="金屏说史 look: paste the gold-scroll toolkit (references/looks/gold-scroll.md)")
-    ap.add_argument("--flowribbon", action="store_true", help="flow-ribbon look: paste the flow-field ribbon toolkit (references/looks/flow-ribbon.md)")
     ap.add_argument("--scroll", default="", help="long-scroll film: comma-separated looks, one world per shot in order (paper = the core look, no toolkit); references/looks/scroll.md")
-    ap.add_argument("--look", default="", help="paste assets/toolkit-<look>.js into the story, e.g. datamin, harmonic, brushsketch, ukiyoe, naturalplate (references/looks/<look>.md)")
-    ap.add_argument("--three", action="store_true", help="3D look: inline three.js (assets/lib); with no --look it pastes the brick3d toolkit (references/looks/brick3d.md). WebGL looks (clay3d, voxel, paper3d, isometric, flatsci) turn this on by themselves")
+    ap.add_argument("--look", default="", help="paste assets/toolkit-<look>.js into the story, e.g. inkwash, ukiyoe, naturalplate, chalkboard (references/looks/<look>.md)")
+    ap.add_argument("--three", action="store_true", help="3D look: inline three.js (assets/lib). WebGL looks (clay3d, voxel, isometric, flatsci) turn this on by themselves")
     ap.add_argument("--narrated", action="store_true", help="the film will have a voice track: no ambience beds (they hiss under speech)")
     ap.add_argument("--aria", default="", help="one-sentence description for screen readers")
     ap.add_argument("--pixel", type=int, default=0, help="pixel-art mode: draw at (W/N)x(H/N) and scale up xN nearest-neighbour, e.g. 8 -> 320x180")
@@ -204,8 +203,6 @@ def main() -> int:
     assets = Path(__file__).resolve().parent.parent / "assets"
     if a.goldscroll:
         story += (assets / "toolkit-goldscroll.js").read_text(encoding="utf-8") + "\n"
-    if a.flowribbon:
-        story += (assets / "toolkit-flowribbon.js").read_text(encoding="utf-8") + "\n"
     if a.look == "scroll":
         sys.exit("scroll is a film format: use --scroll <look>,<look>,… (one look per world); see references/looks/scroll.md")
     if a.look:
@@ -216,7 +213,7 @@ def main() -> int:
         a.three = a.three or "THREE." in tk_src   # a WebGL look needs the library inlined
         story += tk_src + "\n"
     if a.three and not a.look:
-        story += (assets / "toolkit-brick3d.js").read_text(encoding="utf-8") + "\n"
+        sys.exit("--three needs a WebGL look: --look clay3d|voxel|isometric|flatsci")
     scroll_looks = [x.strip() for x in a.scroll.split(",") if x.strip()]
     if scroll_looks:
         if a.pixel or a.three or a.look:

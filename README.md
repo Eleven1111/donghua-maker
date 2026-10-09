@@ -2,22 +2,22 @@
 
 **一句话生成动画短片**：三个遵循 [Agent Skills 开放标准](https://agentskills.io/specification) 的技能加三个一句话出片 Agent，Claude Code、Codex、Cursor、Antigravity、WorkBuddy、OpenClaw 等终端都能用。输入一句主题（"做一个日本历史快速讲解的动画"），自动产出一部**单文件 HTML** 动画短片：画面用 Canvas 2D 或 WebGL（three.js 内嵌）绘制，声音用 Web Audio，全部由代码生成，浏览器里直接播放，也能逐帧导出 MP4。
 
-Agent Skills (Claude Code, Codex, Cursor, Antigravity, WorkBuddy, OpenClaw…) that turn a one-line idea into a self-contained HTML animated short (Canvas 2D or inlined three.js WebGL + Web Audio) in 54 verified looks, with visual self-checks, a sourced fact gate, an automatic sound pass and a first-use creator profile.
+Agent Skills (Claude Code, Codex, Cursor, Antigravity, WorkBuddy, OpenClaw…) that turn a one-line idea into a self-contained HTML animated short (Canvas 2D or inlined three.js WebGL + Web Audio) in 28 verified looks, with visual self-checks, a sourced fact gate, an automatic sound pass and a first-use creator profile.
 
 ## 功能
 
-- **54 种画面风格**：默认的纸艺定格之外，每种风格都有说明书（`references/looks/`）和验证过的示例片，用 `scaffold.py --look <名字>` 起片。按用途分：
+- **28 种画面风格**：默认的纸艺定格之外，每种风格都有说明书（`references/looks/`）和验证过的示例片，用 `scaffold.py --look <名字>` 起片。按用途分：
 
   | 用途 | 风格（`--look` 名字，括号里是示例片） |
   |---|---|
-  | **讲故事、有角色** | 撕纸拼贴绘本 `torn-paper`（晚安纸条）、皮影戏 `shadow-puppet`（射日）、水彩 `watercolor`（春雨）、美漫分镜 `comic`（夜巡）、**3D 黏土** `clay3d`（小猫钓鱼）、**3D 体素** `voxel`（农场的一天）、**3D 立体纸艺** `paper3d`（放风筝）、**3D 积木** `brick3d`（积木机器人）、**图层卡通讲解** `layered`（十万粉）、简笔漫画 `brushsketch`（放风筝）、像素农场 / 像素技术图解 `pixel`（农场的一天、像素神经网络） |
-  | **讲解知识、数据、产品** | 手绘科普 `explainer`（地球的诞生）、商务财经图解 `biz-explainer`（毛利、股权稀释）、可爱软件演示 `ui-demo`（小克剪辑、小克数据台）、**3D 扁平科普** `flatsci`（月亮为什么会变）、报刊数据图 `editorial`（练习数据）、黑板粉笔 `chalkboard`（黑板课）、工程蓝图 `blueprint`（台灯设计图）、数据极简 `datamin`（光速）、**3D 等距几何** `isometric`（积木城）、金屏说史系列 `gold-scroll`（赤壁之战，60 秒一回）、谐波运动 `harmonic`（圆与波）、科幻界面 `hud`（对接）、绿屏终端 `terminal`（咖啡机）、控制台大屏 `opsboard`（NIGHT DESK） |
-  | **中国传统** | 青绿长卷 `qinglu`（江山市井图）、写意水墨 `inkwash`（清水游虾）、敦煌壁画 `dunhuang`（飞天）、年画 `nianhua`（年年有余） |
-  | **艺术史、版画、复古** | 浮世绘 `ukiyoe`、博物版画 `naturalplate`、梵高厚涂 `vangogh`、修拉点彩 `seurat`、格子构成 `mondrian`、康定斯基构成 `kandinsky`、包豪斯 `bauhaus`、剪纸拼贴 `cutout`、麻胶版画 `linocut`、铅笔素描 `pencil`、一笔画 `oneline`、孟菲斯 `memphis`、七十年代复古 `retro70`、16mm 老纪录片 `film16`、欧普艺术 `opart`、镶嵌变形 `tessellation`、沙画 `sandart` |
-  | **生成艺术、文字** | 流场色带 `flow-ribbon`（风的形状）、规则粒子 `process`、弹性线条 `elastic`、差分生长 `growth`、粒子流体 `datafluid`（两万粒子）、发光花 `bloom`、字符画 `ascii`、动态字体 `kinetic`（开口） |
+  | **讲故事、有角色** | 撕纸拼贴绘本 `torn-paper`（晚安纸条）、皮影戏 `shadow-puppet`（射日）、水彩 `watercolor`（春雨）、美漫分镜 `comic`（夜巡）、**3D 黏土** `clay3d`（小猫钓鱼）、**3D 体素** `voxel`（农场的一天）、**图层卡通讲解** `layered`（十万粉）、像素农场 / 像素技术图解 `pixel`（农场的一天、像素神经网络） |
+  | **讲解知识、数据、产品** | 手绘科普 `explainer`（地球的诞生）、商务财经图解 `biz-explainer`（毛利、股权稀释）、可爱软件演示 `ui-demo`（小克剪辑、小克数据台）、**3D 扁平科普** `flatsci`（月亮为什么会变）、报刊数据图 `editorial`（练习数据）、黑板粉笔 `chalkboard`（黑板课）、工程蓝图 `blueprint`（台灯设计图）、**3D 等距几何** `isometric`（积木城）、金屏说史系列 `gold-scroll`（赤壁之战，60 秒一回）、谐波运动 `harmonic`（圆与波）、科幻界面 `hud`（对接）、控制台大屏 `opsboard`（NIGHT DESK） |
+  | **中国传统** | 青绿长卷 `qinglu`（江山市井图）、写意水墨 `inkwash`（清水游虾） |
+  | **版画、素描、胶片** | 浮世绘 `ukiyoe`、博物版画 `naturalplate`、铅笔素描 `pencil`、一笔画 `oneline`、16mm 老纪录片 `film16` |
+  | **文字** | 动态字体 `kinetic`（开口） |
 
-  金屏说史和流场色带用各自的开关起片：`--goldscroll`、`--flowribbon`。长卷穿越片（一个人从左走到右，穿过几种画风，跨边界时人和世界一起换画法）用 `--scroll paper,inkwash,ukiyoe`，示例片「穿过三幅画」，说明书 `references/looks/scroll.md`。
-- **真 3D 风格**：`clay3d`、`voxel`、`paper3d`、`brick3d`、`isometric`、`flatsci` 用 WebGL 渲染。three.js r158 直接内嵌进片子，所以仍是离线可播的单文件；这几种风格会自动开启 three.js。
+  金屏说史用自己的开关起片：`--goldscroll`。长卷穿越片（一个人从左走到右，穿过几种画风，跨边界时人和世界一起换画法）用 `--scroll paper,inkwash,ukiyoe`，示例片「穿过三幅画」，说明书 `references/looks/scroll.md`。
+- **真 3D 风格**：`clay3d`、`voxel`、`isometric`、`flatsci` 用 WebGL 渲染。three.js r158 直接内嵌进片子，所以仍是离线可播的单文件；这几种风格会自动开启 three.js。
   - 3D 黏土：立体泥塑表面有指纹、拇指按痕和刀痕，打暖色主光和柔和阴影；角色每秒 12 个姿势，镜头平滑运动。
   - 3D 体素：浮在空中的方块小岛，每块颜色略有差别；一条光照曲线从清晨走到夜晚，窗户亮灯、萤火虫；上下边缘移轴虚化，看起来像微缩模型。
   - 3D 立体纸艺：每张纸片有厚度、手剪毛边和白色纸芯，前后分层互相投影，镜头推进时有视差；纸偶每秒 12 个姿势。
@@ -173,10 +173,8 @@ skills/donghua-maker/        底座
   SKILL.md                   完整工作流：分镜 → 骨架 → 镜头 → 音频 → 事实核对 → 验证 → 交付 → 导出
   assets/engine.html         引擎模板
   assets/example-*.html      每种风格验证过的示例片
-  assets/toolkit-brick3d.js  3D 积木工具（--three 时注入）
   assets/toolkit-goldscroll.js 金屏说史模块库（--goldscroll 时注入）
-  assets/toolkit-flowribbon.js 流场色带模块库（--flowribbon 时注入）
-  assets/toolkit-<look>.js    各风格的模块库（--look <look> 时注入；用到 THREE 的会自动内嵌 three.js：clay3d / voxel / paper3d / datamin / harmonic / brushsketch / ukiyoe / naturalplate / vangogh / seurat / qinglu / inkwash / dunhuang / mondrian / kandinsky / cutout / process / elastic / growth / isometric / datafluid / bloom / opart / nianhua / tessellation / sandart / ascii / bauhaus / chalkboard / blueprint / oneline / pencil / memphis / linocut / retro70 / film16 / terminal / hud / opsboard / kinetic / flatsci / editorial / layered）
+  assets/toolkit-<look>.js    各风格的模块库（--look <look> 时注入；用到 THREE 的会自动内嵌 three.js：clay3d / voxel / isometric / flatsci）
   assets/lib/                three.js r158（MIT，附 LICENSE 与 sources.json）
   references/catalog.md      全部示例片目录（选定风格后再读，不占主文件篇幅）
   references/setup.md        新机器安装：体检、每项依赖对应的功能、key 的读取顺序、字体下载不了怎么办
