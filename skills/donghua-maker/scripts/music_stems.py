@@ -45,6 +45,27 @@ PEAK_MAX = 10 ** (-1.5 / 20)
 PAN = {"pad": 0, "comp": -.25, "bass": 0, "lead": .15, "drums": 0}
 
 
+# used for any part the brief's `voices` does not name; a Surge part falls back to its sfizz twin when Surge XT is not installed
+DEFAULT_VOICES = {
+    "pad": ({"engine": "surge", "patch": "Pads/Assymetry"}, {"engine": "sfizz", "sfz": "pad-soft"}),
+    "comp": ({"engine": "sfizz", "sfz": "pluck"}, None),
+    "bass": ({"engine": "sfizz", "sfz": "bass-saw"}, None),
+    "lead": ({"engine": "surge", "patch": "Leads/Banter"}, {"engine": "sfizz", "sfz": "pluck"}),
+    "drums": ({"engine": "gm"}, None),
+}
+
+
+def default_voice(part: str) -> dict:
+    main, fallback = DEFAULT_VOICES[part]
+    if main["engine"] == "surge" and fallback:
+        try:
+            surge_vst3()
+            need("pedalboard", "pip install pedalboard")
+        except SystemExit:
+            return fallback
+    return main
+
+
 def need(mod: str, hint: str):
     try:
         return __import__(mod)
@@ -257,14 +278,15 @@ def render_stems(perf: list, P: dict, voices: dict, out: Path, sf2: Path | None,
     tmp = out.parent / (out.name + ".stems")
     tmp.mkdir(exist_ok=True)
     midis[None].save(str(out.with_suffix(".mid")))
-    stems = {}
+    stems, used = {}, {}
     for part, mf in midis.items():
         if part is None:
             continue
         mid = tmp / f"{part}.mid"
         mf.save(str(mid))
-        v = voices.get(part, {"engine": "gm"})
+        v = voices.get(part) or default_voice(part)
         eng = v.get("engine", "gm")
+        used[part] = v
         if eng == "gm":
             if sf2 is None or not sf2.is_file():
                 sys.exit(f"{part}: engine gm needs a SoundFont (SOUNDFONT=<.sf2>)")
@@ -278,6 +300,7 @@ def render_stems(perf: list, P: dict, voices: dict, out: Path, sf2: Path | None,
         shutil.copyfile(mid, out.parent / f"{out.name}.{part}.mid")
         stems[part] = a
     report = mix(stems, P["dur"], out.with_suffix(".wav"))
+    report["_voices"] = used   # what was really used (defaults and fallbacks resolved); the licence record reads it
     shutil.rmtree(tmp, ignore_errors=True)
     out.with_suffix(".mix.json").write_text(json.dumps(report, indent=2))
     return report

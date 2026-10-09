@@ -146,3 +146,26 @@ Budget: 10 sfx come to about 150 KB; a 30 s bed is about 500 KB.
 2. Stems: `await __film.wav({stem: 'music'|'sfx'|'voice'})`, plus `{stem: 'music', duck: false}` for the undipped bed. To check that ducking works, compare the RMS of the music stem with and without `duck` in a window just after a `ding`: it should be about −6 dB, and 0 dB in a window with no cue (the negative control).
 3. Export (`scripts/export.py`) masters by default with two-pass `loudnorm` to −16 LUFS and a −1.5 dBTP ceiling (`--lufs`, `--tp`, `--no-norm`). It then re-measures the **encoded MP4**, because AAC can add peaks. `--stems` writes `<out>-music/-sfx/-voice.wav` for listening.
 4. Listening is separate from measuring. Listen to the SFX stem, then the full mix, then the MP4, and check that each key action is audible, that a cue's first transient isn't masked and that its tail isn't cut. If you only measured, report it as "not auditioned".
+
+## 7. Stems: arrange per part, voice per part, mix per part (optional)
+`music_render.py` has a second path for when one General MIDI pass is not enough: each part (pad, comp, bass, lead, drums) is its own MIDI track, gets its own instrument engine, is level-matched, runs through its own effect chain, and is summed.
+```bash
+pip install mido soundfile pedalboard            # pedalboard is GPL-3.0; none of these is bundled here
+python3 scripts/audio_director.py film.html --mood warm-business --key F --stems --run     # or:
+python3 scripts/music_render.py brief.json --stems -o film-audio/bgm
+```
+`brief.json` may carry `voices`; a part it does not name gets a default (Surge XT pad and lead, sfizz pluck and bass, GM drums; without Surge the pad and lead fall back to the sfizz files):
+```json
+"voices": { "pad":   {"engine": "surge", "patch": "Pads/Assymetry"},
+            "lead":  {"engine": "surge", "patch": "Leads/Banter"},
+            "comp":  {"engine": "sfizz", "sfz": "pluck"},
+            "bass":  {"engine": "sfizz", "sfz": "bass-saw"},
+            "drums": {"engine": "gm"} }
+```
+- **Score.** `bgm.mid` has a conductor track plus one track per part; `bgm.<part>.mid` is each part alone. Edit the notes in any DAW; the next render reads the same files.
+- **gm**: fluidsynth + the SoundFont, as before. **sfizz**: `sfizz_render` plays a plain-text `.sfz`. `assets/sfz/` has three that need no sample files (`bass-saw`, `pluck`, `pad-soft`: built-in oscillators, so attack, filter cutoff and `fil_veltrack` / `amp_veltrack` velocity curves are numbers you edit). Point `sfz` at your own SFZ with real samples for real instruments. Build `sfizz_render` from github.com/sfztools/sfizz (`-DSFIZZ_RENDER=ON`) and put it on PATH or set `SFIZZ_RENDER`. **surge**: pedalboard hosts the Surge XT VST3 (`SURGE_VST3`, patches in `SURGE_DATA`); `patch` is a name such as `Pads/Assymetry`, a unique substring, or an `.fxp` path. Pedalboard cannot load `.fxp` itself, so `music_stems.py` writes the patch into the plugin state, and renders a throwaway note first because Surge applies a new state on its first block.
+- **Mix.** Each stem is brought to its target level, measured over the sounding windows only (a gated RMS: a part that plays in four bars of twenty is not turned up to make up for its silence), then runs through its chain (`CHAINS`: high-pass, compressor, chorus, delay, reverb), then equal-power pan. The sum gets a master gain to -24 dB RMS, a compressor, and a peak guard at -1.5 dBFS. `bgm.mix.json` lists before / leveled / after-chain dB per part, so a balance problem is a number, not an impression.
+- **Checked on a 20 s sample (warm-business, 100 bpm, 162 notes):** MIDI note count from a byte-level parse equals the planner's (162, six tracks); sfizz and gm parts rendered twice are bit-identical; the sfizz parts' pitches match their MIDI notes (23 of 24 measured), the Surge lead patch tracks pitch (1-cent spread over 8 notes); the master measures -20 LUFS, peak -9 dBFS. `tools/validate.py` checks the gated level measure (and the MIDI track layout when mido is installed), and fails when the gate is removed.
+- **Not reproducible byte for byte:** a part rendered by Surge differs run to run (oscillators and LFOs start at random phases; peak difference about the signal's own level). Keep the rendered `bgm.wav`, not just the brief. No one has listened to these samples: the checks above are measurements, so judge the sound by ear before it ships.
+- **Licence of the bed.** Your composition rendered by sfizz and the SFZ files here (BSD-2 and MIT) carries no extra terms. Surge XT is GPL-3.0 software; the licences of its patches were not verified (the `patches_3rdparty` folders are other authors' work), and `audio_director.py` writes that into the bed's licence record as UNVERIFIED. For a film you will publish commercially, prefer sfizz and gm parts, or check the patch's author terms.
+

@@ -235,7 +235,7 @@ def main() -> int:
     a = ap.parse_args()
     sf2 = Path(os.environ.get("SOUNDFONT", SF_DEFAULT)).expanduser()
     brief = json.loads(a.brief.read_text())
-    stems = a.stems or bool(brief.get("voices"))
+    stems = a.stems or "voices" in brief
     if not sf2.is_file() and not stems:
         sys.exit(f"SoundFont not found: {sf2} (see references/audio.md §7)")
     P = plan(brief)
@@ -247,7 +247,7 @@ def main() -> int:
         progs["drums"] = P["inst"]["kit"]
         rep = music_stems.render_stems(perf, P, brief.get("voices", {}), a.out, sf2, progs)
         parts = sorted({p for p, *_ in perf})
-        a.out.with_suffix(".plan.json").write_text(json.dumps({"brief": brief, "bars": P["bars"], "instruments": P["inst"], "notes": len(perf), "parts": parts, "voices": brief.get("voices", {}), "mix": rep}, indent=2))
+        a.out.with_suffix(".plan.json").write_text(json.dumps({"brief": brief, "bars": P["bars"], "instruments": P["inst"], "notes": len(perf), "parts": parts, "voices": rep.pop("_voices"), "mix": rep}, indent=2))
         print(f"ok  {len(perf)} notes · stems {', '.join(parts)} · {len(P['bars'])} bars @ {P['bpm']:g} bpm · master peak {rep['_master']['peak']} → {a.out.with_suffix('.wav')}")
         return 0
     mid, wav = a.out.with_suffix(".mid"), a.out.with_suffix(".wav")
