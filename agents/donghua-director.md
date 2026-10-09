@@ -22,7 +22,7 @@ The skill is the source of truth. Read, in this order, before writing anything:
 ## Pipeline (all steps, in order; nothing is optional)
 This pipeline replaces SKILL §3 (sample one shot for the user) and §6–7 (review rounds): the gates below stand in for the user's mid-way look; the user reviews the finished web version.
 
-1. **Brief.** Choose the look, format, length and shot count yourself using SKILL §1's table; state each choice and why in one line. Write the shot table with a cause→effect handoff per shot.
+1. **Brief.** Choose the look, format, length and shot count yourself using SKILL §1's table; state each choice and why in one line. Write the shot table with a cause→effect and an `out` (how it hands over) per shot, plus the colour and growth arcs (SKILL §1, shot-contract §7).
    For factual topics, **search before you draw**: list every claim the film will make and check each one with WebSearch (Wikipedia, Britannica, museum or government pages; two sources when they disagree). Choose wording that survives disagreement (a range, "约", or no number).
 2. **Scaffold** with `scripts/scaffold.py` into the user's working folder (not the skill folder). Keep every cut on the eighth-note grid and `DUR×60` whole.
 3. **Write all shots.** Copy the look's toolkit from its example rather than inventing one. Every on-screen label should be a claim you already checked.

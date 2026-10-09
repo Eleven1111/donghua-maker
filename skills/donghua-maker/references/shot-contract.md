@@ -18,7 +18,7 @@ Read this before writing any shot code. Everything here exists in `assets/engine
 ## 1. Clock model
 
 - Film runs at 60 fps. Simulation `step()` runs on every frame at fixed dt = 1/60.
-- Stop-motion look: `snap()` is called only every `EXPO` frames (default 5 → 12 poses/s). `draw()` must read the **snapshot** fields (`rx, ry, ra`, `rope.rx/ry`, `rope.at(u)`), never the live ones — that is what makes puppets move in steps while the camera (`cam(st)`) glides on every frame.
+- Stop-motion look: `snap()` is called only every `EXPO` frames (default 5 → 12 poses/s; to change it, edit `EXPO` near the top of the file and the `Stop-motion · 12 poses/s` label in `ui()`). `draw()` must read the **snapshot** fields (`rx, ry, ra`, `rope.rx/ry`, `rope.at(u)`), never the live ones — that is what makes puppets move in steps while the camera (`cam(st)`) glides on every frame.
 - `e` = exposure index, feed it to `boil(id, e, amt)` to get the hand-placed jitter `[dx, dy, drot]`. Give every puppet a distinct `id`.
 - `sq` = time quantised to the exposure; use it for event-driven appearances (a bloom that pops at note time).
 - Each shot resets to its own frame 0 when entered, so shots are independent; seeking is deterministic. Never use `Math.random()` in step/draw — use `rng(seed)` created in `reset()` or `hash()`.
@@ -105,6 +105,15 @@ Every event also takes `role` (music/sfx/voice; default from its kind), `duck` (
 To add a new voice (marimba, bell, pad, kalimba…): add a method on `Sound` built from oscillators + envelopes like `musicBox`, and a `case` in `Sound.play`. Keep it inside the file.
 
 ## 7. Cross-shot continuity
+
+**Plan the cut, not only the shot.** The brief's `out` column says how the eye crosses each cut: a motion carried
+across it (a ball thrown out of frame lands in the next shot), a match (a round moon → a round lamp), a camera move
+that keeps going, an object filling the lens, a seam or a transition in the look's language (§7c). "Hard cut" is a
+valid answer, but write it down: a film whose every `out` is "cut" plays as a slideshow. Two arcs run across the cuts:
+**colour** (warm lamp-lit → cold night → warm again) and **growth** (what gets bigger, worse or nearer each time: a
+character's size, a counter, the same set returning more broken). Repeat one set or prop on purpose and escalate it,
+rather than inventing a new place for every beat.
+
 
 A hero prop that travels between shots (the kite) should be a shared rig: `xxxRig()`, `xxxStep()`, `xxxSnap()`, `xxxDraw()` defined once, reused by each shot, with sprites baked in the first shot's build() (boot builds shots in order). End each shot where the next begins: same prop, same direction of travel, same colour accent.
 

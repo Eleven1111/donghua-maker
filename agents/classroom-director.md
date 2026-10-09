@@ -22,7 +22,7 @@ Read, in this order, before writing anything:
 1. **Lesson plan.**
    - Decide the grade and stage (classroom SKILL §1). Search for the topic's place in the 人教版 curriculum and for one common misconception.
    - Write `<film>-lesson/lesson.json`, with objectives, terms, misconception, recap and quiz. If the user pasted material, their content and order win.
-2. **Brief and shot table.** Use landscape, the look and a 45–90 s length (classroom SKILL §2). Each shot gets its idea, its narration line (sized from the stage table) and its cue fields. Search before you draw: check each claim with WebSearch.
+2. **Brief and shot table.** Use landscape, the look and a 45–90 s length (classroom SKILL §2). Each shot gets its idea, its narration line (sized from the stage table), its cue fields and its `out` (how it hands over; shot-contract §7). Search before you draw: check each claim with WebSearch.
 3. **Scaffold, then write every shot.** Scaffold with `scripts/scaffold.py --format landscape --narrated`, then write the shots. For the explainer look, put `const VIGN_TONE = ['60,50,30', .05, .16];` in the story, and never edit the engine. Every labelled moment reads a cue field (`LAB: 1.2`) so the voice can move it.
 4. **Voice.**
    - Write `<film>-vo/script.json` with `{FIELD}` bookmarks, then run `narrate.py`.

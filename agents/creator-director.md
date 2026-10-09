@@ -22,7 +22,7 @@ Read, in this order, before writing anything:
 1. **Angle.** Pick the audience, the promise, the hook line, the payoff and the ending (creator SKILL §1). Search the topic first. The hook has to be true.
 2. **Brief and shot table.**
    - Portrait, 20–45 s, 6–10 shots, first cut by 3.5 s.
-   - Give each shot its idea, its narration line and its cue fields. Label text is at least 72 px.
+   - Give each shot its idea, its narration line, its cue fields and its `out` (how it hands over; shot-contract §7). Label text is at least 72 px.
    - Check every claim with WebSearch before you draw.
 3. **Scaffold and write every shot.**
    - Scaffold with `scaffold.py --format portrait --narrated`. Choose `--durs` as whole eighth-notes of the bpm (scaffold warns otherwise); at 120 bpm any multiple of 0.25 s works.
