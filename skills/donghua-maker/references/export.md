@@ -16,10 +16,15 @@ Options:
 - `--crf N`: sets the x264 quality.
 - `--no-audio`: exports picture only.
 - `--aspect 3:4`: centre-crops before scaling, e.g. the 小红书 version of a 9:16 film.
+- `--workers N`: renders with N browsers in parallel. Each worker takes one contiguous run of frames, so its seeks stay
+  short (a stop-motion shot re-simulates from its start on a cold seek). Frames go through a folder, then ffmpeg.
+- `--frames DIR`: keeps the frames in DIR. Running the same command again renders only the missing frames, so an
+  interrupted long export resumes. DIR holds a manifest (the film's sha256, fps, smooth, format); if any of them
+  changed, the export refuses to reuse the folder rather than mixing frames from two versions.
 
 Requires `ffmpeg` and `playwright` (Python), plus Google Chrome or `python3 -m playwright install chromium`.
 
-Measured on Red Kite (10 s, 2560×1440): about 70 s to export. The master at crf 18 was about 100 MB, because film grain is expensive to encode. `--scale .75 --crf 23` gave 1920×1080 at about 5 MB. For platform uploads, recommend the 1080p copy: 1080×1920 for portrait, which is `--scale .75` on 1440×2560.
+Measured on Red Kite (10 s, 2560×1440): about 70 s to export. At `--fps 30`, rendering its 300 frames took 48 s with one worker and 18 s with `--workers 3`; the frames were byte-identical, and so was the decoded video of the piped export. Killed at 109 frames, a second run rendered the other 191 and gave the same video. The master at crf 18 was about 100 MB, because film grain is expensive to encode. `--scale .75 --crf 23` gave 1920×1080 at about 5 MB. For platform uploads, recommend the 1080p copy: 1080×1920 for portrait, which is `--scale .75` on 1440×2560.
 
 Verify every export yourself:
 1. Run `ffprobe` and check that `nb_frames == DUR*fps`, the duration equals DUR, and an audio stream exists.

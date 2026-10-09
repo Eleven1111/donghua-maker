@@ -47,12 +47,13 @@ Turn the user's theme into a shot table. If the user leaves story, format or sty
 ```
 Title / format (landscape|portrait|square|feed) / duration / shot count
 Look (styles.md §2) + palette (§3) + rhythm (§4) + key/bpm/voice (§5)
-Per shot: name · time span · one-sentence cause→effect · the thing handed to the next shot
+Arcs: colour (how the palette moves across the film) · growth (what gets bigger, worse or nearer each time)
+Per shot: name · time span · one-sentence cause→effect · out: how it hands over to the next shot
           props (static sprites) · moving things (rope/particles/puppets) · camera start→end
           melody notes in this bar and what each one triggers visually · foley + ambience bed
 ```
 
-Why a handoff per shot matters: these films read as one continuous chain reaction (steam → note → birds → petals → girl). That causal thread is what makes 10 seconds feel like a story and not a slideshow.
+Why a handoff per shot matters: these films read as one continuous chain reaction (steam → note → birds → petals → girl). That causal thread is what makes 10 seconds feel like a story and not a slideshow. The `out` column forces it: write how the eye crosses each cut (shot-contract §7).
 
 **Given a reference video** ("make one like this"), run `python3 scripts/breakdown.py <video>` first and brief from its cuts, tempo, shot lengths and motion; copy the mechanism, not the pixels.
 
@@ -66,7 +67,7 @@ Why a handoff per shot matters: these films read as one continuous chain reactio
 | greeting card / festive / loop for social | 6–12 s | 5–8 short shots | 120–132 bpm, 1–1.5 s cuts on the beat, final hold ≥ 1.5 s |
 | poem or quote, one line per shot | ~2.5 s per line + 1.5 s end hold | one per line | tempo from the reading pace |
 
-Shot lengths don't have to be equal: give the payoff shot room (often 1.3–1.6× the others) and keep setup shots short. Budget note: every shot costs roughly the same to build and verify, so 8 shots is about twice the work of 4. Past about 9 shots or 30 s, split the piece into two films.
+Shot lengths don't have to be equal: give the payoff shot room (often 1.3–1.6× the others) and keep setup shots short. Budget note: every shot costs roughly the same to build and verify, so 8 shots is about twice the work of 4. Past about 9 shots or 30 s, build it in chapters (`references/long-film.md`: one file per chapter, placeholders until drawn) or split it into two films.
 
 ### 2. Scaffold
 ```bash
@@ -96,7 +97,6 @@ Follow `references/shot-contract.md`. Rules that keep the look:
 - If a prop crosses shots, build it as a shared rig with `xxxRig/Step/Snap/Draw` helpers (see the kite in the example).
 - Every melody note needs a visible cause or effect.
 - In portrait: action runs vertically, the camera moves mostly on y, and key action stays inside the middle 60% of the frame (platform UI covers the top and bottom).
-- To change the pose rate, edit `EXPO` near the top of the file and the `Stop-motion · 12 poses/s` label in `ui()`.
 
 ### 4b. Narration (only when the user asks for a voice track)
 Only when the user asks for a voice. Follow `references/narration.md`: one line per shot sized at ~5.3 字/s, free `scripts/narrate.py` or paid MiniMax via `scripts/voice.py` (key from `.env` only), the audio is the source of truth, embed via `VO.src`, mix with no ambience bed under the voice, report pronunciation as UNVERIFIED.
@@ -116,7 +116,7 @@ Serve the folder (`python3 -m http.server <port>`, since file:// may be blocked)
 3. Run `await window.__film.wav()`. The byte length must equal `44 + DUR*48000*4`, and `__film.score()` must hold the expected events.
    Then run `__film.audio()`. Its warnings must be empty, or each one explained. Every key action needs an sfx cue within 1–2 frames of its picture moment. Check ducking by measuring the music stem with and without `duck` after the loudest cue (`references/audio.md` §5).
 4. Play across at least one cut and confirm `__film.info().shot` advances and the timeline segment highlights.
-   If `document.visibilityState` is `hidden` (the browser pane is in the background), requestAnimationFrame runs 0×/s and live playback can't be tested: verify cuts with `seek()` and report live playback as UNVERIFIED.
+   If `document.visibilityState` is `hidden`, rAF doesn't run: verify cuts with `seek()` and report live playback as UNVERIFIED.
 5. Stop the server.
 
 Report honestly what you did not check, e.g. that you didn't listen to the audio or didn't click-test `poke`.

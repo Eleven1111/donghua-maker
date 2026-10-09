@@ -113,6 +113,28 @@ def check_scaffold() -> None:
             if err:
                 fail(f"scaffold --look {look}: JavaScript does not parse: {err}")
     print(f"  scaffolded {len(looks)} films (plain + {len(looks) - 2} looks + the long-scroll format)")
+    check_chapters(maker)
+
+
+def check_chapters(maker: Path) -> None:
+    """chapters.py: init → fill one chapter → build parses; an empty chapter builds as a placeholder."""
+    with tempfile.TemporaryDirectory() as tmp:
+        d, py = Path(tmp) / "film", maker / "scripts" / "chapters.py"
+        r = subprocess.run([sys.executable, str(py), "init", str(d), "--title", "T", "--bpm", "96", "--chapters", "A:2.5,B:2.5"],
+                           capture_output=True, text=True, timeout=60)
+        if r.returncode:
+            return fail(f"chapters.py init: {(r.stderr or r.stdout).strip()[-300:]}")
+        (d / "ch" / "01-A.js").write_text("const k = 1;\nshot({ name: 'a', t0: 0, t1: 2.5, cam() { return { x: W / 2, y: H / 2, z: k }; }, build() {}, reset() {}, step() {}, snap() {}, draw() {}, score() { return []; } });\n")
+        r = subprocess.run([sys.executable, str(py), "build", str(d)], capture_output=True, text=True, timeout=60)
+        out = d / "film.html"
+        if r.returncode or not out.exists():
+            return fail(f"chapters.py build: exit {r.returncode}: {(r.stderr or r.stdout).strip()[-300:]}")
+        err = js_parses(out)
+        if err:
+            fail(f"chapters.py build: JavaScript does not parse: {err}")
+        if out.read_text(encoding="utf-8").count("chapterClose(CH); })();") != 2:   # parsing alone misses a chapter that never runs
+            fail("chapters.py build: not every chapter is wrapped in an invoked function")
+    print("  built a two-chapter film (chapters.py)")
 
 
 def check_hygiene() -> None:

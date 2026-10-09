@@ -3,7 +3,12 @@
 
 Drives the film's own deterministic hooks in headless Chrome: window.__film.wav() for the
 offline audio mix, window.__film.seek(f) + canvas capture for every frame, piped to ffmpeg.
+
+Long films: --workers N renders with N browsers in parallel (each takes one contiguous run of frames, so its seeks
+stay short), and --frames DIR keeps the frames on disk so an interrupted export resumes where it stopped.
 """
+import hashlib
+import multiprocessing as mp
 import argparse
 import base64
 import json
@@ -26,6 +31,60 @@ def launch(p):
             return p.chromium.launch(headless=True)
         except Exception as e:
             sys.exit(f"no Chrome for Playwright: install Google Chrome or run `python3 -m playwright install chromium` ({e})")
+
+
+def render_range(job) -> int:
+    """One worker: its own browser, one contiguous run of [output index, film frame]; writes each frame atomically."""
+    url, todo, folder, ext, mime, q, wid = job
+    from playwright.sync_api import sync_playwright
+    with sync_playwright() as p:
+        browser = launch(p)
+        page = browser.new_page(viewport={"width": 1280, "height": 800})
+        errors = []
+        page.on("pageerror", lambda e: errors.append(str(e)))
+        page.goto(url)
+        page.wait_for_function("window.__READY === true", timeout=120_000)
+        t0 = time.time()
+        for n, (i, f) in enumerate(todo):
+            dst = Path(folder) / f"f{i:06d}.{ext}"
+            tmp = dst.with_suffix(".tmp")
+            tmp.write_bytes(base64.b64decode(page.evaluate(CAPTURE_JS, [f, mime, q])))
+            tmp.replace(dst)
+            if n % 120 == 0 or n == len(todo) - 1:
+                print(f"[worker {wid}] {n + 1}/{len(todo)}  {time.time() - t0:.0f}s", flush=True)
+        browser.close()
+    if errors:
+        raise RuntimeError(f"worker {wid}: film threw during capture: {errors[0]}")
+    return len(todo)
+
+
+def frames_on_disk(film: Path, url: str, folder: Path, frames: list, a, mime: str, q: float) -> str:
+    """Render the frames into folder (resumable, guarded by a manifest), in parallel when a.workers > 1. Returns the
+    ffmpeg input pattern."""
+    ext = "png" if a.png else "jpg"
+    folder.mkdir(parents=True, exist_ok=True)
+    key = {"film_sha256": hashlib.sha256(film.read_bytes()).hexdigest(), "fps": a.fps, "smooth": a.smooth, "format": ext, "frames": len(frames)}
+    man = folder / "export.json"
+    if man.exists():
+        old = json.loads(man.read_text())
+        if old != key:
+            changed = ", ".join(k for k in key if old.get(k) != key[k])
+            sys.exit(f"{folder} holds frames of a different export ({changed} changed). Use a new --frames folder, or delete this one yourself.")
+    man.write_text(json.dumps(key, indent=1))
+    todo = [(i, f) for i, f in enumerate(frames) if not ((folder / f"f{i:06d}.{ext}").exists() and (folder / f"f{i:06d}.{ext}").stat().st_size > 1000)]
+    print(f"{len(frames) - len(todo)} of {len(frames)} frames already in {folder}; rendering {len(todo)} with {a.workers} worker(s)", flush=True)
+    if todo:
+        n = max(1, min(a.workers, len(todo)))
+        size = -(-len(todo) // n)
+        jobs = [(url, todo[k:k + size], str(folder), ext, mime, q, w + 1) for w, k in enumerate(range(0, len(todo), size))]
+        t0 = time.time()
+        with mp.get_context("spawn").Pool(len(jobs)) as pool:   # a fresh process even for one job: this one is inside Playwright already
+            pool.map(render_range, jobs)
+        print(f"rendered {len(todo)} frames in {time.time() - t0:.0f}s", flush=True)
+    missing = [i for i in range(len(frames)) if not (folder / f"f{i:06d}.{ext}").exists()]
+    if missing:
+        sys.exit(f"{len(missing)} frames missing after rendering (first: {missing[0]}); run the same command again to resume")
+    return str(folder / f"f%06d.{ext}")
 
 
 def loudnorm_json(stderr: str) -> dict:
@@ -71,6 +130,8 @@ def main() -> int:
     ap.add_argument("--tp", type=float, default=-1.5, help="true-peak ceiling in dBTP (default -1.5)")
     ap.add_argument("--no-norm", action="store_true", help="keep the raw in-browser mix level")
     ap.add_argument("--stems", action="store_true", help="also write <out>-music/-sfx/-voice.wav for listening checks")
+    ap.add_argument("--workers", type=int, default=1, help="render with N browsers in parallel (frames go through a folder)")
+    ap.add_argument("--frames", type=Path, help="keep the frames in this folder; running again resumes an interrupted export")
     a = ap.parse_args()
 
     film = a.film.resolve()
@@ -81,6 +142,8 @@ def main() -> int:
     if not 0.1 <= a.scale <= 1:
         sys.exit("--scale must be between 0.1 and 1")
     out = (a.out or film.with_suffix(".mp4")).resolve()
+    if not 1 <= a.workers <= 16:
+        sys.exit("--workers must be between 1 and 16")
     mime, q = ("image/png", 1) if a.png else ("image/jpeg", 0.95)
 
     try:
@@ -125,7 +188,15 @@ def main() -> int:
                 wav = normed
             page.evaluate("window.__film.seek(0)")
 
-        cmd = ["ffmpeg", "-y", "-loglevel", "error", "-f", "image2pipe", "-framerate", str(a.fps), "-i", "-"]
+        step = 60 // a.fps
+        frames = list(range(0, nf, step))
+        on_disk = a.workers > 1 or a.frames is not None
+        if on_disk:   # free this browser before the workers start theirs
+            browser.close()
+            pattern = frames_on_disk(film, url, (a.frames or Path(tmp) / "frames").resolve(), frames, a, mime, q)
+            cmd = ["ffmpeg", "-y", "-loglevel", "error", "-framerate", str(a.fps), "-start_number", "0", "-i", pattern]
+        else:
+            cmd = ["ffmpeg", "-y", "-loglevel", "error", "-f", "image2pipe", "-framerate", str(a.fps), "-i", "-"]
         if not a.no_audio:
             cmd += ["-i", str(wav)]
         cmd += ["-vf", crop + f"scale={ow}:{oh}:flags=lanczos,format=yuv420p", "-c:v", "libx264", "-preset", "medium", "-crf", str(a.crf),
@@ -133,21 +204,21 @@ def main() -> int:
         if not a.no_audio:
             cmd += ["-c:a", "aac", "-b:a", "192k", "-shortest"]
         cmd.append(str(out))
-        ff = subprocess.Popen(cmd, stdin=subprocess.PIPE)
-
-        step = 60 // a.fps
-        frames = range(0, nf, step)
-        t0 = time.time()
-        try:
-            for i, f in enumerate(frames):
-                ff.stdin.write(base64.b64decode(page.evaluate(CAPTURE_JS, [f, mime, q])))
-                if i % 60 == 0 or i == len(frames) - 1:
-                    print(f"\rframe {i + 1}/{len(frames)}  {time.time() - t0:.0f}s", end="", flush=True)
-        finally:
-            ff.stdin.close()
-            code = ff.wait()
-            browser.close()
-        print()
+        if on_disk:
+            code = subprocess.run(cmd).returncode
+        else:
+            ff = subprocess.Popen(cmd, stdin=subprocess.PIPE)
+            t0 = time.time()
+            try:
+                for i, f in enumerate(frames):
+                    ff.stdin.write(base64.b64decode(page.evaluate(CAPTURE_JS, [f, mime, q])))
+                    if i % 60 == 0 or i == len(frames) - 1:
+                        print(f"\rframe {i + 1}/{len(frames)}  {time.time() - t0:.0f}s", end="", flush=True)
+            finally:
+                ff.stdin.close()
+                code = ff.wait()
+                browser.close()
+            print()
         if errors:
             sys.exit(f"film threw during capture: {errors[0]}")
         if code != 0:
