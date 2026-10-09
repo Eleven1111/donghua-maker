@@ -132,47 +132,21 @@ Look-specific helpers and rules each have a file in `references/looks/`. Read th
 | torn-paper collage | `looks/torn-paper.md` | `assets/example-torn-paper-night.html` |
 | shadow puppet / 皮影 | `looks/shadow-puppet.md` | `assets/example-shadow-archer.html` |
 | watercolour / 水彩 | `looks/watercolor.md` | `assets/example-spring-rain.html` |
-| 3D brick build / 3D 积木拼装 (three.js, `--three`) | `looks/brick3d.md` | `assets/example-brick-robot.html` |
 | 3D clay / 3D 黏土定格 (three.js, `--look clay3d`) | `looks/clay3d.md` | `assets/example-clay3d.html` |
 | 3D voxel / 3D 体素 (three.js, `--look voxel`) | `looks/voxel.md` | `assets/example-voxel.html` |
-| 3D paper theatre / 立体纸艺 (three.js, `--look paper3d`) | `looks/paper3d.md` | `assets/example-paper3d.html` |
 | 金屏说史 gold-scroll history series (`--goldscroll`) | `looks/gold-scroll.md` | `assets/example-gold-scroll-chibi.html` |
-| flow-ribbon / 流场色带 (`--flowribbon`) | `looks/flow-ribbon.md` | `assets/example-flow-ribbon.html` |
-| 数据极简 / data-minimal (`--look datamin`) | `looks/datamin.md` | `assets/example-datamin.html` |
 | 谐波运动 / harmonic motion (`--look harmonic`) | `looks/harmonic.md` | `assets/example-harmonic.html` |
-| 简笔漫画 / brush-sketch manhua (`--look brushsketch`) | `looks/brushsketch.md` | `assets/example-brushsketch.html` |
 | 浮世绘 / ukiyo-e woodblock (`--look ukiyoe`) | `looks/ukiyoe.md` | `assets/example-ukiyoe.html` |
 | 博物版画 / natural-history plate (`--look naturalplate`) | `looks/naturalplate.md` | `assets/example-naturalplate.html` |
-| 梵高 / Van Gogh impasto (`--look vangogh`) | `looks/vangogh.md` | `assets/example-vangogh.html` |
-| 修拉 · 点彩 / pointillism (`--look seurat`) | `looks/seurat.md` | `assets/example-seurat.html` |
 | 青绿长卷 / blue-green handscroll (`--look qinglu`) | `looks/qinglu.md` | `assets/example-qinglu.html` |
 | 长卷穿越 / long scroll (`--scroll paper,inkwash,…`) | `looks/scroll.md` | `assets/example-scroll.html` |
 | 写意水墨 / ink wash (Qi Baishi study) (`--look inkwash`) | `looks/inkwash.md` | `assets/example-inkwash.html` |
-| 敦煌壁画 / Dunhuang mural (`--look dunhuang`) | `looks/dunhuang.md` | `assets/example-dunhuang.html` |
-| 格子构成 / Mondrian grid (`--look mondrian`) | `looks/mondrian.md` | `assets/example-mondrian.html` |
-| 康定斯基 · 构成 / Kandinsky composition (`--look kandinsky`) | `looks/kandinsky.md` | `assets/example-kandinsky.html` |
-| 剪纸拼贴 / gouache cut-outs (`--look cutout`) | `looks/cutout.md` | `assets/example-cutout.html` |
-| 规则粒子 / process particles (`--look process`) | `looks/process.md` | `assets/example-process.html` |
-| 弹性线条 / elastic lines (`--look elastic`) | `looks/elastic.md` | `assets/example-elastic.html` |
-| 差分生长 / differential growth (`--look growth`) | `looks/growth.md` | `assets/example-growth.html` |
 | 等距几何 / isometric blocks (three.js, `--look isometric`) | `looks/isometric.md` | `assets/example-isometric.html` |
-| 粒子流体 / data fluid (`--look datafluid`) | `looks/datafluid.md` | `assets/example-datafluid.html` |
-| 发光花 / luminous flowers (`--look bloom`) | `looks/bloom.md` | `assets/example-bloom.html` |
-| 欧普艺术 / Op Art (`--look opart`) | `looks/opart.md` | `assets/example-opart.html` |
-| 年画 / New Year print (`--look nianhua`) | `looks/nianhua.md` | `assets/example-nianhua.html` |
-| 镶嵌变形 / tessellation metamorphosis (`--look tessellation`) | `looks/tessellation.md` | `assets/example-tessellation.html` |
-| 沙画 / sand animation (`--look sandart`) | `looks/sandart.md` | `assets/example-sandart.html` |
-| 字符画 / ASCII art (`--look ascii`) | `looks/ascii.md` | `assets/example-ascii.html` |
-| 包豪斯构成 / Bauhaus (`--look bauhaus`) | `looks/bauhaus.md` | `assets/example-bauhaus.html` |
 | 黑板粉笔 / Chalkboard (`--look chalkboard`) | `looks/chalkboard.md` | `assets/example-chalkboard.html` |
 | 工程蓝图 / Blueprint (`--look blueprint`) | `looks/blueprint.md` | `assets/example-blueprint.html` |
 | 一笔画 / One-line drawing (`--look oneline`) | `looks/oneline.md` | `assets/example-oneline.html` |
 | 铅笔素描 / Pencil sketch (`--look pencil`) | `looks/pencil.md` | `assets/example-pencil.html` |
-| 孟菲斯 / Memphis (`--look memphis`) | `looks/memphis.md` | `assets/example-memphis.html` |
-| 麻胶版画 / Linocut (`--look linocut`) | `looks/linocut.md` | `assets/example-linocut.html` |
-| 七十年代复古 / 70s retro (`--look retro70`) | `looks/retro70.md` | `assets/example-retro70.html` |
 | 16mm 老纪录片 / 16 mm documentary (`--look film16`) | `looks/film16.md` | `assets/example-film16.html` |
-| 绿屏终端 / Terminal (`--look terminal`) | `looks/terminal.md` | `assets/example-terminal.html` |
 | 科幻界面 / Sci-fi HUD (`--look hud`) | `looks/hud.md` | `assets/example-hud.html` |
 | 控制台大屏 / Ops board (`--look opsboard`) | `looks/opsboard.md` | `assets/example-opsboard.html` |
 | 动态字体 / Kinetic typography (`--look kinetic`) | `looks/kinetic.md` | `assets/example-kinetic.html` |
