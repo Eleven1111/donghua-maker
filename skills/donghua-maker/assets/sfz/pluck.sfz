@@ -1,0 +1,7 @@
+// Short plucked synth for arpeggios: triangle + a thin square, fast decay, velocity brightens the filter.
+<global>
+ampeg_attack=0.002 ampeg_decay=0.5 ampeg_sustain=0 ampeg_release=0.25
+fil_type=lpf_2p cutoff=1400 resonance=2 fil_veltrack=3200
+amp_veltrack=70
+<region> sample=*triangle pitch_keycenter=60 lokey=0 hikey=127
+<region> sample=*square pitch_keycenter=60 lokey=0 hikey=127 volume=-14 tune=7

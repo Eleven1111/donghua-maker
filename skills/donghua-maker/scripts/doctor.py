@@ -32,6 +32,10 @@ FIX = {  # item → {os: command}
     "fluidsynth": {"mac": "brew install fluid-synth", "linux": "sudo apt install -y fluidsynth", "win": "winget install FluidSynth.FluidSynth"},
     "soundfont": {"*": "download GeneralUser GS (free) from https://schristiancollins.com/generaluser.php, "
                        "save the .sf2 as ~/.local/share/soundfonts/GeneralUser-GS.sf2 or set SOUNDFONT=<path> in ~/.config/donghua/.env"},
+    "mido": {"*": f"{PIP} mido soundfile"},
+    "pedalboard": {"*": f"{PIP} pedalboard   (GPL-3.0)"},
+    "sfizz_render": {"*": "build github.com/sfztools/sfizz with -DSFIZZ_RENDER=ON, put sfizz_render on PATH or set SFIZZ_RENDER=<path> (references/audio.md, Stems)"},
+    "surge": {"*": "install Surge XT (surge-synthesizer.github.io) or set SURGE_VST3=<path to Surge XT.vst3>"},
     "node": {"mac": "brew install node", "linux": "sudo apt install -y nodejs", "win": "winget install OpenJS.NodeJS"},
 }
 rows: list[tuple[str, str, bool, str]] = []   # (group, item, ok, detail)
@@ -116,6 +120,17 @@ def music() -> None:
     sf = Path(donghua_env.get("SOUNDFONT", str(Path.home() / ".local/share/soundfonts/GeneralUser-GS.sf2"))).expanduser()
     add("音乐与音效 music/sfx", "soundfont", sf.is_file(), str(sf))
     add("音乐与音效 music/sfx", "numpy", has_mod("numpy"), "ranks found sound effects (sfx_search.py)")
+    g = "音乐与音效 music/sfx"
+    add(g, "mido", has_mod("mido") and has_mod("soundfile"), "optional · stem music: one MIDI track per part (music_stems.py)")
+    add(g, "pedalboard", has_mod("pedalboard"), "optional · stem music: effect chains + Surge XT host")
+    add(g, "sfizz_render", bool(donghua_env.get("SFIZZ_RENDER") or shutil.which("sfizz_render")), "optional · stem music: SFZ instruments")
+    try:
+        import music_stems
+        music_stems.surge_vst3()
+        surge = True
+    except (SystemExit, ImportError):
+        surge = False
+    add(g, "surge", surge, "optional · stem music: Surge XT VST3, 3000+ synth patches")
     src = donghua_env.where("FREESOUND_API_KEY")
     rows.append(("音乐与音效 music/sfx", "FREESOUND_API_KEY (optional)", bool(src),
                  f"from {src}" if src else "not set — Mixkit and local libraries still work"))

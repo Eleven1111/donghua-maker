@@ -174,6 +174,7 @@ skills/donghua-maker/        底座
   assets/engine.html         引擎模板
   assets/example-*.html      每种风格验证过的示例片
   assets/toolkit-goldscroll.js 金屏说史模块库（--goldscroll 时注入）
+  assets/sfz/                 三个不用采样文件的 SFZ 乐器（贝斯、拨弦、铺底），配乐分轨流程用
   assets/toolkit-<look>.js    各风格的模块库（--look <look> 时注入；用到 THREE 的会自动内嵌 three.js：clay3d / voxel / isometric / flatsci）
   assets/lib/                three.js r158（MIT，附 LICENSE 与 sources.json）
   references/catalog.md      全部示例片目录（选定风格后再读，不占主文件篇幅）
@@ -181,7 +182,7 @@ skills/donghua-maker/        底座
   references/onboarding.md   首次使用：读档案、从终端记忆了解用户、三个问题、档案 → 默认值
   references/narration.md    解说流程；references/export.md 导出 MP4
   references/                镜头接口、各风格工具箱（looks/）、配色与节奏、音频、事实核对规范
-  scripts/                   scaffold / stills / fact_check / audio_director / music_render /
+  scripts/                   scaffold / stills / fact_check / audio_director / music_render / music_stems（配乐分轨：mido 写谱、Surge XT / sfizz / fluidsynth 发声、分轨混音，可选）/
                              sfx_search / sfx_import / export / voice / narrate / font_embed / profile / doctor / chapters
 ```
 

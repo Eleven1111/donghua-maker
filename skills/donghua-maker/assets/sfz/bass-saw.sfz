@@ -1,0 +1,7 @@
+// Synth bass from a built-in saw: no sample files. Edit the numbers; sfizz_render picks them up on the next run.
+<global>
+ampeg_attack=0.004 ampeg_decay=0.25 ampeg_sustain=70 ampeg_release=0.18
+fil_type=lpf_2p cutoff=420 resonance=3 fil_veltrack=1800    // louder notes open the filter
+amp_veltrack=60
+<region> sample=*saw pitch_keycenter=60 lokey=0 hikey=127
+<region> sample=*sine pitch_keycenter=60 lokey=0 hikey=127 volume=-4 transpose=-12   // sub octave

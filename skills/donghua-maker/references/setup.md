@@ -15,6 +15,7 @@ python3 <skill-dir>/scripts/doctor.py --online   # + one real edge-tts word and 
 | MiniMax narration (`voice.py`, paid, opt-in) | `MINIMAX_API_KEY` | use edge-tts |
 | commercial-safe fonts (`font_embed.py`) | `pip install fonttools`; font files downloaded once to `~/.cache/donghua-fonts/` | system fonts; not safe to publish |
 | generated background music (`music_render.py`) | `fluidsynth` + a SoundFont (`SOUNDFONT`) | recorded music beds / synth fallback |
+| stem music (`music_render.py --stems`, optional) | `pip install mido soundfile pedalboard`; `sfizz_render`; Surge XT (`SURGE_VST3`) | the one-pass fluidsynth path above (`references/audio.md` §7) |
 | found sound effects (`sfx_search.py`) | `pip install numpy`; `FREESOUND_API_KEY` optional | code-synthesised sounds |
 
 All Python packages at once: `pip install -r requirements.txt` (repo root).

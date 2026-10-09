@@ -128,6 +128,23 @@ def run(cmd: list) -> None:
     subprocess.run([sys.executable, *map(str, cmd)], check=True)
 
 
+def bgm_license(work: Path) -> str:
+    """The licence line for the rendered bed, from the engines bgm.plan.json says were used."""
+    try:
+        voices = json.loads((work / "bgm.plan.json").read_text()).get("voices", {})
+    except (OSError, ValueError):
+        voices = {}
+    engines = {v.get("engine", "gm") for v in voices.values()} or {"gm"}
+    parts = ["own composition"]
+    if "gm" in engines:
+        parts.append("GeneralUser GS v2.0.3 (free for music creation, commercial OK)")
+    if "sfizz" in engines:
+        parts.append("sfizz (BSD-2) with the oscillator SFZ files in assets/sfz (own, MIT)")
+    if "surge" in engines:
+        parts.append("Surge XT patches: UNVERIFIED, patch licences were not checked (3rdparty patch folders carry their authors' terms); read the patch's licence before publishing")
+    return "; ".join(parts)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("film", type=Path)
@@ -139,6 +156,7 @@ def main() -> int:
     ap.add_argument("--replace", default="music", choices=["groove", "music", "none"], help="which synth music the rendered bed replaces")
     ap.add_argument("--keep", action="append", default=["mb"], help="music kinds kept on top of the bed (action notes)")
     ap.add_argument("--no-bgm", action="store_true")
+    ap.add_argument("--stems", action="store_true", help="BGM through the stem pipeline (mido + Surge XT/sfizz/fluidsynth per part, level-matched stems; references/audio.md §Stems); edit brief.json `voices` to choose instruments")
     ap.add_argument("--check", action="store_true", help="after --run (or alone): headless audio acceptance of the film")
     a = ap.parse_args()
     film = a.film.resolve()
@@ -148,6 +166,8 @@ def main() -> int:
     work.mkdir(exist_ok=True)
     info = read_film(film)
     brief, needs = derive(info, a)
+    if a.stems:
+        brief.setdefault("voices", {})
     (work / "brief.json").write_text(json.dumps(brief, ensure_ascii=False, indent=2))
     (work / "needs.json").write_text(json.dumps({"needs": needs}, ensure_ascii=False, indent=2))
     (work / "plan.json").write_text(json.dumps({"film": film.name, "dur": info["dur"], "bpm": brief["bpm"], "shots": info["shots"], "brief": brief, "needs": needs}, ensure_ascii=False, indent=2))
@@ -168,7 +188,7 @@ def main() -> int:
     if not a.no_bgm:
         spec["sounds"].append({"id": "bgm", "file": "bgm.wav", "role": "music", "cat": "music", "max": info["dur"], "trim": False,
                                "source": "bgm.mid rendered by music_render.py (own composition)", "author": "donghua-maker",
-                               "license": "own composition; rendered with GeneralUser GS v2.0.3 (free for music creation, commercial OK)", "method": "midi-render"})
+                               "license": bgm_license(work), "method": "midi-render"})
         spec["bgm"] = {"id": "bgm", "replace": a.replace, "keep": sorted(set(a.keep))}
     sounds.write_text(json.dumps(spec, ensure_ascii=False, indent=2))
     run([HERE / "sfx_import.py", sounds, "--film", film])
