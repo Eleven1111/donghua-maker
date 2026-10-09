@@ -15,7 +15,7 @@ fails, write down where it stopped working. Read this before briefing a film; ad
 - Use: any look that imitates a real tradition, and any animal or person. Static cast sheet first, then shot 1.
 
 **2. Make the hero bigger than feels right.**
-- Evidence: paper3d — the girl at scale 1 was too small at 16:9, 1.35 passed (`looks/paper3d.md`). Pixel films — 1×
+- Evidence: paper3d — the girl at scale 1 was too small at 16:9, 1.35 passed. Pixel films — 1×
   sprites on a 320×180 buffer were rejected as unreadable (`looks/pixel.md`).
 - Why: the maker looks at full-resolution stills; viewers watch a phone screen, in motion, once.
 - Use: judge hero size on a phone-size still (≈ 400 px wide), not the 2560 px master.
@@ -28,7 +28,7 @@ fails, write down where it stopped working. Read this before briefing a film; ad
 
 **4. Simulate how the real material is made.**
 - Evidence: sand art — clean strokes read as neon tubes; three jittered passes per stroke width made them read as
-  sand (`looks/sandart.md`).
+  sand.
 - Why: viewers recognise a medium by the traces of its process, not by its palette.
 - Use: before writing a new look's renderer, ask how the physical thing is made and code that process.
 
