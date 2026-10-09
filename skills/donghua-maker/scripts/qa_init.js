@@ -55,7 +55,8 @@
         if (maxW && x1 - x0 > maxW) x1 = x0 + maxW;
         const y0 = y - m.actualBoundingBoxAscent, y1 = y + m.actualBoundingBoxDescent, xs = [], ys = [];
         for (const [px, py] of [[x0, y0], [x1, y0], [x0, y1], [x1, y1]]) { xs.push(T.a * px + T.c * py + T.e); ys.push(T.b * px + T.d * py + T.f); }
-        const sub = typeof film !== 'undefined' && !!film._sub;
+        // `film` is in its TDZ while the story draws offscreen text at script load; typeof doesn't guard that.
+        let sub = false; try { sub = !!film._sub; } catch (e) {}
         push(this.canvas, [t.slice(0, 40), xs, ys, !!this.__clip, sub]);
       }
       return o[fn].apply(this, arguments);
