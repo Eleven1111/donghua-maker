@@ -67,7 +67,7 @@ Why a handoff per shot matters: these films read as one continuous chain reactio
 | greeting card / festive / loop for social | 6–12 s | 5–8 short shots | 120–132 bpm, 1–1.5 s cuts on the beat, final hold ≥ 1.5 s |
 | poem or quote, one line per shot | ~2.5 s per line + 1.5 s end hold | one per line | tempo from the reading pace |
 
-Shot lengths don't have to be equal: give the payoff shot room (often 1.3–1.6× the others) and keep setup shots short. Budget note: every shot costs roughly the same to build and verify, so 8 shots is about twice the work of 4. Past about 9 shots or 30 s, split the piece into two films.
+Shot lengths don't have to be equal: give the payoff shot room (often 1.3–1.6× the others) and keep setup shots short. Budget note: every shot costs roughly the same to build and verify, so 8 shots is about twice the work of 4. Past about 9 shots or 30 s, build it in chapters (`references/long-film.md`: one file per chapter, placeholders until drawn) or split it into two films.
 
 ### 2. Scaffold
 ```bash

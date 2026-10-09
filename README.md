@@ -122,6 +122,8 @@ python3 ~/.claude/skills/donghua-maker/scripts/doctor.py --online # 其他终端
 S=~/.claude/skills/donghua-maker/scripts   # 其他终端换成它的技能目录，如 ~/.codex/skills/…
 python3 $S/scaffold.py film.html --title "片名" --format landscape --shots "A,B,C" --durs "4,4,4" --bpm 120
 python3 $S/scaffold.py film.html --title "片名" --look clay3d --shots "A,B,C" --durs "4,4,4"   # 指定风格（3D 风格自动内嵌 three.js）
+python3 $S/chapters.py init 长片/ --title "片名" --chapters "开场:6,第一章:20,第二章:20"   # 长片：一章一个文件
+python3 $S/chapters.py build 长片/                             # → 长片/长片.html（没写的章节先显示占位卡）
 python3 $S/stills.py film.html --shots                         # 画面自检
 python3 $S/fact_check.py film.html --init                      # 生成事实清单，填好后：
 python3 $S/fact_check.py film.html                             # → FACT CHECK PASS
@@ -182,12 +184,12 @@ skills/donghua-maker/        底座
   references/narration.md    解说流程；references/export.md 导出 MP4
   references/                镜头接口、各风格工具箱（looks/）、配色与节奏、音频、事实核对规范
   scripts/                   scaffold / stills / fact_check / audio_director / music_render /
-                             sfx_search / sfx_import / export / voice / narrate / font_embed / profile / doctor
+                             sfx_search / sfx_import / export / voice / narrate / font_embed / profile / doctor / chapters
 ```
 
 ## 设计理念
 
-- **单文件**：一部片子就是一个 HTML 文件，3D 风格也一样（three.js 内嵌），没有构建步骤，改完刷新就能看。
+- **单文件**：一部片子就是一个 HTML 文件，3D 风格也一样（three.js 内嵌），没有构建步骤，改完刷新就能看。超过约 30 秒的长片可以一章一个文件来写，`chapters.py build` 再拼回同样的单文件（`references/long-film.md`）。
 - **画面可以换，动画不用改**：图层按名字取用，代码画的占位图和自己生成的图片可以互相替换。
 - **先网页后视频**：所有修改都在浏览器里完成，确认之后才导出 MP4。
 - **确定性**：不用 `Math.random()`，随机都由种子控制。任意一帧都能复现，离线混音和实时播放的结果一致。

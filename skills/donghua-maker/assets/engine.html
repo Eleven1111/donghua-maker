@@ -23,7 +23,7 @@ canvas{display:block;width:100%;height:100%;cursor:crosshair;touch-action:none}
 #bar button:hover{border-color:var(--line2)}
 button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 #track{flex:1 1 220px;position:relative;height:30px;display:grid;grid-template-columns:repeat(var(--shots,1),1fr);gap:3px;cursor:pointer;touch-action:none;user-select:none}
-#track .seg{border-top:2px solid var(--line);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding-top:6px}
+#track .seg{overflow:hidden;white-space:nowrap;border-top:2px solid var(--line);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding-top:6px}
 #track .seg.on{border-color:var(--accent);color:var(--ink)}
 #head{position:absolute;top:-5px;left:0;width:2px;height:12px;background:var(--ink);transform:translateX(-1px);pointer-events:none}
 #tc{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-variant-numeric:tabular-nums;font-size:12px;color:var(--muted)}
@@ -846,6 +846,8 @@ function pxDisc(g, cx, cy, r, col) { g.fillStyle = col; cx = Math.round(cx); cy 
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
 function pxDither(g, x, y, w, h, a, b, t) { g.fillStyle = a; g.fillRect(x, y, w, h); g.fillStyle = b; for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) { const k = typeof t === 'function' ? t(x + i, y + j) : t; if ((BAYER[((y + j) & 3) * 4 + ((x + i) & 3)] + .5) / 16 < k) g.fillRect(x + i, y + j, 1, 1); } }
 /*__STORY__*/
+// a chapter build (scripts/chapters.py) leaves the bar empty: one segment per shot, made here
+if (!document.querySelector('#track .seg')) SHOTS.forEach(s => { const el = document.createElement('span'); el.className = 'seg'; el.textContent = s.name; document.getElementById('track').insertBefore(el, document.getElementById('head')); });
 document.getElementById('track').style.gridTemplateColumns = SHOTS.map(s => (s.t1 - s.t0) + 'fr').join(' ');
 // ═══ ENGINE · clock, stop-motion stepping, camera, post, sound schedule, interaction ═══════════════
 const Q = new URLSearchParams(location.search);
