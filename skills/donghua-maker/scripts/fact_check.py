@@ -17,6 +17,9 @@ facts.json:
 status: verified (≥1 source URL) · disputed (≥1 source + note naming the other view) · na (no factual content; note says why)
         · todo / unverified → FAIL. `visual` must exist (use [] only when nothing in the picture makes a factual claim:
         maps, positions, flags, uniforms, dates on objects all count).
+schematic: a visual that simplifies or is not to scale (a cutaway, a curve with no real data, a map with moved places)
+        gets "schematic": true and "label": the on-screen string that tells the viewer so. The label must be in the
+        film and contain 示意 (or "schematic" / "not to scale" / "illustrative"); otherwise FAIL.
 The gate also fails when a claim's text no longer appears in the film (text changed after it was checked).
 """
 import argparse
@@ -29,6 +32,7 @@ CJK = re.compile(r"[\u3040-\u30ff\u3400-\u9fff\uf900-\ufaff]")
 LIT = re.compile(r"'((?:[^'\\\n]|\\.)*)'|\"((?:[^\"\\\n]|\\.)*)\"|`([^`]*)`")
 DATE = re.compile(r"[~约c.]*\d{2,4}(?:\s*[–-]\s*\d{2,4})?\s*(?:BCE?|CE|AD|s)?")   # bare years / ranges on rulers
 OK = {"verified", "disputed", "na"}
+SCHEMATIC = ("示意", "schematic", "not to scale", "illustrative")
 
 
 def story(html: str) -> str:
@@ -83,6 +87,10 @@ def check(texts: list, facts: dict) -> list:
             errs.append(f"UNSETTLED  visual {v.get('what')!r} status={v.get('status')!r}")
         elif not v.get("sources") and not v.get("still"):
             errs.append(f"NO EVIDENCE visual {v.get('what')!r} needs a source URL or the still it was checked on")
+        if v.get("schematic"):
+            lab = v.get("label") or ""
+            if lab not in texts or not any(m in lab.lower() for m in SCHEMATIC):
+                errs.append(f"SCHEMATIC  visual {v.get('what')!r} is schematic: `label` must name on-screen text that says 示意 (now {lab!r})")
     return errs
 
 

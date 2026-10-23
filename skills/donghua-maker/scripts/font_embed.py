@@ -28,7 +28,7 @@ CATALOG = {
                "url": "https://github.com/lxgw/LxgwWenKai/releases/download/v1.522/LXGWWenKai-Regular.ttf",
                "home": "https://github.com/lxgw/LxgwWenKai", "license": "SIL Open Font License 1.1",
                "license_url": "https://raw.githubusercontent.com/lxgw/LxgwWenKai/main/OFL.txt"},
-    "notosans": {"family": "Noto Sans SC", "file": "NotoSansSC-wght.ttf",
+    "notosans": {"family": "Noto Sans SC", "file": "NotoSansSC-wght.ttf", "weights": "100 900",
                  "url": "https://github.com/google/fonts/raw/main/ofl/notosanssc/NotoSansSC%5Bwght%5D.ttf",
                  "home": "https://github.com/google/fonts/tree/main/ofl/notosanssc", "license": "SIL Open Font License 1.1",
                  "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosanssc/OFL.txt"},

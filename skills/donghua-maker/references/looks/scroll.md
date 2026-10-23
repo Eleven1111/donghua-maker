@@ -58,4 +58,4 @@ reads as a rewind; `qa.py` counts these steps (*camera steps back*), across seam
 - The near ink range is still fairly regular; the ink hero is a plain silhouette.
 - Pixel and WebGL looks can't be scroll worlds (pixel mode is film-wide; WebGL looks render on their own canvas).
 - Music: seams land on the beat grid, but the score doesn't yet change instrument per world; re-voicing one motif per
-  world is the next step (see `lessons.md`).
+  world is the next step (see `crew/sound.md` › Music motif).

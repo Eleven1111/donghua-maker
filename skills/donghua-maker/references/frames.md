@@ -1,7 +1,7 @@
 # Character frames (opt-in)
 
 Code-drawn puppets stay the default: free, deterministic, and they take any look. Faces and human figures are where
-they fail most. 射日's first cartoon and 小猫钓鱼's first cat head were both rejected (`lessons.md` #1), and in another
+they fail most (the cases: `crew/picture.md` › Bake and approve the characters before animating any shot), and in another
 code-animation skill's 36 looks the character was the weakest part of most of them. When a person, an
 anthropomorphic animal or a recurring hero must read as *right*, draw the character as image frames, by an image
 model or by a person, and let the code do what it is good at: position, size, facing, timing, material, props.

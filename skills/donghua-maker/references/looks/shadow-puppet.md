@@ -24,7 +24,7 @@ Rules learned on 射日:
   - every garment covered in carved lace;
   - flat red, green, blue and black on amber hide;
   - straight one-piece legs and upturned boots.
-- **Show a static cast sheet before animating.** Bake the characters as a still (`shadow-cast.html` in the source project) and get the design approved. Faces took three rounds there: hollow white brows instead of solid ones, and beards that grow from a fine root instead of three sticks.
+- **Show a static cast sheet before animating.** Bake the characters as a still (the source project kept it as a separate cast-sheet page) and get the design approved. Faces took three rounds there: hollow white brows instead of solid ones, and beards that grow from a fine root instead of three sticks.
 - **No rods (签子) in frame.** Real puppets have three, but the user found them cluttered. Let the puppets move on their own.
 - Scale heads up about 1.3× with the part's `s`. The traditional proportion is right, but a 1080-wide phone screen needs the face to read.
 - Keep the story in the silhouette: suns are carved leather discs that blacken (`sh` drawn over them) and tumble out when hit; the dawn swaps the cracked earth for a healed green piece and opens blossoms on the tree's recorded branch tips (`TREE_TIPS`).

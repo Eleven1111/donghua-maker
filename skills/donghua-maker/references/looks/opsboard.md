@@ -5,8 +5,8 @@ scrolls past a reading row; tokens get coloured tags as a small cyan reader pass
 that flies pink across the gap and lands on a fan of ticks (one tick per item), then settles into the colour of the worker
 that took it. One card per worker counts what it did. Under them, a decision stream, a big counter, meters, a sparkline,
 a dot matrix, a ring and a legend, all driven by the same number. Nothing cuts: the picture lives by many small things
-ticking at once, and the end is told by a config window and a centre result card. Terminal (`terminal`) is a single
-green screen that types; HUD (`hud`) is sci-fi instruments; this look is the engineering dashboard of a real workflow.
+ticking at once, and the end is told by a config window and a centre result card. This look is the engineering
+dashboard of a real workflow.
 
 Verified in NIGHT DESK (`assets/example-opsboard.html`, 4:5 `--format feed`, 22 s, one shot): 1,200 trending posts →
 rules drop 1,178, a reading model reads 19, a writing model drafts 3, you pick 1. Then the monthly bill at tonight's

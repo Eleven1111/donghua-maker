@@ -3,6 +3,7 @@
 
     python3 platform_check.py <film>.html                          # default --platforms douyin,xhs
     python3 platform_check.py <film>.html --platforms douyin --step 0.25
+    python3 platform_check.py <film>.html --read-only                # READ alone, any format (lessons, landscape films)
 
 Reads the text the film actually draws (engine hook __film.textBoxes: every fillText/strokeText, transformed, per frame),
 sampled every --step seconds plus the first frame of each shot. Checks, per platform:
@@ -10,6 +11,10 @@ sampled every --step seconds plus the first frame of each shot. Checks, per plat
   CROP     for xhs (3:4) — the 9:16 film is centre-cropped to 3:4, so text must also sit inside the crop, with margin
   OVERLAP  two different texts overlapping by > 20 % of the smaller box (subtitle vs. label included)
   HOOK     readable text on screen by 1.0 s; voice (if any) starts by 0.6 s; first cut by 3.5 s
+  READ     once a text is fully drawn it stays up for (汉字 ÷ 4.5 + letters and digits ÷ 15 + 1.5) s (lemo-opuscar's
+           reading rule). Only text at least 2.5 % of the short side tall counts. A shorter hold is listed as a note;
+           a sentence of 6+ units held under half its time fails. Frames follow the text by position, so counters and
+           typewriter reveals count as one text.
 Exit 1 on any failure.
 
 Safe areas are third-party rules of thumb, not official platform specs (UNVERIFIED — check with a real upload):
@@ -17,6 +22,7 @@ Safe areas are third-party rules of thumb, not official platform specs (UNVERIFI
   like/comment/share column, whose width no source gives (assumption).
 """
 import argparse
+import re
 import sys
 from pathlib import Path
 
@@ -30,6 +36,7 @@ PLATFORMS = {
 SOURCES = ["https://www.secaiyun.com/docs/douyin-kuaishou-video-size-specification-guide-2026-06-02.html",
            "https://zhuanlan.zhihu.com/p/584374300"]
 HOOK_TEXT, HOOK_VOICE, HOOK_CUT = 1.0, .6, 3.5
+READ_CJK, READ_LATIN, READ_BASE, READ_MIN_H, READ_FAIL_UNITS = 4.5, 15, 1.5, .025, 6
 
 
 def area(b):
@@ -38,6 +45,64 @@ def area(b):
 
 def inter(a, b):
     return area([max(a[0], b[0]), max(a[1], b[1]), min(a[2], b[2]), min(a[3], b[3])])
+
+
+def read_need(text):
+    """(reading units, seconds to hold once fully drawn): a 汉字 is one unit, a Latin word or number one unit."""
+    cjk = len(re.findall(r"[一-鿿]", text))
+    latin = re.findall(r"[A-Za-z0-9]+", text)
+    return cjk + len(latin), cjk / READ_CJK + sum(map(len, latin)) / READ_LATIN + READ_BASE
+
+
+def _follow(live, b):
+    """The live text that b continues: same string first, else a box that mostly coincides or is centre-aligned with it."""
+    it = next((i for i in live if i["last"] == b["text"]), None)
+    if it:
+        return it
+    best, score = None, 0
+    for i in live:
+        a, c = i["box"], b["box"]
+        ov = inter(a, c)
+        iou = ov / max(1e-9, area(a) + area(c) - ov)
+        h = min(a[3] - a[1], c[3] - c[1])
+        centred = ov >= .8 * min(area(a), area(c)) and abs(a[0] + a[2] - c[0] - c[2]) < h and abs(a[1] + a[3] - c[1] - c[3]) < h
+        sc = iou if iou > .3 else (.3 if centred else 0)
+        if sc > score:
+            best, score = i, sc
+    return best
+
+
+def read_holds(frames, dur, short_side):
+    """Every non-subtitle text item: (seconds held after fully drawn, seconds needed, units, text, first seen)."""
+    items, live = [], []
+    for k, (t, boxes) in enumerate(frames):
+        t_next = frames[k + 1][0] if k + 1 < len(frames) else dur
+        taken = []
+        for b in boxes:
+            if b["sub"] or not read_need(b["text"])[0] or any(x["last"] == b["text"] for x in taken):
+                continue
+            it = _follow([i for i in live if i not in taken], b)
+            if it is None:
+                it = {"t0": t, "full": t, "text": b["text"], "h": 0}
+                items.append(it)
+            if read_need(b["text"])[0] > read_need(it["text"])[0]:
+                it.update(text=b["text"], full=t)
+            it.update(t1=t_next, box=b["box"], last=b["text"], h=max(it["h"], b["box"][3] - b["box"][1]))
+            taken.append(it)
+        live = taken
+    return [(i["t1"] - i["full"], read_need(i["text"])[1], read_need(i["text"])[0], i["text"], i["t0"])
+            for i in items if i["h"] >= READ_MIN_H * short_side]
+
+
+def read_report(frames, dur, short_side):
+    """READ lines: (failures, notes)."""
+    errs, notes = [], []
+    for held, need, units, text, t0 in sorted(read_holds(frames, dur, short_side), key=lambda r: r[4]):
+        if held >= need:
+            continue
+        msg = f"READ     {text[:24]!r} at {t0:.2f}s is up {held:.1f}s once drawn; {units} units need {need:.1f}s"
+        (errs if units >= READ_FAIL_UNITS and held < need / 2 else notes).append(msg)
+    return errs, notes
 
 
 def frame_rect(W, H, crop):
@@ -53,6 +118,7 @@ def main() -> int:
     ap.add_argument("film", type=Path)
     ap.add_argument("--platforms", default="douyin,xhs")
     ap.add_argument("--step", type=float, default=.25)
+    ap.add_argument("--read-only", action="store_true", help="only the READ check, for any format")
     a = ap.parse_args()
     plats = [p.strip() for p in a.platforms.split(",") if p.strip()]
     bad = [p for p in plats if p not in PLATFORMS]
@@ -66,7 +132,15 @@ def main() -> int:
 
     base, frames = probe(a.film, job)
     W, H = base["W"], base["H"]
-    errs, seen = [], set()
+    read_errs, notes = read_report(frames, base["dur"], min(W, H))
+    if a.read_only:
+        errs = read_errs + [f"PAGE     {e}" for e in base["errors"]]
+        print(f"{W}×{H} · {base['dur']:g}s · {len(frames)} frames sampled · READ only")
+        for e in errs + ["note " + n for n in notes]:
+            print("  " + e)
+        print("READ CHECK " + ("FAIL" if errs else "PASS"))
+        return 1 if errs else 0
+    errs, seen = list(read_errs), set()
 
     def once(key, msg):
         if key not in seen:
@@ -109,6 +183,8 @@ def main() -> int:
     print(f"{W}×{H} · {base['dur']:g}s · {len(frames)} frames sampled · {n} text draws · platforms: {', '.join(PLATFORMS[p]['name'] for p in plats)}")
     for e in errs:
         print("  " + e)
+    for e in notes:
+        print("  note " + e)
     print("safe areas: third-party rules of thumb (UNVERIFIED): " + " ".join(SOURCES))
     print("PLATFORM CHECK " + ("FAIL" if errs else "PASS"))
     return 1 if errs else 0

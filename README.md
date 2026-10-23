@@ -1,36 +1,35 @@
 # donghua-maker
 
-**一句话生成动画短片**：三个遵循 [Agent Skills 开放标准](https://agentskills.io/specification) 的技能加三个一句话出片 Agent，Claude Code、Codex、Cursor、Antigravity、WorkBuddy、OpenClaw 等终端都能用。输入一句主题（"做一个日本历史快速讲解的动画"），自动产出一部**单文件 HTML** 动画短片：画面用 Canvas 2D 或 WebGL（three.js 内嵌）绘制，声音用 Web Audio，全部由代码生成，浏览器里直接播放，也能逐帧导出 MP4。
+**一句话生成动画短片**：三个遵循 [Agent Skills 开放标准](https://agentskills.io/specification) 的技能加一个一句话出片 Agent（`donghua-director`，按请求自动选片型），Claude Code、Codex、Cursor、Antigravity、WorkBuddy、OpenClaw 等终端都能用。输入一句主题（"做一个日本历史快速讲解的动画"），自动产出一部**单文件 HTML** 动画短片：画面用 Canvas 2D 或 WebGL（three.js 内嵌）绘制，声音用 Web Audio，全部由代码生成，浏览器里直接播放，也能逐帧导出 MP4。
 
-Agent Skills (Claude Code, Codex, Cursor, Antigravity, WorkBuddy, OpenClaw…) that turn a one-line idea into a self-contained HTML animated short (Canvas 2D or inlined three.js WebGL + Web Audio) in 28 verified looks, with visual self-checks, a sourced fact gate, an automatic sound pass and a first-use creator profile.
+Agent Skills (Claude Code, Codex, Cursor, Antigravity, WorkBuddy, OpenClaw…) that turn a one-line idea into a self-contained HTML animated short (Canvas 2D or inlined three.js WebGL + Web Audio) in 25 verified looks besides the default paper cut-out, with visual self-checks, a sourced fact gate, an automatic sound pass and a first-use creator profile.
 
 ## 功能
 
-- **28 种画面风格**：默认的纸艺定格之外，每种风格都有说明书（`references/looks/`）和验证过的示例片，用 `scaffold.py --look <名字>` 起片。按用途分：
+- **25 种画面风格**：默认的纸艺定格之外，每种风格都有说明书（`references/looks/`）和验证过的示例片，用 `scaffold.py --look <名字>` 起片。按用途分：
 
   | 用途 | 风格（`--look` 名字，括号里是示例片） |
   |---|---|
   | **讲故事、有角色** | 撕纸拼贴绘本 `torn-paper`（晚安纸条）、皮影戏 `shadow-puppet`（射日）、水彩 `watercolor`（春雨）、美漫分镜 `comic`（夜巡）、**3D 黏土** `clay3d`（小猫钓鱼）、**3D 体素** `voxel`（农场的一天）、**图层卡通讲解** `layered`（十万粉）、像素农场 / 像素技术图解 `pixel`（农场的一天、像素神经网络） |
-  | **讲解知识、数据、产品** | 手绘科普 `explainer`（地球的诞生）、商务财经图解 `biz-explainer`（毛利、股权稀释）、可爱软件演示 `ui-demo`（小克剪辑、小克数据台）、**3D 扁平科普** `flatsci`（月亮为什么会变）、报刊数据图 `editorial`（练习数据）、黑板粉笔 `chalkboard`（黑板课）、工程蓝图 `blueprint`（台灯设计图）、**3D 等距几何** `isometric`（积木城）、金屏说史系列 `gold-scroll`（赤壁之战，60 秒一回）、谐波运动 `harmonic`（圆与波）、科幻界面 `hud`（对接）、控制台大屏 `opsboard`（NIGHT DESK） |
+  | **讲解知识、数据、产品** | 手绘科普 `explainer`（地球的诞生）、商务财经图解 `biz-explainer`（毛利、股权稀释）、可爱软件演示 `ui-demo`（小克剪辑、小克数据台）、**3D 扁平科普** `flatsci`（月亮为什么会变）、**3D 爆炸拆解** `teardown`（安全钳，拆开看）、报刊数据图 `editorial`（练习数据）、黑板粉笔 `chalkboard`（黑板课）、工程蓝图 `blueprint`（台灯设计图）、金屏说史系列 `gold-scroll`（赤壁之战，60 秒一回）、控制台大屏 `opsboard`（NIGHT DESK）、**产品发布片** `launch`（拾事，虚构产品） |
   | **中国传统** | 青绿长卷 `qinglu`（江山市井图）、写意水墨 `inkwash`（清水游虾） |
-  | **版画、素描、胶片** | 浮世绘 `ukiyoe`、博物版画 `naturalplate`、铅笔素描 `pencil`、一笔画 `oneline`、16mm 老纪录片 `film16` |
+  | **版画、胶片** | 浮世绘 `ukiyoe`、16mm 老纪录片 `film16`、**半调档案** `halftone`（跳一下能保命吗） |
   | **文字** | 动态字体 `kinetic`（开口） |
 
   金屏说史用自己的开关起片：`--goldscroll`。长卷穿越片（一个人从左走到右，穿过几种画风，跨边界时人和世界一起换画法）用 `--scroll paper,inkwash,ukiyoe`，示例片「穿过三幅画」，说明书 `references/looks/scroll.md`。
-- **真 3D 风格**：`clay3d`、`voxel`、`isometric`、`flatsci` 用 WebGL 渲染。three.js r158 直接内嵌进片子，所以仍是离线可播的单文件；这几种风格会自动开启 three.js。
+- **真 3D 风格**：`clay3d`、`voxel`、`flatsci`、`teardown` 用 WebGL 渲染。three.js r158 直接内嵌进片子，所以仍是离线可播的单文件；这几种风格会自动开启 three.js。
   - 3D 黏土：立体泥塑表面有指纹、拇指按痕和刀痕，打暖色主光和柔和阴影；角色每秒 12 个姿势，镜头平滑运动。
   - 3D 体素：浮在空中的方块小岛，每块颜色略有差别；一条光照曲线从清晨走到夜晚，窗户亮灯、萤火虫；上下边缘移轴虚化，看起来像微缩模型。
-  - 3D 立体纸艺：每张纸片有厚度、手剪毛边和白色纸芯，前后分层互相投影，镜头推进时有视差；纸偶每秒 12 个姿势。
-  - 3D 积木：积木旋转落下、拼装，带运动模糊；最后是说明书翻页，页面上的步骤图由实时渲染生成。
-  - 等距几何：用正交等距镜头，镜头可以绕场景转；房间一件件搭起来，城市拔地而起、整体换色。
   - 扁平科普：卡通分色着色，星球的晨昏线来自真实光照，月相也由光照得出。
+  - 爆炸拆解：真实材质的物体放在深石墨背景上打影棚光，零件沿各自方向分层拆开再合回，引线从零件上的 3D 点引出；没有工程图就标「示意」。
 - **图层卡通讲解，素材可以换**（`layered`）：画面按有名字的图层组织，比如 `hero.head`、`hero.eyes.happy`、`bg.office`。
   - 默认每层由代码画出占位图：粗细变化的墨线、两级明暗、背景虚化、角色会呼吸眨眼、换眼换嘴；
   - 动画件包括常驻计数器、仪表、堆叠、数值标签、盖章大字、故障转场；
   - 可以用自己生成的图片逐层替换（`LY.image(名字, 图片)`），动画代码不用改，图层清单写在 `looks/layered.md`。
 - **定格质感引擎**：每秒 12 次摆位、镜头平滑运动、纸纹、胶片颗粒、曝光闪烁；跳转任意帧结果都一样，可复现。
 - **首次使用先了解你**（`profile.py`）：先读本机档案；没有就从终端已有的记忆里取你的背景并跟你确认，读不到就问三个小问题。之后按档案自动选场景包、画幅和画风。
-- **一句话出片 Agent（`donghua-director`）**：自己选风格、画幅、时长和分镜，然后写镜头，过三道关卡后交付网页版，中间不问人。
+- **一句话出片 Agent（`donghua-director`）**：先判断片型（讲课 → 课堂，发抖音/小红书 → 自媒体，其余 → 通用），再自己选风格、画幅、时长和分镜，按总导演的流程做完并过各道关卡后交付网页版，中间不问人。
+- **导演组结构**：`SKILL.md` 是总导演（流程和每步的关卡），`crew/` 下是四本分项手册（编剧 / 画面 / 声音 / 审片交付）和三张片型单（通用 / 课堂 / 自媒体）。做到哪一步只读那一步的手册。
 - **事实核对关卡**（`fact_check.py`）：片中每一句屏幕文字都必须登记为三种状态之一：已核实（附来源网址）、有争议（写明另一种说法）、非事实（注明原因）。地图方位这类画面事实也要登记。片子改过字，旧的核对记录自动失效。
 - **画面自检**（`stills.py`）：截出每个镜头开头、中间、结尾的原尺寸静帧，拼成一张总览图，页面报错时判失败。
 - **音频流程**（`audio_director.py`）：
@@ -46,12 +45,12 @@ Agent Skills (Claude Code, Codex, Cursor, Antigravity, WorkBuddy, OpenClaw…) t
   - 解说超出镜头时长就判失败。
 - **可商用字体**（`font_embed.py`）：嵌入霞鹜文楷和 Noto Sans SC（均为 SIL OFL 许可），只保留片中用到的字，并记录授权。
 - **MiniMax 中文解说**（可选，付费）：`voice.py`，默认不启用。
-- **老师场景包**（`donghua-classroom` 加 `classroom-director` Agent）：一句话（如"初二勾股定理"）或一段教案，就能生成讲课用的 16:9 微课：
+- **老师场景包**（`donghua-classroom`，片型单 `crew/types/classroom.md`）：一句话（如"初二勾股定理"）或一段教案，就能生成讲课用的 16:9 微课：
   - 按学段控制语速、停顿和新词数量；
   - 包含学习目标、易错点、回顾和课后小测；
   - 自动生成讲义；
   - **盲测关卡**：没看过脚本的新读者只看影片内容答题，正确率要达到 80% 才能通过。
-- **自媒体场景包**（`donghua-creator` 加 `creator-director` Agent）：一句选题，就能生成可发抖音、视频号、小红书的 9:16 竖屏短片和发布包：
+- **自媒体场景包**（`donghua-creator`，片型单 `crew/types/creator.md`）：一句选题，就能生成可发抖音、视频号、小红书的 9:16 竖屏短片和发布包：
   - **平台关卡**：逐帧读取片中实际画出的文字，检查它是否在平台安全区内、会不会被小红书的 3:4 裁切切掉、文字之间有没有重叠，以及前 3 秒的钩子是否到位；
   - **发布包**：包括两种比例的封面、各平台的标题/简介/话题（有字数检查）和授权清单。素材授权不可商用或来源不明就判失败，CC-BY 素材自动署名；
   - 只导出文件，不代发任何平台。
@@ -108,11 +107,13 @@ python3 ~/.claude/skills/donghua-maker/scripts/doctor.py --online # 其他终端
 
 ```
 用 donghua-director 做一个讲光合作用原理的科普动画
-用 classroom-director 做一节初二勾股定理的微课
-用 creator-director 做一条抖音和小红书的短视频：为什么猫咪爱钻纸箱
+用 donghua-director 做一节初二勾股定理的微课
+用 donghua-director 做一条抖音和小红书的短视频：为什么猫咪爱钻纸箱
 ```
 
-没有子 Agent 的终端（Codex、Antigravity、WorkBuddy、OpenClaw 等）会读 `donghua-maker/directors/` 里对应的说明，由主 Agent 自己按步骤做完。
+没有子 Agent 的终端（Codex、Antigravity、WorkBuddy、OpenClaw 等）会读 `donghua-maker/directors/` 里的 donghua-director.md，由主 Agent 自己按步骤做完。
+
+从旧版升级：`classroom-director` 和 `creator-director` 已并入 `donghua-director`。`install.sh` 不会删除旧文件，请手动删掉你的 agents 目录（如 `~/.claude/agents/`）里的这两个文件。
 
 老师场景包做完后，由主会话另派一个新上下文的 Agent 只看 `film-lesson/blind/packet.md` 答题，然后运行 `lesson_check.py film.html --blind`。
 
@@ -159,23 +160,26 @@ AGENTS.md                    给改仓库的 Agent 看的规则（CLAUDE.md 引�
 tools/validate.py            仓库关卡：技能规范、失效链接、脚本自检、每种风格各起一部空片的冒烟测试、密钥扫描
 .github/workflows/           CI：官方 skills-ref 校验 + validate.py + 安装器演练
 agents/
-  donghua-director.md        一句话出片 Agent
-  classroom-director.md      老师一句话出微课 Agent
-  creator-director.md        自媒体一句话出片 Agent
+  donghua-director.md        一句话出片 Agent（自动判断片型：通用 / 课堂 / 自媒体）
 skills/donghua-classroom/    老师场景包（建立在底座之上，不改引擎）
-  SKILL.md                   学段节奏表、课程结构、解说/字幕/字体/盲测流程
+  SKILL.md                   触发词；内容在底座的 crew/types/classroom.md
   scripts/lesson_check.py    课程关卡：目标、关键词、语速、停顿、小测证据、盲测 → 讲义.md
 skills/donghua-creator/      自媒体场景包（建立在底座之上，不改引擎）
-  SKILL.md                   钩子、竖屏构图、文案规则、平台关卡、发布包
+  SKILL.md                   触发词；内容在底座的 crew/types/creator.md
   scripts/platform_check.py  安全区 / 3:4 裁切 / 文字重叠 / 钩子
   scripts/publish_kit.py     封面、各平台文案、授权清单 → 发布包.md
 skills/donghua-maker/        底座
-  SKILL.md                   完整工作流：分镜 → 骨架 → 镜头 → 音频 → 事实核对 → 验证 → 交付 → 导出
+  SKILL.md                   总导演：工作流 0–8 步，每步产出、该读的手册和关卡
+  crew/story.md              编剧手册：立意、分镜表、事实核对、长片
+  crew/picture.md            画面手册：骨架、镜头、角色、静帧与节奏检查
+  crew/sound.md              声音手册：配乐、音效、解说
+  crew/review.md             审片交付手册：浏览器检查、阅读停留、独立审片、导出
+  crew/types/                片型单：general / classroom / creator
   assets/engine.html         引擎模板
   assets/example-*.html      每种风格验证过的示例片
   assets/toolkit-goldscroll.js 金屏说史模块库（--goldscroll 时注入）
   assets/sfz/                 三个不用采样文件的 SFZ 乐器（贝斯、拨弦、铺底），配乐分轨流程用
-  assets/toolkit-<look>.js    各风格的模块库（--look <look> 时注入；用到 THREE 的会自动内嵌 three.js：clay3d / voxel / isometric / flatsci）
+  assets/toolkit-<look>.js    各风格的模块库（--look <look> 时注入；用到 THREE 的会自动内嵌 three.js：clay3d / voxel / flatsci / teardown）
   assets/lib/                three.js r158（MIT，附 LICENSE 与 sources.json）
   references/catalog.md      全部示例片目录（选定风格后再读，不占主文件篇幅）
   references/setup.md        新机器安装：体检、每项依赖对应的功能、key 的读取顺序、字体下载不了怎么办

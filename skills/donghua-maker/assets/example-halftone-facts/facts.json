@@ -1,0 +1,250 @@
+{
+ "topic": "电梯坠落时最后一刻起跳能否保命（传言辨析）",
+ "claims": [
+  {
+   "text": "15",
+   "claim": "the car's floor indicator shows 15, the storey of the exhibit's fall",
+   "status": "verified",
+   "sources": [
+    "https://www.wtamu.edu/~cbaird/sq/2012/12/05/if-im-on-an-elevator-that-breaks-loose-and-plummets-down-the-shaft-can-i-avoid-harm-by-jumping-at-the-last-second/"
+   ],
+   "note": "same case as 15 楼 ≈ 50 米"
+  },
+  {
+   "text": "档案 No.07",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "case-file prop label (fictional numbering)"
+  },
+  {
+   "text": "电梯坠落传言",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "subject label of the file"
+  },
+  {
+   "text": "立案",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "shot name"
+  },
+  {
+   "text": "50",
+   "claim": "the giant numeral is the fall height in metres",
+   "status": "verified",
+   "sources": [
+    "https://www.wtamu.edu/~cbaird/sq/2012/12/05/if-im-on-an-elevator-that-breaks-loose-and-plummets-down-the-shaft-can-i-avoid-harm-by-jumping-at-the-last-second/"
+   ],
+   "note": "165 ft = 50.3 m"
+  },
+  {
+   "text": "落地前",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "headline: the rumour asked as a question, refuted in shot 3"
+  },
+  {
+   "text": "跳一下，",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "headline: the rumour as a question"
+  },
+  {
+   "text": "能保命吗？",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "headline: the rumour as a question"
+  },
+  {
+   "text": "证物 A",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "exhibit label"
+  },
+  {
+   "text": "15 楼 ≈ 50 米",
+   "claim": "a 15-storey fall is about 50 m",
+   "status": "verified",
+   "sources": [
+    "https://www.wtamu.edu/~cbaird/sq/2012/12/05/if-im-on-an-elevator-that-breaks-loose-and-plummets-down-the-shaft-can-i-avoid-harm-by-jumping-at-the-last-second/"
+   ],
+   "note": "Baird's worked case: 165 feet, about 15 floors; 165 ft = 50.3 m"
+  },
+  {
+   "text": "取证",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "shot name"
+  },
+  {
+   "text": "做不到",
+   "claim": "timing it that precisely is essentially impossible",
+   "status": "verified",
+   "sources": [
+    "https://www.scienceabc.com/pure-sciences/would-it-help-if-you-jumped-in-a-free-falling-elevator-just-when-it-hit-the-ground"
+   ],
+   "note": "「which is essentially impossible」"
+  },
+  {
+   "text": "人是飘着的",
+   "claim": "in free fall the passenger is weightless and floats inside the car",
+   "status": "verified",
+   "sources": [
+    "https://www.scienceabc.com/pure-sciences/would-it-help-if-you-jumped-in-a-free-falling-elevator-just-when-it-hit-the-ground",
+    "https://www.thenakedscientists.com/articles/questions/could-i-survive-falling-elevator-jumping-last-second"
+   ],
+   "note": "Science ABC: 「In a true free fall you are weightless, floating freely inside the car」"
+  },
+  {
+   "text": "证物 B",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "exhibit label"
+  },
+  {
+   "text": "失重",
+   "claim": "the passenger in a falling car is weightless",
+   "status": "verified",
+   "sources": [
+    "https://www.scienceabc.com/pure-sciences/would-it-help-if-you-jumped-in-a-free-falling-elevator-just-when-it-hit-the-ground",
+    "https://www.thenakedscientists.com/articles/questions/could-i-survive-falling-elevator-jumping-last-second"
+   ],
+   "note": ""
+  },
+  {
+   "text": "到毫秒",
+   "claim": "as above",
+   "status": "verified",
+   "sources": [
+    "https://www.scienceabc.com/pure-sciences/would-it-help-if-you-jumped-in-a-free-falling-elevator-just-when-it-hit-the-ground"
+   ],
+   "note": "second line of the same note"
+  },
+  {
+   "text": "失重：",
+   "claim": "as above",
+   "status": "verified",
+   "sources": [
+    "https://www.scienceabc.com/pure-sciences/would-it-help-if-you-jumped-in-a-free-falling-elevator-just-when-it-hit-the-ground",
+    "https://www.thenakedscientists.com/articles/questions/could-i-survive-falling-elevator-jumping-last-second"
+   ],
+   "note": "caption lead-in"
+  },
+  {
+   "text": "脚下踩不实",
+   "claim": "weightless, the feet have nothing to push against",
+   "status": "verified",
+   "sources": [
+    "https://www.kepuchina.cn/book/202205/t20220511_3135871.shtml",
+    "https://www.scienceabc.com/pure-sciences/would-it-help-if-you-jumped-in-a-free-falling-elevator-just-when-it-hit-the-ground"
+   ],
+   "note": "科普中国: 「人在失重状态下，是根本跳不起来的」; Science ABC: 「nothing pressing you against the floor」"
+  },
+  {
+   "text": "结案",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "shot name"
+  },
+  {
+   "text": "不成立",
+   "claim": "the rumour (a last-second jump saves you) does not hold",
+   "status": "verified",
+   "sources": [
+    "https://www.thenakedscientists.com/articles/questions/could-i-survive-falling-elevator-jumping-last-second",
+    "https://www.wtamu.edu/~cbaird/sq/2012/12/05/if-im-on-an-elevator-that-breaks-loose-and-plummets-down-the-shaft-can-i-avoid-harm-by-jumping-at-the-last-second/"
+   ],
+   "note": "Naked Scientists: 「as it turns out, you can't」; Baird: 「would help, but not much」 (72 → 65 mph)"
+  },
+  {
+   "text": "跳一下，照样",
+   "claim": "after the jump the impact is still far too fast to survive unhurt",
+   "status": "verified",
+   "sources": [
+    "https://www.wtamu.edu/~cbaird/sq/2012/12/05/if-im-on-an-elevator-that-breaks-loose-and-plummets-down-the-shaft-can-i-avoid-harm-by-jumping-at-the-last-second/",
+    "https://www.thenakedscientists.com/articles/questions/could-i-survive-falling-elevator-jumping-last-second"
+   ],
+   "note": "caption lead-in; Baird 72 → 65 mph"
+  },
+  {
+   "text": "扛不住",
+   "claim": "the remaining impact still breaks legs or kills",
+   "status": "verified",
+   "sources": [
+    "https://www.thenakedscientists.com/articles/questions/could-i-survive-falling-elevator-jumping-last-second",
+    "https://www.wtamu.edu/~cbaird/sq/2012/12/05/if-im-on-an-elevator-that-breaks-loose-and-plummets-down-the-shaft-can-i-avoid-harm-by-jumping-at-the-last-second/"
+   ],
+   "note": "Naked Scientists: 「it breaks your legs and kills you」"
+  },
+  {
+   "text": "好消息",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "chip label"
+  },
+  {
+   "text": "电梯几乎不可能掉到底",
+   "claim": "a car falling all the way to the pit is almost impossible",
+   "status": "verified",
+   "sources": [
+    "https://www.kepuchina.cn/book/202205/t20220511_3135871.shtml",
+    "https://www.wtamu.edu/~cbaird/sq/2012/12/05/if-im-on-an-elevator-that-breaks-loose-and-plummets-down-the-shaft-can-i-avoid-harm-by-jumping-at-the-last-second/"
+   ],
+   "note": "科普中国: 「轿厢完全掉到井底，是几乎不可能的」; Baird: a backup brake engages when the car starts to fall"
+  },
+  {
+   "text": "起跳要卡准",
+   "claim": "the jump would have to be timed within milliseconds",
+   "status": "verified",
+   "sources": [
+    "https://www.scienceabc.com/pure-sciences/would-it-help-if-you-jumped-in-a-free-falling-elevator-just-when-it-hit-the-ground"
+   ],
+   "note": "「You would also have to time it to within milliseconds while disoriented and weightless」"
+  }
+ ],
+ "visual": [
+  {
+   "what": "the passenger floats inside the falling car and clear of the floor line on the height board",
+   "shot": 2,
+   "t": 5.3,
+   "status": "verified",
+   "sources": [
+    "https://www.scienceabc.com/pure-sciences/would-it-help-if-you-jumped-in-a-free-falling-elevator-just-when-it-hit-the-ground",
+    "https://www.thenakedscientists.com/articles/questions/could-i-survive-falling-elevator-jumping-last-second"
+   ],
+   "note": "free fall: weightless, floating inside the car"
+  },
+  {
+   "what": "the floor indicator counts down 15 → 1 while the car falls (shot 1) and reads 1 in shot 3",
+   "shot": 1,
+   "t": 2.2,
+   "status": "verified",
+   "sources": [
+    "https://www.wtamu.edu/~cbaird/sq/2012/12/05/if-im-on-an-elevator-that-breaks-loose-and-plummets-down-the-shaft-can-i-avoid-harm-by-jumping-at-the-last-second/"
+   ],
+   "note": "a 15-floor fall as in Baird's case; the countdown speed (0.17 s a floor) is illustrative, not to scale"
+  },
+  {
+   "what": "the hoist cable is drawn snapped above the falling car",
+   "shot": 1,
+   "t": 1.6,
+   "status": "disputed",
+   "sources": [
+    "https://www.kepuchina.cn/book/202205/t20220511_3135871.shtml",
+    "https://www.wtamu.edu/~cbaird/sq/2012/12/05/if-im-on-an-elevator-that-breaks-loose-and-plummets-down-the-shaft-can-i-avoid-harm-by-jumping-at-the-last-second/"
+   ],
+   "note": "the rumour's premise, not a likely event: 科普中国 「轿厢完全掉到井底，是几乎不可能的」, Baird: a backup brake engages when the car starts to fall; the film's closing chip says 电梯几乎不可能掉到底"
+  }
+ ]
+}

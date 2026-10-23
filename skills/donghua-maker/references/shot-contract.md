@@ -2,19 +2,6 @@
 
 Read this before writing any shot code. Everything here exists in `assets/engine.html`; the verified full example is `assets/example-red-kite.html` (4 shots, 10 s, landscape) — open it and copy patterns from it rather than inventing new ones.
 
-## Contents
-1. Clock model
-2. The shot object
-3. Library: drawing
-4. Library: physics
-5. Library: puppets
-6. Library: sound
-7. Cross-shot continuity
-7b. Look toolkits → `references/looks/`
-7c. Transitions (optional)
-8. Test hooks
-9. Narration
-
 ## 1. Clock model
 
 - Film runs at 60 fps. Simulation `step()` runs on every frame at fixed dt = 1/60.
@@ -117,45 +104,6 @@ rather than inventing a new place for every beat.
 
 A hero prop that travels between shots (the kite) should be a shared rig: `xxxRig()`, `xxxStep()`, `xxxSnap()`, `xxxDraw()` defined once, reused by each shot, with sprites baked in the first shot's build() (boot builds shots in order). End each shot where the next begins: same prop, same direction of travel, same colour accent.
 
-## 7b. Look toolkits (one file per look)
-
-Look-specific helpers and rules each have a file in `references/looks/`. Read the file for the look you are building, and only that one:
-
-| look | file | verified example |
-|---|---|---|
-| pixel art / farm-sim (`--pixel N`) | `looks/pixel.md` | `assets/example-pixel-farm.html` |
-| pixel diagram / neural-net explainer (`--pixel 4`) | `looks/pixel.md` (§ Pixel diagram) | `assets/example-pixel-neural.html` |
-| cute software demo / 可爱软件演示 (kawaii flat UI) | `looks/ui-demo.md` | `assets/example-ui-demo-editor.html`, `assets/example-ui-demo-dashboard.html` |
-| business / finance explainer / 商务财经图解 | `looks/biz-explainer.md` | `assets/example-biz-margin.html`, `assets/example-biz-equity.html` |
-| hand-drawn explainer | `looks/explainer.md` | `assets/example-earth-explainer.html` |
-| American comic | `looks/comic.md` | `assets/example-comic-night-watch.html` |
-| torn-paper collage | `looks/torn-paper.md` | `assets/example-torn-paper-night.html` |
-| shadow puppet / 皮影 | `looks/shadow-puppet.md` | `assets/example-shadow-archer.html` |
-| watercolour / 水彩 | `looks/watercolor.md` | `assets/example-spring-rain.html` |
-| 3D clay / 3D 黏土定格 (three.js, `--look clay3d`) | `looks/clay3d.md` | `assets/example-clay3d.html` |
-| 3D voxel / 3D 体素 (three.js, `--look voxel`) | `looks/voxel.md` | `assets/example-voxel.html` |
-| 金屏说史 gold-scroll history series (`--goldscroll`) | `looks/gold-scroll.md` | `assets/example-gold-scroll-chibi.html` |
-| 谐波运动 / harmonic motion (`--look harmonic`) | `looks/harmonic.md` | `assets/example-harmonic.html` |
-| 浮世绘 / ukiyo-e woodblock (`--look ukiyoe`) | `looks/ukiyoe.md` | `assets/example-ukiyoe.html` |
-| 博物版画 / natural-history plate (`--look naturalplate`) | `looks/naturalplate.md` | `assets/example-naturalplate.html` |
-| 青绿长卷 / blue-green handscroll (`--look qinglu`) | `looks/qinglu.md` | `assets/example-qinglu.html` |
-| 长卷穿越 / long scroll (`--scroll paper,inkwash,…`) | `looks/scroll.md` | `assets/example-scroll.html` |
-| 写意水墨 / ink wash (Qi Baishi study) (`--look inkwash`) | `looks/inkwash.md` | `assets/example-inkwash.html` |
-| 等距几何 / isometric blocks (three.js, `--look isometric`) | `looks/isometric.md` | `assets/example-isometric.html` |
-| 黑板粉笔 / Chalkboard (`--look chalkboard`) | `looks/chalkboard.md` | `assets/example-chalkboard.html` |
-| 工程蓝图 / Blueprint (`--look blueprint`) | `looks/blueprint.md` | `assets/example-blueprint.html` |
-| 一笔画 / One-line drawing (`--look oneline`) | `looks/oneline.md` | `assets/example-oneline.html` |
-| 铅笔素描 / Pencil sketch (`--look pencil`) | `looks/pencil.md` | `assets/example-pencil.html` |
-| 16mm 老纪录片 / 16 mm documentary (`--look film16`) | `looks/film16.md` | `assets/example-film16.html` |
-| 科幻界面 / Sci-fi HUD (`--look hud`) | `looks/hud.md` | `assets/example-hud.html` |
-| 控制台大屏 / Ops board (`--look opsboard`) | `looks/opsboard.md` | `assets/example-opsboard.html` |
-| 动态字体 / Kinetic typography (`--look kinetic`) | `looks/kinetic.md` | `assets/example-kinetic.html` |
-| 扁平科普 / Flat science explainer (three.js, `--look flatsci`) | `looks/flatsci.md` | `assets/example-flatsci.html` |
-| 报刊数据图 / Editorial data graphics (`--look editorial`) | `looks/editorial.md` | `assets/example-editorial.html` |
-| 图层卡通讲解 / Layered cartoon explainer (`--look layered`) | `looks/layered.md` | `assets/example-layered.html` |
-
-Paper cut-out (the default look) uses only the core library above; see `assets/example-red-kite.html`. When a new look is verified in a real film, add a file here rather than growing this one.
-
 ## 7c. Transitions (optional)
 
 A hard cut on the beat is the default and is usually right. When a cut should *say* something, a shot opens with a
@@ -189,6 +137,7 @@ const S2 = { name: 'Pond', t0: 4, t1: 8, enter: { kind: 'ink', dur: .6, at: [.5,
 ## 8. Test hooks
 
 `?t=3.2` opens at 3.2 s, `?ui=0` bare frame, `window.__film.seek(frame)`, `.info()`, `.score()`, `await .wav()` (base64 WAV of the full mix; byte length should be `44 + DUR*48000*4`).
+`.textBoxes(frame)`: every text drawn in that frame with its string and canvas box, subtitles tagged; scene packs use it for safe-area, overlap and reading-hold checks. Text baked into a sprite is invisible to it.
 ## 9. Narration (`k: 'vo'`)
 
 - `VO.src = ['<base64 mp3>', …]`: set this in the story before `SHOTS`. The engine calls `voReady()` at boot and `await`s it in `renderWav()`.
