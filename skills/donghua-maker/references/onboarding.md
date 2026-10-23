@@ -34,9 +34,9 @@ The file is `~/.config/donghua/profile.md` (or `$DONGHUA_PROFILE`), plain Markdo
 |---|---|
 | teacher, 讲课, 课堂 | `donghua-classroom` pack: 16:9, narration + subtitles, pace by grade, quiz and handout; looks `chalkboard`, `explainer`, `flatsci`, `blueprint` |
 | 自媒体, 抖音/视频号/小红书 | `donghua-creator` pack: 9:16, 3-second hook, safe areas, publish kit; looks `layered`, `kinetic`, `biz-explainer`, `comic` |
-| product, SaaS, 市场 | `ui-demo`, `isometric`, `kinetic`; 16:9 for sites, 9:16 for social; claims go through the fact gate |
+| product, SaaS, 市场 | `ui-demo`, `kinetic` (software), `teardown` (a physical product's insides); 16:9 for sites, 9:16 for social; claims go through the fact gate |
 | children's stories, 绘本 | `torn-paper`, `clay3d`, `watercolor`, `voxel`; slower bpm, no on-screen jargon |
-| art, 实验 | `inkwash`, `ukiyoe`, `oneline`, `harmonic`, music-led, few words |
+| art, 实验 | `inkwash`, `ukiyoe`, music-led, few words |
 | likes / avoid | shortlist or strike looks; an explicit request in the session always wins |
 | language | on-screen text and narration language |
 

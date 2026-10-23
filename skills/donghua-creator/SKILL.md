@@ -31,12 +31,13 @@ Write the brief in the film's `checkpoint.md` section, not in a new file. It nee
 - **Sound.** Use a brighter mood (`bright-tech`, `cute`, `warm-business`). Follow the base narration mix rules: no ambience bed under the voice. `audio_director --check` lists `offGrid` cues. That list is informational: word-timed labels and picture-tied sfx sit off the music grid on purpose; only cuts must be on it.
 
 ## 3. Gates (all must pass on the final file)
-1. **Base gates.** `stills.py` (0 page errors), `fact_check.py` PASS, `narrate.py --check` PASS, `font_embed.py --check` PASS and `audio_director.py --check` PASS.
+1. **Base gates.** `stills.py` (0 page errors), `fact_check.py` PASS, `narrate.py --check` PASS, `font_embed.py --check` PASS, `audio_director.py --check` PASS, `voice_check.py` PASS (or each line it lists listened to) and `pace.py` PASS (`references/craft-checks.md` §5–7).
 2. **`python3 scripts/platform_check.py <film>.html`** must print PLATFORM CHECK PASS. It reads every piece of text the film draws, frame by frame (`__film.textBoxes`), and checks:
    - **SAFE**: text stays inside 抖音's safe area (top, bottom, sides, and the right-hand button column);
    - **CROP**: text also fits inside the 小红书 3:4 crop;
    - **OVERLAP**: no two texts collide, subtitles included;
-   - **HOOK**: text by 1.0 s, voice by 0.6 s, and the first cut by 3.5 s.
+   - **HOOK**: text by 1.0 s, voice by 0.6 s, and the first cut by 3.5 s;
+   - **READ**: once fully drawn, each text stays up for 汉字 ÷ 4.5 + 1.5 s. A sentence of 6+ characters held under half that fails; shorter holds are notes. Watch the end card, which the film's end cuts short.
 
    Text baked into a sprite with `drawImage` is invisible to it, so draw labels live.
 3. **`python3 scripts/publish_kit.py <film>.html`** reads `<film>-publish/pack.json` and must print PUBLISH KIT PASS. It checks:
@@ -58,6 +59,6 @@ Platform numbers are third-party rules of thumb, and the right-column width is a
 - `<film>-publish/` holds `cover-9x16.jpg`, `cover-3x4.jpg`, `发布包.md` (copy-paste text per platform, attributions, licence table) and the `.srt`.
 - **Never post to any platform.** The creator uploads the files themselves.
 - Always list as UNVERIFIED:
-  - nobody has listened to the voice;
+  - nobody has listened to the voice (`voice_check.py` only transcribed it);
   - the safe areas haven't been previewed on a real account;
   - edge-tts commercial terms. For monetised accounts, recommend recording their own voice over the same script, or a licensed TTS.

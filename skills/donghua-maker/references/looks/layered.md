@@ -15,6 +15,35 @@ Verified in 十万粉 (`assets/example-layered.html`, 16:9, 12 s, 3 shots, 120 b
 - the traffic gauge swings, likes pile up with 1万/5万/10万 tags, and 爆了！ stamps down;
 - a wall of screens, comment bubbles, a fist pump, and 十万粉达成！.
 
+## Signature features
+Checked against stills and strips (`review.md` item 8); numbers are the toolkit's defaults.
+- Ink with two weights: the silhouette is stroked at `lw × 2` under the fill, so `lw` shows; inner lines are
+  `max(2, lw × .35)`, about a third of it. Lashes, brows and strands are tapered strokes (`LY.taper`).
+- Cel shading: a second tone where the shape is shifted by its own `dx, dy` (the hero's fist: 18, 10), plus a
+  top-left light gradient. Never a flat fill alone.
+- Depth in four planes: blurred, darkened ground → sharp character → sharp props → 2D UI on top.
+- Pop-ins (`LY.pop`, back-ease c = 2.2) overshoot to 1.15× about halfway and land on a beat; each pile
+  item pops in over 0.25 s.
+- Stamps slam from 1.8×, dip to about 0.88× and settle, tilted −0.06 rad, shaking sideways up to
+  ±10 px as they land, with a `thump`.
+- The rig lives in every shot: breathing (body ±1.2 % every 2.4 s), head sway ±0.03 rad, a 0.15 s blink every 3.7 s,
+  mouth swaps 8 per second while talking.
+- Glitch only at cuts, about 0.15 s each side: 14 slices shifted up to ±130 px plus a 14 px colour offset.
+
+## What it is not
+- Not flat motion graphics: a shape without an ink silhouette and a cel shadow is the look's known failure (Pitfalls).
+- Not the whiteboard explainers (`explainer`, `biz-*`): no line drawing itself onto paper; the picture is full colour
+  and staged in depth from the first frame.
+- Not comic pages (`comic`): no panel borders, halftone dots or speech balloons; one stage seen through a moving camera.
+- Not a copy of a channel: the grammar is shared, the characters and scenes are ours.
+
+## What may change
+| tier | elements | evidence |
+|---|---|---|
+| safe to change | palette (keep dark ink and two tones), the hero (own `LY.image` layers or a new `LY.bake` rig), props, scenes, format, the HUD counter, gauge and pile (story-dependent) | the elevator film: 9:16, its own passenger rig, no HUD, gauge or pile, approved for render |
+| changes the character, try one frame first | blurred backdrops (the elevator film used plain filled grounds instead), glitch cuts, stamp shake, rays and sparkles | they carry the look's energy; dropping several at once leaves a plain cartoon |
+| can't change | the depth order (ground → sharp character → sharp props → 2D UI); variable-weight ink with two tones, never flat fill alone; the named-layer rig (breathe, blink, mouth and eye swaps); pop-ins with overshoot landing on the beat | the first placeholder broke the ink rule and was called too rough |
+
 ## Two ways to make the pictures
 1. **Code-drawn placeholders (default).** Every layer is painted by code (`LY.bake`), so the film works as one HTML file with no assets. The toolkit's placeholder hero, 小林, is fully drawn this way. This is about 70% of the detail of an illustrated original.
 2. **Your own images.** Generate the layers yourself (for example with an image model you are licensed to use) and register each one with `LY.image(name, dataURI, { ax, ay })` before the shots run. The animation code does not change, because it only asks for layers by name.

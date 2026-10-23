@@ -2,28 +2,26 @@
 
 **一句话生成动画短片**：三个遵循 [Agent Skills 开放标准](https://agentskills.io/specification) 的技能加三个一句话出片 Agent，Claude Code、Codex、Cursor、Antigravity、WorkBuddy、OpenClaw 等终端都能用。输入一句主题（"做一个日本历史快速讲解的动画"），自动产出一部**单文件 HTML** 动画短片：画面用 Canvas 2D 或 WebGL（three.js 内嵌）绘制，声音用 Web Audio，全部由代码生成，浏览器里直接播放，也能逐帧导出 MP4。
 
-Agent Skills (Claude Code, Codex, Cursor, Antigravity, WorkBuddy, OpenClaw…) that turn a one-line idea into a self-contained HTML animated short (Canvas 2D or inlined three.js WebGL + Web Audio) in 28 verified looks, with visual self-checks, a sourced fact gate, an automatic sound pass and a first-use creator profile.
+Agent Skills (Claude Code, Codex, Cursor, Antigravity, WorkBuddy, OpenClaw…) that turn a one-line idea into a self-contained HTML animated short (Canvas 2D or inlined three.js WebGL + Web Audio) in 25 verified looks besides the default paper cut-out, with visual self-checks, a sourced fact gate, an automatic sound pass and a first-use creator profile.
 
 ## 功能
 
-- **28 种画面风格**：默认的纸艺定格之外，每种风格都有说明书（`references/looks/`）和验证过的示例片，用 `scaffold.py --look <名字>` 起片。按用途分：
+- **25 种画面风格**：默认的纸艺定格之外，每种风格都有说明书（`references/looks/`）和验证过的示例片，用 `scaffold.py --look <名字>` 起片。按用途分：
 
   | 用途 | 风格（`--look` 名字，括号里是示例片） |
   |---|---|
   | **讲故事、有角色** | 撕纸拼贴绘本 `torn-paper`（晚安纸条）、皮影戏 `shadow-puppet`（射日）、水彩 `watercolor`（春雨）、美漫分镜 `comic`（夜巡）、**3D 黏土** `clay3d`（小猫钓鱼）、**3D 体素** `voxel`（农场的一天）、**图层卡通讲解** `layered`（十万粉）、像素农场 / 像素技术图解 `pixel`（农场的一天、像素神经网络） |
-  | **讲解知识、数据、产品** | 手绘科普 `explainer`（地球的诞生）、商务财经图解 `biz-explainer`（毛利、股权稀释）、可爱软件演示 `ui-demo`（小克剪辑、小克数据台）、**3D 扁平科普** `flatsci`（月亮为什么会变）、报刊数据图 `editorial`（练习数据）、黑板粉笔 `chalkboard`（黑板课）、工程蓝图 `blueprint`（台灯设计图）、**3D 等距几何** `isometric`（积木城）、金屏说史系列 `gold-scroll`（赤壁之战，60 秒一回）、谐波运动 `harmonic`（圆与波）、科幻界面 `hud`（对接）、控制台大屏 `opsboard`（NIGHT DESK） |
+  | **讲解知识、数据、产品** | 手绘科普 `explainer`（地球的诞生）、商务财经图解 `biz-explainer`（毛利、股权稀释）、可爱软件演示 `ui-demo`（小克剪辑、小克数据台）、**3D 扁平科普** `flatsci`（月亮为什么会变）、**3D 爆炸拆解** `teardown`（安全钳，拆开看）、报刊数据图 `editorial`（练习数据）、黑板粉笔 `chalkboard`（黑板课）、工程蓝图 `blueprint`（台灯设计图）、金屏说史系列 `gold-scroll`（赤壁之战，60 秒一回）、控制台大屏 `opsboard`（NIGHT DESK）、**产品发布片** `launch`（拾事，虚构产品） |
   | **中国传统** | 青绿长卷 `qinglu`（江山市井图）、写意水墨 `inkwash`（清水游虾） |
-  | **版画、素描、胶片** | 浮世绘 `ukiyoe`、博物版画 `naturalplate`、铅笔素描 `pencil`、一笔画 `oneline`、16mm 老纪录片 `film16` |
+  | **版画、胶片** | 浮世绘 `ukiyoe`、16mm 老纪录片 `film16`、**半调档案** `halftone`（跳一下能保命吗） |
   | **文字** | 动态字体 `kinetic`（开口） |
 
   金屏说史用自己的开关起片：`--goldscroll`。长卷穿越片（一个人从左走到右，穿过几种画风，跨边界时人和世界一起换画法）用 `--scroll paper,inkwash,ukiyoe`，示例片「穿过三幅画」，说明书 `references/looks/scroll.md`。
-- **真 3D 风格**：`clay3d`、`voxel`、`isometric`、`flatsci` 用 WebGL 渲染。three.js r158 直接内嵌进片子，所以仍是离线可播的单文件；这几种风格会自动开启 three.js。
+- **真 3D 风格**：`clay3d`、`voxel`、`flatsci`、`teardown` 用 WebGL 渲染。three.js r158 直接内嵌进片子，所以仍是离线可播的单文件；这几种风格会自动开启 three.js。
   - 3D 黏土：立体泥塑表面有指纹、拇指按痕和刀痕，打暖色主光和柔和阴影；角色每秒 12 个姿势，镜头平滑运动。
   - 3D 体素：浮在空中的方块小岛，每块颜色略有差别；一条光照曲线从清晨走到夜晚，窗户亮灯、萤火虫；上下边缘移轴虚化，看起来像微缩模型。
-  - 3D 立体纸艺：每张纸片有厚度、手剪毛边和白色纸芯，前后分层互相投影，镜头推进时有视差；纸偶每秒 12 个姿势。
-  - 3D 积木：积木旋转落下、拼装，带运动模糊；最后是说明书翻页，页面上的步骤图由实时渲染生成。
-  - 等距几何：用正交等距镜头，镜头可以绕场景转；房间一件件搭起来，城市拔地而起、整体换色。
   - 扁平科普：卡通分色着色，星球的晨昏线来自真实光照，月相也由光照得出。
+  - 爆炸拆解：真实材质的物体放在深石墨背景上打影棚光，零件沿各自方向分层拆开再合回，引线从零件上的 3D 点引出；没有工程图就标「示意」。
 - **图层卡通讲解，素材可以换**（`layered`）：画面按有名字的图层组织，比如 `hero.head`、`hero.eyes.happy`、`bg.office`。
   - 默认每层由代码画出占位图：粗细变化的墨线、两级明暗、背景虚化、角色会呼吸眨眼、换眼换嘴；
   - 动画件包括常驻计数器、仪表、堆叠、数值标签、盖章大字、故障转场；
@@ -175,7 +173,7 @@ skills/donghua-maker/        底座
   assets/example-*.html      每种风格验证过的示例片
   assets/toolkit-goldscroll.js 金屏说史模块库（--goldscroll 时注入）
   assets/sfz/                 三个不用采样文件的 SFZ 乐器（贝斯、拨弦、铺底），配乐分轨流程用
-  assets/toolkit-<look>.js    各风格的模块库（--look <look> 时注入；用到 THREE 的会自动内嵌 three.js：clay3d / voxel / isometric / flatsci）
+  assets/toolkit-<look>.js    各风格的模块库（--look <look> 时注入；用到 THREE 的会自动内嵌 three.js：clay3d / voxel / flatsci / teardown）
   assets/lib/                three.js r158（MIT，附 LICENSE 与 sources.json）
   references/catalog.md      全部示例片目录（选定风格后再读，不占主文件篇幅）
   references/setup.md        新机器安装：体检、每项依赖对应的功能、key 的读取顺序、字体下载不了怎么办

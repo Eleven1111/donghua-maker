@@ -1,0 +1,220 @@
+{
+ "topic": "渐进式电梯安全钳结构（示意）",
+ "claims": [
+  {
+   "text": "01",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "callout index"
+  },
+  {
+   "text": "导轨",
+   "claim": "the part is called a guide rail",
+   "status": "verified",
+   "sources": [
+    "https://www.ndls.org.cn/standard/detail/7fbabf03fd6c429e0e4f058dcd488f6e"
+   ],
+   "note": "GB/T 22562-2008 电梯T型导轨"
+  },
+  {
+   "text": "为轿厢导向，T 型",
+   "claim": "lift guide rails guide the car (and counterweight); standard profile is T-type",
+   "status": "verified",
+   "sources": [
+    "https://www.ndls.org.cn/standard/detail/7fbabf03fd6c429e0e4f058dcd488f6e"
+   ],
+   "note": "「本标准适用于电梯中使用的供电梯轿厢和对重导向的导轨」"
+  },
+  {
+   "text": "02",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "callout index"
+  },
+  {
+   "text": "钳体",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "part name only"
+  },
+  {
+   "text": "装在轿厢下横梁",
+   "claim": "the progressive safety gear is mounted at both ends of the car's lower crosshead",
+   "status": "verified",
+   "sources": [
+    "https://patents.google.com/patent/CN105329739A/zh"
+   ],
+   "note": "「渐进式安全钳安装在电梯轿厢下横梁的两端」"
+  },
+  {
+   "text": "03",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "callout index"
+  },
+  {
+   "text": "楔块",
+   "claim": "braking force is applied by moving brake wedges",
+   "status": "verified",
+   "sources": [
+    "https://www.wittur.com/zh/产品/mechanical-packages/安全装置/csgb-010203---单向.aspx"
+   ],
+   "note": "「由活动制动楔块进行作用」"
+  },
+  {
+   "text": "拉起即夹紧导轨",
+   "claim": "the pull-up mechanism moves the slider/wedge up the fixed incline until it meets and clamps the rail",
+   "status": "verified",
+   "sources": [
+    "https://patents.google.com/patent/CN105329739A/zh",
+    "https://www.wittur.com/zh/产品/mechanical-packages/安全装置/csgb-010203---单向.aspx"
+   ],
+   "note": "patent calls the moving part 滑块: 「沿固定楔块6斜面上移」「直至滑块5接触右导轨面」"
+  },
+  {
+   "text": "04",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "callout index"
+  },
+  {
+   "text": "碟形弹簧组",
+   "claim": "braking force comes from paired disc springs",
+   "status": "verified",
+   "sources": [
+    "https://www.wittur.com/zh/产品/mechanical-packages/安全装置/csgb-010203---单向.aspx",
+    "https://commons.wikimedia.org/wiki/File:Keilfangvorrichtung_Aufzugsbau.jpg"
+   ],
+   "note": "「制动力通常由成对的碟形弹簧和制动组件共同产生」"
+  },
+  {
+   "text": "调节制动力",
+   "claim": "braking force is adjustable via the disc-spring packs",
+   "status": "verified",
+   "sources": [
+    "https://www.wittur.com/zh/产品/mechanical-packages/安全装置/csgb-010203---单向.aspx",
+    "https://commons.wikimedia.org/wiki/File:Keilfangvorrichtung_Aufzugsbau.jpg"
+   ],
+   "note": "「制动力可通过碟形弹簧组件进行调节」"
+  },
+  {
+   "text": "05",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "callout index"
+  },
+  {
+   "text": "提拉机构",
+   "claim": "the gear has a pull-up (lifting) mechanism",
+   "status": "verified",
+   "sources": [
+    "https://patents.google.com/patent/CN105329739A/zh"
+   ],
+   "note": "「再使安全钳的提拉机构动作」"
+  },
+  {
+   "text": "由限速器拉动",
+   "claim": "the overspeed governor acts first and then actuates the gear's pull-up mechanism",
+   "status": "verified",
+   "sources": [
+    "https://patents.google.com/patent/CN105329739A/zh"
+   ],
+   "note": "「电梯限速器装置首先动作」…「再使安全钳的提拉机构动作」"
+  },
+  {
+   "text": "安全钳，拆开看",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "title, no claim"
+  },
+  {
+   "text": "渐进式安全钳 · 结构示意，非实物尺寸",
+   "claim": "progressive safety gear is a real type; the subtitle flags the model as schematic",
+   "status": "verified",
+   "sources": [
+    "https://www.wittur.com/zh/产品/mechanical-packages/安全装置/csgb-010203---单向.aspx"
+   ],
+   "note": "「CSGB 01 / 02 / 03 为渐进式安全钳」"
+  },
+  {
+   "text": "下行超速时，限速器先动作",
+   "claim": "on downward overspeed the governor acts first",
+   "status": "verified",
+   "sources": [
+    "https://patents.google.com/patent/CN105329739A/zh"
+   ],
+   "note": "「当电梯轿厢下行超速或因意外而坠落时，电梯限速器装置首先动作」"
+  },
+  {
+   "text": "楔块夹紧导轨，轿厢被制停",
+   "claim": "the gear clamps the rail and stops the car",
+   "status": "verified",
+   "sources": [
+    "https://patents.google.com/patent/CN105329739A/zh",
+    "https://www.wittur.com/zh/产品/mechanical-packages/安全装置/csgb-010203---单向.aspx"
+   ],
+   "note": "「安全钳夹紧导轨15，起到使电梯轿厢制停作用」"
+  },
+  {
+   "text": "整体",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "shot name"
+  },
+  {
+   "text": "拆开",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "shot name"
+  },
+  {
+   "text": "楔紧",
+   "claim": "",
+   "status": "na",
+   "sources": [],
+   "note": "shot name"
+  }
+ ],
+ "visual": [
+  {
+   "what": "two brass wedges, one on each side of the rail, each backed by a disc-spring stack inside an open yellow frame",
+   "shot": 2,
+   "t": 7.6,
+   "status": "disputed",
+   "sources": [
+    "https://commons.wikimedia.org/wiki/File:Keilfangvorrichtung_Aufzugsbau.jpg",
+    "https://patents.google.com/patent/CN105329739A/zh"
+   ],
+   "note": "Commons photo shows the two-sided build; patent CN105329739A describes one moving slider against one rail face — designs differ, the film says 结构示意"
+  },
+  {
+   "what": "wedges rise relative to the body when the rod is pulled up, then stop on the rail",
+   "shot": 3,
+   "t": 11.6,
+   "status": "verified",
+   "sources": [
+    "https://patents.google.com/patent/CN105329739A/zh"
+   ],
+   "note": "「提拉机构带动安全钳的滑块沿固定楔块6斜面上移」"
+  },
+  {
+   "what": "the rail is drawn with a T profile",
+   "shot": 1,
+   "t": 1.5,
+   "status": "verified",
+   "sources": [
+    "https://www.ndls.org.cn/standard/detail/7fbabf03fd6c429e0e4f058dcd488f6e"
+   ],
+   "note": ""
+  }
+ ]
+}

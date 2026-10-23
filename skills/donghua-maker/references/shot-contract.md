@@ -135,22 +135,19 @@ Look-specific helpers and rules each have a file in `references/looks/`. Read th
 | 3D clay / 3D 黏土定格 (three.js, `--look clay3d`) | `looks/clay3d.md` | `assets/example-clay3d.html` |
 | 3D voxel / 3D 体素 (three.js, `--look voxel`) | `looks/voxel.md` | `assets/example-voxel.html` |
 | 金屏说史 gold-scroll history series (`--goldscroll`) | `looks/gold-scroll.md` | `assets/example-gold-scroll-chibi.html` |
-| 谐波运动 / harmonic motion (`--look harmonic`) | `looks/harmonic.md` | `assets/example-harmonic.html` |
 | 浮世绘 / ukiyo-e woodblock (`--look ukiyoe`) | `looks/ukiyoe.md` | `assets/example-ukiyoe.html` |
-| 博物版画 / natural-history plate (`--look naturalplate`) | `looks/naturalplate.md` | `assets/example-naturalplate.html` |
 | 青绿长卷 / blue-green handscroll (`--look qinglu`) | `looks/qinglu.md` | `assets/example-qinglu.html` |
 | 长卷穿越 / long scroll (`--scroll paper,inkwash,…`) | `looks/scroll.md` | `assets/example-scroll.html` |
 | 写意水墨 / ink wash (Qi Baishi study) (`--look inkwash`) | `looks/inkwash.md` | `assets/example-inkwash.html` |
-| 等距几何 / isometric blocks (three.js, `--look isometric`) | `looks/isometric.md` | `assets/example-isometric.html` |
 | 黑板粉笔 / Chalkboard (`--look chalkboard`) | `looks/chalkboard.md` | `assets/example-chalkboard.html` |
 | 工程蓝图 / Blueprint (`--look blueprint`) | `looks/blueprint.md` | `assets/example-blueprint.html` |
-| 一笔画 / One-line drawing (`--look oneline`) | `looks/oneline.md` | `assets/example-oneline.html` |
-| 铅笔素描 / Pencil sketch (`--look pencil`) | `looks/pencil.md` | `assets/example-pencil.html` |
 | 16mm 老纪录片 / 16 mm documentary (`--look film16`) | `looks/film16.md` | `assets/example-film16.html` |
-| 科幻界面 / Sci-fi HUD (`--look hud`) | `looks/hud.md` | `assets/example-hud.html` |
+| 半调档案 / Halftone dossier (`--look halftone`) | `looks/halftone.md` | `assets/example-halftone.html` |
 | 控制台大屏 / Ops board (`--look opsboard`) | `looks/opsboard.md` | `assets/example-opsboard.html` |
+| 产品发布片 / Product launch (`--look launch`) | `looks/launch.md` | `assets/example-launch.html` |
 | 动态字体 / Kinetic typography (`--look kinetic`) | `looks/kinetic.md` | `assets/example-kinetic.html` |
 | 扁平科普 / Flat science explainer (three.js, `--look flatsci`) | `looks/flatsci.md` | `assets/example-flatsci.html` |
+| 爆炸拆解 / Teardown (three.js, `--look teardown`) | `looks/teardown.md` | `assets/example-teardown.html` |
 | 报刊数据图 / Editorial data graphics (`--look editorial`) | `looks/editorial.md` | `assets/example-editorial.html` |
 | 图层卡通讲解 / Layered cartoon explainer (`--look layered`) | `looks/layered.md` | `assets/example-layered.html` |
 
@@ -189,6 +186,7 @@ const S2 = { name: 'Pond', t0: 4, t1: 8, enter: { kind: 'ink', dur: .6, at: [.5,
 ## 8. Test hooks
 
 `?t=3.2` opens at 3.2 s, `?ui=0` bare frame, `window.__film.seek(frame)`, `.info()`, `.score()`, `await .wav()` (base64 WAV of the full mix; byte length should be `44 + DUR*48000*4`).
+`.textBoxes(frame)`: every text drawn in that frame with its string and canvas box, subtitles tagged; scene packs use it for safe-area, overlap and reading-hold checks. Text baked into a sprite is invisible to it.
 ## 9. Narration (`k: 'vo'`)
 
 - `VO.src = ['<base64 mp3>', …]`: set this in the story before `SHOTS`. The engine calls `voReady()` at boot and `await`s it in `renderWav()`.

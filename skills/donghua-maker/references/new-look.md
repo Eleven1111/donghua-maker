@@ -53,7 +53,14 @@ pixels.
 ## Hand back
 The files above, plus in `looks/<look>.md`: the pipeline in order, key parameters and colour values, how each motif
 moves, the transition kind if any, the cost per frame, pitfalls met, and what could still be better. Be concrete and
-give numbers. Then an independent review of the example film (`references/review.md`).
+give numbers. Three sections every look file carries (sample: `looks/layered.md`):
+- **Signature features**: the 5–8 traits a viewer knows the look by, each written so a stranger can check it in a still
+  or a strip: numbers, not adjectives ("pops overshoot to 1.15× and settle", not "bouncy"). The reviewer checks the
+  example film and every later film in the look against this list (`review.md` item 8). (Borrowed from mg-styles-15.)
+- **What it is not**: the two or three neighbouring looks it can slide into, each with the tell that gives it away.
+- **What may change**: three tiers. *Safe to change* (palette within its logic, characters, topic, format…),
+  *changes the character* (try one frame first), *can't change* (the 3–5 form elements). Each row names its evidence,
+  so a request for brand colours or the user's own character bends the look without breaking it. Then an independent review of the example film (`references/review.md`).
 
 **Nobody to ask** (a batch or overnight run): build the direction the brief names, and list in the hand-back the two
 other directions you would have offered, one line each, so the user can pick one later.
