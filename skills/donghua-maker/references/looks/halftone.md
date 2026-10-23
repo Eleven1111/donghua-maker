@@ -108,6 +108,8 @@ wide.
 | `htStampSprite(text, { w, h, size, col })`, `htSlam(g, sprite, x, y, ks, { rot, s0, sc })`, `htShake(T, t0)` | rough stamp, slam curve, camera shake |
 | `htNumeral(text, { size, col, tone })`, `htHud(g, T, caseNo, subject, rec)` | giant toned numeral; case HUD with blinking REC |
 
+The helpers `page`, `pulse`, `flashAt`, `chipC` and `HUD` in `assets/example-halftone.html` are not in the toolkit: they live in the example's story layer, so copy them from there.
+
 Scaffold with `scaffold.py --look halftone`. Embed fonts with `font_embed.py <film>.html --fonts
 notoserif,notosans,wenkai,jetbrainsmono`: serif for headlines, sans for captions and stamps, 霞鹜文楷 for notes, and
 mono with a CJK fallback for chips and the HUD.

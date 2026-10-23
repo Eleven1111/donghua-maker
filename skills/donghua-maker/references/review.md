@@ -13,13 +13,13 @@ shots were added or re-cut; a colour or wording fix doesn't need a new review.
 
 ## Who
 A fresh-context agent that took no part in making the film: a subagent if your terminal has them, otherwise a new
-session. A director agent can't start one (it is a subagent itself): it reports the review as **pending** and gives the
-main conversation the packet path below.
+session; an agent that made the film reports it as pending with the packet path below.
 
 ## The packet: the film only
 Give the reviewer:
 - the film path and how to serve it (`python3 -m http.server`, then `<film>.html`; Space plays, 1–N jumps to a shot);
 - `<film>-stills/` (from `scripts/stills.py --shots`) and the `shot_NN.jpg` strips from `scripts/qa.py`;
+- besides the `--shots` stills, a still at every key action (each strike, slam, reveal; `stills.py --at`): an event that lives 0.3 s falls between first/middle/last frames (a pilot review called a present bolt missing);
 - one line on who the film is for (e.g. "a 30 s vertical short for 小红书", "a lesson for grade 8");
 - films with characters: `faces/`, each character's key expressions at final size (below);
 - the look's **Signature features** section from `looks/<look>.md`, when it has one: it describes the look, not this film.
@@ -61,13 +61,10 @@ mg-styles-15's jury prompt. The scores are reported, not a gate: a reviewer's nu
 What gets acted on is the named template moments and a missing hero moment.
 
 ## Faces at final size
-The maker knows which emotion each face is meant to show, and checks it zoomed in. The viewer sees it once, phone-sized.
-On the elevator film (2026-10-21) the redesigned passenger's scared face read as angry on the cover: the brows were
-hidden under the fringe, and the fringe clipped the arched upper-lid line into a frown. Dropping that line fixed it. For each character, take the still of every key expression, scale the whole
-still to what a phone shows (390 px wide for 9:16, 640 px for 16:9), then crop the face without enlarging it. Save the
-crops as `faces/face_01.png`… in shuffled order, and keep the key (file → intended emotion) outside the packet.
-A face the reviewer names differently from the key is a defect, not a matter of taste: redraw it (brow direction, what
-covers the eyes; `craft-checks.md` §2), crop again and ask again.
+Packet steps: for each character, take the still of every key expression, scale the whole still to what a phone shows
+(390 px wide for 9:16, 640 px for 16:9), then crop the face without enlarging it. Save the crops as `faces/face_01.png`…
+in shuffled order, and keep the key (file → intended emotion) outside the packet. What to check, and when a face counts
+as a defect: `crew/picture.md` › Faces at final size.
 
 ## After
 Fix what is clearly wrong, then list in the step-6 report what the review raised, what you fixed, and what you are

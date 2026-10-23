@@ -6,7 +6,7 @@ all of its parts exist and pass (AGENTS.md rule 5): `assets/toolkit-<look>.js`, 
 README table.
 
 ## Read first, in order
-1. `references/shot-contract.md` (the shot interface, the core helpers, §7c transitions) and `references/lessons.md`.
+1. `references/shot-contract.md` (the shot interface, the core helpers, §7c transitions) and the lessons in `crew/picture.md`.
 2. `references/catalog.md`: find the nearest existing look, read its `looks/<look>.md`, open its example. **Reuse its
    toolkit functions before writing new ones.**
 

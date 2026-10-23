@@ -1,7 +1,9 @@
 # Long films: chapters
 
-Past about 9 shots or 30 s, one file gets hard to keep straight: helpers from different scenes collide, an edit to
-one scene breaks another, and nothing plays until everything is written. Build such a film in **chapters**: one file
+Past about 9 shots or 30 s the cost of building and verifying one file grows; the film-type ranges (creator 6–10 shots,
+classroom up to 90 s) come from the film type. Split into chapters past ~60 s or ~11 shots, the longest verified single
+file (the catalog's 60 s, 11-shot example): helpers from different scenes collide, an edit to one scene breaks another,
+and nothing plays until everything is written. Build such a film in **chapters**: one file
 per chapter, assembled into the usual single-file HTML. The deliverable doesn't change; only how you write it does.
 
 ```bash
@@ -51,11 +53,11 @@ shot({ name: '石板路', t0: 3.5, t1: 12, … });   // CH = { name, i, t0, t1, 
 
 Never edit the built HTML by hand: the next build overwrites everything except those carried blocks.
 
-## Splitting the work
-Chapters are independent files, so several agents (or sessions) can write different chapters at once: each edits
-only its own `ch/` file, and anything shared is changed in `story.js` by one owner. Give each one the brief, its rows
-of the shot table (with the `out` of the chapter before and of its own last shot), and this page. Build and run
-`qa.py` on the whole film after merging their files.
+## Working chapter by chapter
+One agent writes the chapters in order. Each chapter is its own file, built and verified on its own (`stills.py`,
+`qa.py`) before the next one starts. Anything shared is changed in `story.js`, and the chapters that use it are
+re-checked. For each chapter keep the brief, its rows of the shot table and the `out` of the chapter before. Run
+`qa.py` on the whole film at the end.
 
 ## Export
 A long film takes minutes to export. `export.py --workers N` renders in parallel, and `--frames DIR` keeps the frames

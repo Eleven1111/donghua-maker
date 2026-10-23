@@ -65,6 +65,41 @@ def check_links(skill: Path) -> None:
                 fail(f"{doc.relative_to(ROOT)}: points at missing `{ref}`")
 
 
+REF_RE = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)|`([^`\s]+)`")
+# not repo refs: URLs, anchors, absolute/~/.env, placeholders & globs, user-side outputs (<film>-facts/, -stills/)
+REF_SKIP = re.compile(r"^(?:[a-z]+:|#|/|~|\.env)|[<>{}*$\u2026|=,;:()]|\.\.\.|^-|^[^/]*-(?:facts|publish)/")
+EXTS = (".md", ".py", ".js", ".html", ".json", ".sh")
+# Named in the docs but created at run time / on the user's side, never in this repo. Keep short.
+REF_ALLOW = {
+    "donghua-maker/directors/", ".agents/skills",  # install.sh target dirs
+    "film-lesson/blind/packet.md", "blind/packet.md", "lesson.json", "answers.json", "讲义.md",  # classroom run output
+    "发布包.md", "facts.json", "brief.json", "bgm.mix.json", "sounds.json", "lines.json",  # per-film run output
+    "film.json", "story.js", "ch/", "faces/", "faces/face_01.png",  # film project files (long-film.md, review.md)
+    "TASTE.md", "USER.md", "IDENTITY.md", "GEMINI.md",  # user-side memory/taste files
+}
+
+
+def check_refs() -> None:
+    """Every markdown link / backticked repo path in skills/, agents/ and the root docs must resolve to a real file."""
+    docs = sorted([*ROOT.glob("skills/**/*.md"), *ROOT.glob("agents/**/*.md"), *(ROOT / n for n in ("README.md", "AGENTS.md", "CLAUDE.md"))])
+    maker, n = ROOT / "skills" / "donghua-maker", 0
+    names = {p.name for d in ("skills", "tools") for p in (ROOT / d).rglob("*")}  # bare `qa.py` = that file anywhere
+    for doc in docs:
+        root = next((s for s in SKILLS if s in doc.parents), None)
+        bases = [doc.parent, *([root] if root else []), maker, maker / "references", ROOT]
+        for i, line in enumerate(doc.read_text(encoding="utf-8").splitlines(), 1):
+            for m in REF_RE.finditer(line):
+                ref = re.sub(r"^(?:<skill-dir>/|\./)", "", (m.group(1) or m.group(2)).split("#")[0]).rstrip(".")
+                if not ref or REF_SKIP.search(ref) or ref in REF_ALLOW:
+                    continue
+                if not ref.endswith(EXTS + ("/",)):  # also drops code tokens like rope.rx/ry
+                    continue
+                n += 1
+                if not any((b / ref).exists() for b in bases) and not (("/" not in ref) and ref in names):
+                    fail(f"{doc.relative_to(ROOT)}:{i} -> {ref}")
+    print(f"  {n} doc references checked")
+
+
 def check_scripts() -> None:
     for py in sorted(ROOT.glob("skills/*/scripts/*.py")):
         rel = py.relative_to(ROOT)
@@ -190,6 +225,7 @@ def main() -> int:
         check_spec(skill)
         check_links(skill)
     print(f"  {len(SKILLS)} skills checked against the Agent Skills spec")
+    check_refs()
     check_scripts()
     check_scaffold()
     check_hygiene()

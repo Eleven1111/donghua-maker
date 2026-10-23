@@ -2,15 +2,6 @@
 
 Pick one row from each section (or blend two) to turn a theme into concrete parameters. These are starting points: when the user names a mood, a reference, or colours, derive new values in the same spirit rather than forcing a preset.
 
-## Contents
-1. Formats & composition
-2. Visual looks (texture recipes)
-3. Palettes
-4. Rhythm (pose rate, pacing)
-4b. Film rhythm (route, energy curve, hook)
-5. Music (scale, tempo, voices)
-6. Prop & puppet ideas by theme
-
 ## 1. Formats & composition
 
 | format | px | use | composition notes |
@@ -101,7 +92,7 @@ Pacing: one clear cause→effect beat per shot. Choose shot count and total leng
 
 §4 is the pose rate inside a shot. This is the energy *across* the film. A film is boring when the shapes below are missing, even if every frame is right: the same shot length, the same move, the same energy in every shot, and the only hit at the very end. Rhythm is contrast between stretches, not a fast tempo; a film that is fast everywhere is as flat as one that is slow everywhere.
 
-> Status: **hypothesis**. The numbers come from huashu-motion's measurements of 21 launch films (author's claim, not reproduced here) and are not yet proven on donghua films. Use them as a checklist. When a donghua film confirms or breaks one, record it in `lessons.md` with the film as evidence.
+> Status: **hypothesis**. The numbers come from huashu-motion's measurements of 21 launch films (author's claim, not reproduced here) and are not yet proven on donghua films. Use them as a checklist. When a donghua film confirms or breaks one, record it in `crew/story.md` › Imported hypotheses with the film as evidence.
 
 **1. Choose the route first** (it follows the theme shape in SKILL §1):
 
@@ -133,7 +124,7 @@ Tempo ties picture to sound. Pick the bpm from the mood first, then set shot len
 | melancholy | A natural minor / D dorian | slow `mb` with low `chord` | room, low levels |
 | Chinese / 中国风 | pentatonic gong/zhi mode (C D E G A) | `pluck` as guzheng (f 200–800 Hz, dur 2.5, bend already built in) | field |
 | festive | C major, fast 120–132 bpm | `mb` + `chord` every bar + `tick` on offbeats | street |
-| explainer with narration | D major, 120 bpm (shots in whole seconds keep `DUR×60` integral) | `mb` at v ≈ .5 on label beats, a `chord` on each reveal, MiniMax voice on top (SKILL §4b) | **none**: no `bed`, no pencil scratches |
+| explainer with narration | D major, 120 bpm (shots in whole seconds keep `DUR×60` integral) | `mb` at v ≈ .5 on label beats, a `chord` on each reveal, narration on top (`narrate.py` by default, MiniMax only on request; `crew/sound.md`) | **none** (`references/narration.md` step 5) |
 | picture-book lullaby | G / C major, 120 bpm felt as slow quarters | `mb` melody at v ≈ .55–.7; a very soft high `mb` for each window lighting up or each handwritten character; `chord` on scene changes | **none** (no bed, no scratches) |
 | comic action | D minor, 120 bpm | square `chip` stabs (triads) on hits, a descending square run for falls, a rising arpeggio for the title; `thump`×2 + low `rustle` for thunder and impacts | rain `rustle` only while rain is on screen |
 | night, magical | E major with high octave sparkles (7th octave) | `mb` + `bloom` | stage |

@@ -33,10 +33,6 @@ Every verified example film in `assets/`, and what to copy from each. Pick the l
 - `assets/example-biz-margin.html` and `assets/example-biz-equity.html`: the verified business/finance whiteboard explainer on two topics: gross margin (9 s, one grid transforming) and equity dilution (8 s, before → after). Copy from them: the `BIZ-EXPLAINER KIT` block, which is identical in both (meaning `block`s + `gridCell`, `card`/`arrow`/`legend`, chapter `tabs`, numbered `caption`, the red `stamp`, the hard-hat `guide` + `say`, `bakePaper`/`iris`, `stateAt`). Then write only a new TOPIC block. Rules are in `looks/biz-explainer.md`.
 - `assets/example-red-kite.html`: a verified 4-shot, 10 s landscape film. Copy techniques from it: a hero prop shared across shots, rope physics, birds taking off, a tree shedding petals, a person turning their head, the final fade.
 
-## Looks by description
-
-纯 JS 生成的单文件 HTML 动画短片，默认是纸艺定格（手工剪切边缘、纸纹、胶片颗粒、每秒 12 次摆位），音乐和音效优先使用找到的授权录音素材（嵌入单文件），找不到的类别由代码合成。画幅可选横屏 16:9、竖屏 9:16（抖音/视频号/Reels）、方形 1:1 或 4:5；配色、节奏、道具、音乐和质感（剪纸、版画、Riso 印刷、水彩、水墨、毛毡、粉笔、夜景、像素风/农场模拟游戏风、像素风技术图解（神经网络可视化）、商务财经图解风（方格比喻+章节标签+讲解员+红章，讲毛利/股权/成本结构等）、可爱软件产品演示风（扁平萌系小方块角色操作软件界面：剪辑软件/仪表盘/App/SaaS 功能介绍）、手绘科普讲解风、美漫/漫画分镜风、撕纸拼贴绘本风、皮影戏、3D 体素风（浮空方块小岛、昼夜变化、移轴微缩）、3D 黏土定格风（three.js 真立体泥塑、指纹按痕、柔光阴影、每秒 12 个姿势）、金屏说史历史讲解系列（金箔屏风片头、金属金字、年份滚轮、河流地图行军、火攻高潮、辨误卡，60 秒一回）、浮世绘风（普鲁士蓝木版、浪花爪、云带、直线雨、题签）、青绿长卷风（千里江山青绿山水×清明上河市井长卷、开卷横移）、写意水墨风（齐白石式虾、湿墨留白、落款钤印）、黑板粉笔风（粉笔板书、板擦擦除、彩色粉笔强调）、工程蓝图风（蓝底白线、尺寸标注、剖面线、图框）、16mm 老纪录片风（黑白颗粒、片头倒数、花框字幕卡、划痕灰尘、画面抖动）、半调档案风（牛皮纸案卷、网点代替渐变、标题错版套印、证物落页、红章砸下、网点转场，适合辟谣和真相类短片）、控制台大屏风（黑底细线分格、等宽字、关键词彩色标签、连线飞过扇形刻度落到各个模型卡片、全屏计数器联动）、动态字体风（只有文字、粗细大小强对比、砸入与滑入、重复文字墙、红色句点）、扁平科普风（three.js 真 3D 卡通分色、靛紫太空、真实明暗交界的星球、月相由光照得出、圆润粗体字幕）、报刊数据图风（白底衬线大标题、红色主线灰色对照、差距标注、横向条形图）、图层卡通讲解风（粗墨线卡通角色分层动画、常驻计数器、仪表指针、堆叠增长、绿色数值标签、盖章大字、故障转场，占位图可换成自己生成的素材）、爆炸拆解风（three.js 真实材质、深石墨背景、影棚光、零件沿自身方向分层拆开再合回、引线从零件上的 3D 点引出、单一橙色强调、无工程图时标「示意」）
-
 ## Phrases that mean "use this skill"
 
 - 用代码/JS 做一个短视频/动画短片

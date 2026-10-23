@@ -1,8 +1,7 @@
 # Rebuilding a real object from a photo
 
 When a film depends on a real machine, tool, animal or building (a teardown, a hero prop, a how-it-works shot), build
-it from a reference, not from memory: 小猫钓鱼's first cat head and 射日's first puppets were drawn from memory and
-rejected. The method is adapted from img2threejs (Apache-2.0; method only, no code): write down what makes the object
+it from a reference, not from memory (the cases: `crew/picture.md` › Bake and approve the characters before animating any shot). The method is adapted from img2threejs (Apache-2.0; method only, no code): write down what makes the object
 itself before writing code, build in passes, and judge each pass on one sheet with the reference beside the render.
 It applies to 2D looks too; the 3D looks (clay3d, voxel, flatsci, teardown) need it most, because a wrong part shows
 from every angle.

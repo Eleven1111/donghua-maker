@@ -18,4 +18,4 @@ Rules learned on 晚安纸条:
 - Build a set of about six layers (sky, moon and stars, clouds, hills, houses, foreground hedge) at parallax .6–1.15. The foreground layer must reach the bottom edge, and each layer must overlap the next, or a strip of sky shows between paper pieces. Check the first frame's bottom row.
 - **Reuse the set, flip the time of day.** Add a `day` field and a `skyHook` to the first shot's `draw` so later shots can call `S1.draw(ctx, st, 4, e, cam)` for the same town, at night or in the morning, with a new sky object (the sun) slipped in behind the houses.
 - Keep the crayon on large light areas faint (a ≈ .06). At .14 the morning sky looked smudged.
-- No ambience bed and no scratch sounds here either. Use music box plus soft foley: `tick` for a bonk, `bloom` for joy, a triangle `chip` slide for a yawn, and a soft square `chip` pair for a bark.
+- No ambience bed and no scratch sounds here either (`references/narration.md` step 5). Use music box plus soft foley: `tick` for a bonk, `bloom` for joy, a triangle `chip` slide for a yawn, and a soft square `chip` pair for a bark.

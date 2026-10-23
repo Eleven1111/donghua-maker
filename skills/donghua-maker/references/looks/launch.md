@@ -70,4 +70,4 @@ Not copied from anywhere: the product, the copy, the layout, the code. The sourc
 - Two directions the brief did not take, one line each: (B) a hardware-style hero object turning on a plinth with spec callouts; (C) editorial type poster, no UI, one data point per cut.
 
 ## Review
-Independent review of the example (`references/review.md`, six questions) is recorded in `lessons.md` (entry 9). Pacing in motion is UNVERIFIED: the reviewer saw stills only, and the rhythm plan is the imported hypothesis of `styles.md` §4b.
+Independent review of the example (`references/review.md`, six questions) is recorded in `crew/review.md` › Launch film: fresh-eyes read of the words. Pacing in motion is UNVERIFIED: the reviewer saw stills only, and the rhythm plan is the imported hypothesis of `styles.md` §4b.

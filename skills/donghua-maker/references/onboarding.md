@@ -40,6 +40,8 @@ The file is `~/.config/donghua/profile.md` (or `$DONGHUA_PROFILE`), plain Markdo
 | likes / avoid | shortlist or strike looks; an explicit request in the session always wins |
 | language | on-screen text and narration language |
 
+The per-audience looks above are a starting shortlist; the film-type defaults (creator / classroom) win when they differ.
+
 State in the brief which defaults came from the profile ("按你的档案：初二课堂，16:9 黑板风"), so the user can correct them in one word.
 
 ## Rules
