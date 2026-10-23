@@ -74,7 +74,7 @@ REF_ALLOW = {
     "donghua-maker/directors/", ".agents/skills",  # install.sh target dirs
     "film-lesson/blind/packet.md", "blind/packet.md", "lesson.json", "answers.json", "讲义.md",  # classroom run output
     "发布包.md", "facts.json", "brief.json", "bgm.mix.json", "sounds.json", "lines.json",  # per-film run output
-    "film.json", "story.js", "ch/", "faces/", "faces/face_01.png",  # film project files (long-film.md, review.md)
+    "film.json", "story.js", "ch/", "faces/", "faces/face_01.png", "checkpoint.md",  # film project files (long-film.md, review.md, the film's own checkpoint)
     "TASTE.md", "USER.md", "IDENTITY.md", "GEMINI.md",  # user-side memory/taste files
 }
 
